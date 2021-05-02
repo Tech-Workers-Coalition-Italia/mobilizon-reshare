@@ -1,0 +1,21 @@
+[default]
+DEBUG = false
+DEVELOPMENT = false
+LOCAL_STATE_DIR = "/var/mobots"
+LOG_DIR = "/var/log/mobots"
+DB_NAME = "events.db"
+DB_PATH ="@jinja /{{ this.LOCAL_STATE_DIR }}/{{ this.DB_NAME | abspath }}"
+
+[development]
+DEVELOPMENT = true
+DEBUG = true
+LOCAL_STATE_DIR = "/tmp/mobots"
+LOG_DIR = "/tmp/mobots"
+DB_NAME = "development.db"
+DB_PATH="@jinja /{{ this.LOCAL_STATE_DIR }}/{{ this.DB_NAME | abspath }}"
+
+[testing]
+DEBUG = true
+LOCAL_STATE_DIR = "/tmp/mobots"
+LOG_DIR = "/tmp/mobots"
+DB_PATH=":memory:"
