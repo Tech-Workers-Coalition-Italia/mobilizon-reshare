@@ -68,21 +68,25 @@ class AbstractPublisher(ABC):
         """
         raise NotImplementedError
 
-    def log_debug(self, msg, *args, **kwargs):
+    def _log_debug(self, msg, *args, **kwargs):
         self.__log(logging.DEBUG, msg, *args, **kwargs)
 
-    def log_info(self, msg, *args, **kwargs):
+    def _log_info(self, msg, *args, **kwargs):
         self.__log(logging.INFO, msg, *args, **kwargs)
 
-    def log_warning(self, msg, *args, **kwargs):
+    def _log_warning(self, msg, *args, **kwargs):
         self.__log(logging.WARNING, msg, *args, **kwargs)
 
-    def log_error(self, msg, *args, **kwargs):
+    def _log_error(self, msg, *args, **kwargs):
         self.__log(logging.ERROR, msg, *args, **kwargs)
 
-    def log_critical(self, msg, *args, **kwargs):
+    def _log_critical(self, msg, *args, **kwargs):
         self.__log(logging.CRITICAL, msg, *args, **kwargs)
 
     def __log(self, level, msg, *args, **kwargs):
         method = inspect.currentframe().f_back.f_back.f_code.co_name
         logger.log(level, f"{self}.{method}(): {msg}", *args, **kwargs)
+
+    def _log_error_and_raise(self, message):
+        self._log_error(message)
+        raise ValueError(message)

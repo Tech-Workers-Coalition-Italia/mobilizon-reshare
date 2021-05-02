@@ -15,10 +15,6 @@ class TelegramPublisher(AbstractPublisher):
         )
         return self._validate_response(res)
 
-    def _log_error_and_raise(self, message):
-        self.log_error(message)
-        raise ValueError(message)
-
     def validate_credentials(self) -> bool:
         chat_id = self.credentials.get("chat_id")
         token = self.credentials.get("token")
@@ -45,7 +41,7 @@ class TelegramPublisher(AbstractPublisher):
         try:
             data = res.json()
         except ValueError as e:
-            self.log_error("Server returned invalid json data")
+            self._log_error("Server returned invalid json data")
             raise ValueError from e
 
         if not data.get("ok"):
