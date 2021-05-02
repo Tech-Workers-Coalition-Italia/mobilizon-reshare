@@ -47,6 +47,21 @@ class AbstractPublisher(ABC):
         raise NotImplementedError
 
     @abstractmethod
+    def are_credetials_valid(self):
+        try:
+            self.validate_credentials()
+        except Exception:
+            return False
+        return True
+
+    def is_event_valid(self):
+        try:
+            self.validate_event()
+        except Exception:
+            return False
+        return True
+
+    @abstractmethod
     def validate_event(self) -> bool:
         """
         Validates publisher's event.
