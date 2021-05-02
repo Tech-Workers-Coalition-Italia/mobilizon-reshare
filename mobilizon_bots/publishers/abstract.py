@@ -30,7 +30,7 @@ class AbstractPublisher(ABC):
     __str__ = __repr__
 
     @abstractmethod
-    def post(self) -> bool:
+    def post(self) -> dict:
         """
         Publishes the actual post on social media using ``data`` info.
         :return: True or False according to whether publisher was able to
@@ -39,22 +39,21 @@ class AbstractPublisher(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    def validate_credentials(self) -> bool:
+    def validate_credentials(self) -> dict:
         """
         Validates credentials.
         :return: True or False according to whether credentials are valid.
         """
         raise NotImplementedError
 
-    @abstractmethod
-    def are_credetials_valid(self):
+    def are_credentials_valid(self) -> bool:
         try:
             self.validate_credentials()
         except Exception:
             return False
         return True
 
-    def is_event_valid(self):
+    def is_event_valid(self) -> bool:
         try:
             self.validate_event()
         except Exception:
@@ -62,7 +61,7 @@ class AbstractPublisher(ABC):
         return True
 
     @abstractmethod
-    def validate_event(self) -> bool:
+    def validate_event(self) -> dict:
         """
         Validates publisher's event.
         :return: True or False according to whether event is valid.
