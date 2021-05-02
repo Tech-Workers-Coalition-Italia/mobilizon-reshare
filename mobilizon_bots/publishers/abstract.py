@@ -3,11 +3,7 @@ import logging
 
 from abc import ABC, abstractmethod
 
-logging.basicConfig(
-    format='%(asctime)s - %(levelname)s - %(name)s - %(message)s',
-    level=logging.INFO
-)
-logger = logging.getLogger("Publishers")
+logger = logging.getLogger(__name__)
 
 
 class AbstractPublisher(ABC):
