@@ -1,19 +1,20 @@
 from dynaconf import Dynaconf, Validator
 
 settings = Dynaconf(
-    envvar_prefix="MOBOTS",
+    environments=True,
+    envvar_prefix="MOBILIZON_BOTS",
     settings_files=[
-        "settings.toml",
-        ".secrets.toml",
-        "/etc/mobots.toml",
-        "/etc/mobots_secrets.toml",
+        "mobilizon_bots/settings.toml",
+        "mobilizon_bots/.secrets.toml",
+        "/etc/mobilizon_bots.toml",
+        "/etc/mobilizon_bots_secrets.toml",
     ],
     validators=[
         # Ensure some parameters exists (are required)
-        Validator("LOCAL_STATE_DIR", "LOG_DIR", "DB_PATH", must_exist=True),
+        Validator("local_state_dir", "log_dir", "db_path", must_exist=True),
         # Ensure some parameter mets a condition
         # conditions: (eq, ne, lt, gt, lte, gte, identity, is_type_of, is_in, is_not_in)
-        Validator("LOCAL_STATE_DIR", "LOG_DIR", "DB_PATH", is_type_of=str),
+        Validator("local_state_dir", "log_dir", "db_path", is_type_of=str),
         # check file or directory
         # validate a value is eq in specific env
         # Validator('PROJECT', eq='hello_world', env='production'),

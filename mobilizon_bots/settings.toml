@@ -1,21 +1,39 @@
 [default]
-DEBUG = false
-DEVELOPMENT = false
-LOCAL_STATE_DIR = "/var/mobots"
-LOG_DIR = "/var/log/mobots"
-DB_NAME = "events.db"
-DB_PATH ="@jinja /{{ this.LOCAL_STATE_DIR }}/{{ this.DB_NAME | abspath }}"
+debug = true
+default = true
+local_state_dir = "/var/mobots"
+log_dir = "/var/log/mobots"
+db_name = "events.db"
+db_path = "@format {this.local_state_dir}/{this.db_name}"
 
-[development]
-DEVELOPMENT = true
-DEBUG = true
-LOCAL_STATE_DIR = "/tmp/mobots"
-LOG_DIR = "/tmp/mobots"
-DB_NAME = "development.db"
-DB_PATH="@jinja /{{ this.LOCAL_STATE_DIR }}/{{ this.DB_NAME | abspath }}"
+[default.logging]
+version = 1
+disable_existing_loggers = false
+
+[default.logging.formatters.standard]
+format = '[%(asctime)s] [%(levelno)s] [%(levelname)s] %(message)s'
+
+[default.logging.handlers.console]
+level = "INFO"
+class = "logging.StreamHandler"
+formatter = "standard"
+stream = "ext://sys.stderr"
+
+[default.logging.handlers.logfile]
+level = "DEBUG"
+class = "logging.handlers.RotatingFileHandler"
+formatter = "standard"
+filename = "@format {this.log_dir}/mobilizon_bots.log"
+maxBytes = 52428800
+backupCount = 500
+encoding = "utf8"
+
+[default.logging.root]
+level = "DEBUG"
+handlers = ['console', 'logfile']
 
 [testing]
 DEBUG = true
 LOCAL_STATE_DIR = "/tmp/mobots"
 LOG_DIR = "/tmp/mobots"
-DB_PATH=":memory:"
+DB_PATH = ":memory:"
