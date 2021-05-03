@@ -16,14 +16,3 @@ class Event(Model):
 
     class Meta:
         table = "event"
-
-
-class SocialNetwork(Model):
-    id = fields.IntField(pk=True)
-    name = fields.TextField()
-
-    def __str__(self):
-        return self.name
-
-    class Meta:
-        table = "social_network"
