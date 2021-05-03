@@ -7,8 +7,8 @@ authors = ["Simone Robutti <simone.robutti@protonmail.com>"]
 [tool.poetry.dependencies]
 python = "^3.9"
 dynaconf = "^3.1.4"
-tortoise-orm = "^0.16.21"
-aiosqlite = "^0.17.0"
+tortoise-orm = "^0.17"
+aiosqlite = "^0.16"
 
 [tool.poetry.dev-dependencies]
 pytest = "^5.2"
