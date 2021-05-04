@@ -9,6 +9,7 @@ python = "^3.9"
 dynaconf = "^3.1.4"
 tortoise-orm = "^0.17"
 aiosqlite = "^0.16"
+Jinja2 = "^2.11.3"
 
 [tool.poetry.dev-dependencies]
 pytest = "^5.2"
