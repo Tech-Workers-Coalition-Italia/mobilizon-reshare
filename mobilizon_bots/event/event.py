@@ -1,3 +1,4 @@
+from __future__ import annotations
 from dataclasses import dataclass, asdict
 from datetime import datetime
 from typing import Optional
@@ -17,6 +18,9 @@ class MobilizonEvent:
     mobilizon_id: str
     thumbnail_link: Optional[str] = None
     location: Optional[str] = None
+
+    def begins_before(self, other: MobilizonEvent) -> bool:
+        return self.begin_datetime < other.begin_datetime
 
     def _fill_template(self, pattern: Template) -> str:
         return pattern.render(**asdict(self))
