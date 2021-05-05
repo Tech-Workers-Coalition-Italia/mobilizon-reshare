@@ -13,7 +13,6 @@ Jinja2 = "^2.11.3"
 
 [tool.poetry.dev-dependencies]
 pytest = "^5.2"
-hypothesis = "^6.10.1"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]

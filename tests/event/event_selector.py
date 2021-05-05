@@ -1,9 +1,8 @@
+from abc import ABC, abstractmethod
 from datetime import timedelta, datetime
 from typing import List, Optional
 
 from mobilizon_bots.event.event import MobilizonEvent
-
-from abc import ABC, abstractmethod
 
 
 class EventSelectionStrategy(ABC):
@@ -28,13 +27,15 @@ class SelectNextEventStrategy(EventSelectionStrategy):
 
         last_published_event = published_events[-1]
         first_unpublished_event = unpublished_events[0]
-        assert (
-            last_published_event.publication_time < datetime.now()
-        ), "Last published event has been published in the future"
+        assert last_published_event.publication_time < datetime.now(), (
+            f"Last published event has been published in the future\n"
+            f"{last_published_event.publication_time}\n"
+            f"{datetime.now()}"
+        )
 
         if (
             last_published_event.publication_time + self.minimum_break_between_events
-            > first_unpublished_event.begin_datetime
+            > datetime.now()
         ):
             return None
 

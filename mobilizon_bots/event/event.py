@@ -1,8 +1,10 @@
 from __future__ import annotations
+
 from dataclasses import dataclass, asdict
 from datetime import datetime
 from enum import Enum
 from typing import Optional
+
 from jinja2 import Template
 
 
