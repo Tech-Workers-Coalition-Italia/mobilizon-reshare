@@ -2,7 +2,7 @@ from datetime import datetime, timedelta
 
 import pytest
 
-from tests.event.event_selector import SelectNextEventStrategy
+from mobilizon_bots.event.event_selector import SelectNextEventStrategy
 
 
 @pytest.mark.parametrize(
