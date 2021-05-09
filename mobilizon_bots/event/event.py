@@ -1,12 +1,13 @@
 from dataclasses import dataclass, asdict
-from enum import Enum
+from datetime import datetime
+from enum import IntEnum
 from typing import Optional
 
 import arrow
 from jinja2 import Template
 
 
-class PublicationStatus(Enum):
+class PublicationStatus(IntEnum):
     WAITING = 1
     FAILED = 2
     PARTIAL = 3
