@@ -6,7 +6,7 @@ from mobilizon_bots.publishers import abstract
 def run(publishers: Iterable[abstract.AbstractPublisher]) -> dict:
     invalid_credentials, invalid_event = [], []
     for p in publishers:
-        if not p.are_credetials_valid():
+        if not p.are_credentials_valid():
             invalid_credentials.append(p)
         if not p.is_event_valid():
             invalid_event.append(p)
