@@ -6,6 +6,24 @@ log_dir = "/var/log/mobots"
 db_name = "events.db"
 db_path = "@format {this.local_state_dir}/{this.db_name}"
 
+[default.selection]
+strategy = "next_event"
+
+[default.selection.strategy_options]
+break_between_events_in_minutes =5
+
+[default.publisher.telegram]
+active=true
+chat_id="pippo"
+[default.publisher.facebook]
+active=false
+[default.publisher.zulip]
+active=false
+[default.publisher.twitter]
+active=false
+[default.publisher.mastodon]
+active=false
+
 [default.logging]
 version = 1
 disable_existing_loggers = false
