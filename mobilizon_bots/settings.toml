@@ -14,7 +14,7 @@ break_between_events_in_minutes =5
 
 [default.publisher.telegram]
 active=true
-chat_id="pippo"
+chat_id="xxx"
 [default.publisher.facebook]
 active=false
 [default.publisher.zulip]
@@ -23,6 +23,17 @@ active=false
 active=false
 [default.publisher.mastodon]
 active=false
+
+[default.notifier.telegram]
+active=true
+chat_id="xxx"
+[default.notifier.zulip]
+active=false
+[default.notifier.twitter]
+active=false
+[default.notifier.mastodon]
+active=false
+
 
 [default.logging]
 version = 1
