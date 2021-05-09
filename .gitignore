@@ -9,6 +9,9 @@ __pycache__/
 *.py[cod]
 *$py.class
 
+# Ignore dynaconf secret files
+**/.secrets.*
+
 # C extensions
 *.so
 
