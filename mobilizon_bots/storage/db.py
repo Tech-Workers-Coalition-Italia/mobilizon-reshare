@@ -8,6 +8,7 @@ class MobilizonBotsDB:
         self.path = path
 
     async def setup(self):
+        # TODO: Caricare i publishers.
         await Tortoise.init(
             db_url=f"sqlite:///{self.path}",
             modules={"models": ["mobilizon_bots.event.model"]},

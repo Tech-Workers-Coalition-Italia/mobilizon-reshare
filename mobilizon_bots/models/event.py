@@ -8,13 +8,14 @@ class Event(Model):
     description = fields.TextField()
 
     mobilizon_id = fields.UUIDField()
-    mobilizon_link = fields.CharField(max_length=512)
-    thumbnail_link = fields.CharField(max_length=512)
-    location = fields.CharField(max_length=255)
+    mobilizon_link = fields.TextField()
+    thumbnail_link = fields.TextField()
+
+    location = fields.TextField()
 
     begin_datetime = fields.DatetimeField()
     end_datetime = fields.DatetimeField()
-    last_accessed = fields.DatetimeField(auto_now=True)
+    last_accessed = fields.DatetimeField()
 
     def __str__(self):
         return self.name

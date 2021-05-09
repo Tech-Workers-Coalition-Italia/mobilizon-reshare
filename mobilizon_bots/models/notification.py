@@ -11,12 +11,12 @@ class Notification(Model):
     target = fields.TextField()
     message = fields.TextField()
 
-    publication = fields.OneToOneField(
-        "models.Publication", related_name="publications", on_delete="SET_NULL"
+    publication = fields.ForeignKeyField(
+        "models.Publication", related_name="notifications", null=True
     )
 
     def __str__(self):
-        return self.name
+        return f"[{self.status}] {self.message}"
 
     class Meta:
         table = "notification"
