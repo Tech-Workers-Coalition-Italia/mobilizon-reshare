@@ -3,13 +3,18 @@ from tortoise.models import Model
 
 
 class Event(Model):
-    id = fields.UUID(pk=True)
+    id = fields.UUIDField(pk=True)
     name = fields.TextField()
+    description = fields.TextField()
 
-    # tournament = fields.ForeignKeyField('models.Tournament', related_name='events')
-    # participants = fields.ManyToManyField('models.Team', related_name='events', through='event_team')
-    # modified = fields.DatetimeField(auto_now=True)
-    # prize = fields.DecimalField(max_digits=10, decimal_places=2, null=True)
+    mobilizon_id = fields.UUIDField()
+    mobilizon_link = fields.CharField(max_length=512)
+    thumbnail_link = fields.CharField(max_length=512)
+    location = fields.CharField(max_length=255)
+
+    begin_datetime = fields.DatetimeField()
+    end_datetime = fields.DatetimeField()
+    last_accessed = fields.DatetimeField(auto_now=True)
 
     def __str__(self):
         return self.name
