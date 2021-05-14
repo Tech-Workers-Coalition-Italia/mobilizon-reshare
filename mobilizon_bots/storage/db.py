@@ -3,8 +3,8 @@ from pathlib import Path
 from tortoise import Tortoise
 
 
-class MobotsDB:
-    def __init__(self, path: Path):
+class MobilizonBotsDB:
+    def __init__(self, path: Path = None):
         self.path = path
 
     async def setup(self):
