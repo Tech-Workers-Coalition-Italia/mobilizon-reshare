@@ -2,7 +2,7 @@ import logging.config
 import sys
 from argparse import ArgumentParser
 
-from config import settings
+from mobilizon_bots.config.config import settings
 
 logger = logging.getLogger(__name__)
 
