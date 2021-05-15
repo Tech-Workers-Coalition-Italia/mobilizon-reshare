@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
-from datetime import timedelta, datetime
 from typing import List, Optional
+import arrow
 
 from mobilizon_bots.event.event import MobilizonEvent
 
@@ -16,8 +16,10 @@ class EventSelectionStrategy(ABC):
 
 
 class SelectNextEventStrategy(EventSelectionStrategy):
-    def __init__(self, minimum_break_between_events: timedelta = timedelta(days=0)):
-        self.minimum_break_between_events = minimum_break_between_events
+    def __init__(self, minimum_break_between_events_in_minutes: int):
+        self.minimum_break_between_events_in_minutes = (
+            minimum_break_between_events_in_minutes
+        )
 
     def select(
         self,
@@ -27,15 +29,17 @@ class SelectNextEventStrategy(EventSelectionStrategy):
 
         last_published_event = published_events[-1]
         first_unpublished_event = unpublished_events[0]
-        assert last_published_event.publication_time < datetime.now(), (
+        now = arrow.now()
+        assert last_published_event.publication_time < now, (
             f"Last published event has been published in the future\n"
             f"{last_published_event.publication_time}\n"
-            f"{datetime.now()}"
+            f"{now}"
         )
-
         if (
-            last_published_event.publication_time + self.minimum_break_between_events
-            > datetime.now()
+            last_published_event.publication_time.shift(
+                minutes=self.minimum_break_between_events_in_minutes
+            )
+            > now
         ):
             return None
 
