@@ -14,7 +14,7 @@ class Publication(Model):
     publisher = fields.ForeignKeyField("models.Publisher", related_name="publications")
 
     def __str__(self):
-        return self.name
+        return f"{self.id}"
 
     class Meta:
         table = "publication"

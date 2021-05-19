@@ -15,10 +15,14 @@ class Event(Model):
 
     begin_datetime = fields.DatetimeField()
     end_datetime = fields.DatetimeField()
+    utcoffset = fields.IntField()
     last_accessed = fields.DatetimeField()
 
     def __str__(self):
         return self.name
+
+    def __repr__(self):
+        return f"{self.id} - {self.name}"
 
     class Meta:
         table = "event"

@@ -8,7 +8,7 @@ class Publisher(Model):
     account_ref = fields.CharField(max_length=512)
 
     def __str__(self):
-        return self.name
+        return f"{self.id}"
 
     class Meta:
         table = "publisher"
