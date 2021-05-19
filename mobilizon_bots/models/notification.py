@@ -1,15 +1,18 @@
 from tortoise import fields
 from tortoise.models import Model
 
+from mobilizon_bots.event.event import NotificationStatus
+
 
 class Notification(Model):
     id = fields.UUIDField(pk=True)
-    # TODO: Make actual IntEnumField
-    status = fields.IntField()
-    error_code = fields.IntField()
+    status = fields.IntEnumField(NotificationStatus)
 
-    target = fields.TextField()
     message = fields.TextField()
+
+    target = fields.ForeignKeyField(
+        "models.Publisher", related_name="notifications", null=True
+    )
 
     publication = fields.ForeignKeyField(
         "models.Publication", related_name="notifications", null=True

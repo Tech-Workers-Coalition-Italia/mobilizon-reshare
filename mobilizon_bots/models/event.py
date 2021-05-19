@@ -7,14 +7,15 @@ class Event(Model):
     name = fields.TextField()
     description = fields.TextField()
 
-    mobilizon_id = fields.UUIDField()
+    mobilizon_id = fields.TextField()
     mobilizon_link = fields.TextField()
-    thumbnail_link = fields.TextField()
+    thumbnail_link = fields.TextField(null=True)
 
-    location = fields.TextField()
+    location = fields.TextField(null=True)
 
     begin_datetime = fields.DatetimeField()
     end_datetime = fields.DatetimeField()
+    # UTC offset in seconds
     utcoffset = fields.IntField()
     last_accessed = fields.DatetimeField()
 

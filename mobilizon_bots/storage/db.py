@@ -8,7 +8,7 @@ logger = logging.getLogger(__name__)
 
 
 class MobilizonBotsDB:
-    def __init__(self, path: Path = None):
+    def __init__(self, path: Path):
         self.path = path
         # TODO: Check if DB is openable/"queriable"
         self.is_init = self.path.exists() and (not self.path.is_dir())
@@ -32,7 +32,7 @@ class MobilizonBotsDB:
         )
         if not self.is_init:
             await Tortoise.generate_schemas()
-            logger.info(f"Succesfully initiated database at {self.path}")
+            logger.info(f"Succesfully initialized database at {self.path}")
 
     @staticmethod
     async def tear_down():

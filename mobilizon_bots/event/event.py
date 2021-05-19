@@ -14,6 +14,13 @@ class PublicationStatus(IntEnum):
     COMPLETED = 4
 
 
+class NotificationStatus(IntEnum):
+    WAITING = 1
+    FAILED = 2
+    PARTIAL = 3
+    COMPLETED = 4
+
+
 @dataclass
 class MobilizonEvent:
     """Class representing an event retrieved from Mobilizon."""
