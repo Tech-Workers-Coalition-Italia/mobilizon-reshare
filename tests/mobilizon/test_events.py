@@ -4,59 +4,84 @@ import arrow
 from mobilizon_bots.event.event import PublicationStatus, MobilizonEvent
 from mobilizon_bots.mobilizon.events import get_mobilizon_future_events
 
+simple_event_element = {
+    "beginsOn": "2021-05-23T12:15:00Z",
+    "description": None,
+    "endsOn": "2021-05-23T15:15:00Z",
+    "onlineAddress": None,
+    "options": {"showEndTime": True, "showStartTime": True},
+    "physicalAddress": None,
+    "picture": None,
+    "title": "test event",
+    "url": "https://apero.bzh/events/1e2e5943-4a5c-497a-b65d-90457b715d7b",
+    "uuid": "1e2e5943-4a5c-497a-b65d-90457b715d7b",
+}
+simple_event_response = {
+    "data": {"group": {"organizedEvents": {"elements": [simple_event_element]}}}
+}
 
-@pytest.mark.parametrize(
-    "mobilizon_answer", [{"data": {"group": {"organizedEvents": {"elements": []}}}}]
-)
-def test_get_mobilizon_future_events(mock_mobilizon_success_answer):
-    """
-    Testing a response with no content
-    """
-    assert get_mobilizon_future_events() == []
+full_event_element = {
+    "beginsOn": "2021-05-25T15:15:00Z",
+    "description": "<p>a description</p>",
+    "endsOn": "2021-05-25T16:15:00Z",
+    "onlineAddress": "http://www.google.com/",
+    "options": {"showEndTime": True, "showStartTime": True},
+    "physicalAddress": None,
+    "picture": None,
+    "title": "full event",
+    "url": "https://apero.bzh/events/56e7ca43-1b6b-4c50-8362-0439393197e6",
+    "uuid": "56e7ca43-1b6b-4c50-8362-0439393197e6",
+}
+full_event_response = {
+    "data": {"group": {"organizedEvents": {"elements": [full_event_element]}}}
+}
 
-
-@pytest.mark.parametrize(
-    "mobilizon_answer",
-    [
-        {
-            "data": {
-                "group": {
-                    "organizedEvents": {
-                        "elements": [
-                            {
-                                "beginsOn": "2021-05-23T12:15:00Z",
-                                "description": None,
-                                "endsOn": "2021-05-23T15:15:00Z",
-                                "onlineAddress": None,
-                                "options": {"showEndTime": True, "showStartTime": True},
-                                "physicalAddress": None,
-                                "picture": None,
-                                "title": "test event",
-                                "url": "https://apero.bzh/events/1e2e5943-4a5c-497a-b65d-90457b715d7b",
-                                "uuid": "1e2e5943-4a5c-497a-b65d-90457b715d7b",
-                            }
-                        ]
-                    }
-                }
-            }
+two_events_response = {
+    "data": {
+        "group": {
+            "organizedEvents": {"elements": [simple_event_element, full_event_element]}
         }
+    }
+}
+
+simple_event = MobilizonEvent(
+    name="test event",
+    description=None,
+    begin_datetime=arrow.get("2021-05-23T12:15:00Z"),
+    end_datetime=arrow.get("2021-05-23T15:15:00Z"),
+    mobilizon_link="https://apero.bzh/events/1e2e5943-4a5c-497a-b65d-90457b715d7b",
+    mobilizon_id="1e2e5943-4a5c-497a-b65d-90457b715d7b",
+    thumbnail_link=None,
+    location=None,
+    publication_time=None,
+    publication_status=PublicationStatus.WAITING,
+)
+
+full_event = MobilizonEvent(
+    name="full event",
+    description="<p>a description</p>",
+    begin_datetime=arrow.get("2021-05-25T15:15:00+00:00]"),
+    end_datetime=arrow.get("2021-05-25T16:15:00+00:00"),
+    mobilizon_link="https://apero.bzh/events/56e7ca43-1b6b-4c50-8362-0439393197e6",
+    mobilizon_id="56e7ca43-1b6b-4c50-8362-0439393197e6",
+    thumbnail_link=None,
+    location="http://www.google.com/",
+    publication_time=None,
+    publication_status=PublicationStatus.WAITING,
+)
+
+
+@pytest.mark.parametrize(
+    "mobilizon_answer, expected_result",
+    [
+        [{"data": {"group": {"organizedEvents": {"elements": []}}}}, []],
+        [simple_event_response, [simple_event]],
+        [full_event_response, [full_event]],
+        [two_events_response, [simple_event, full_event]],
     ],
 )
-def test_simple_event(mock_mobilizon_success_answer):
+def test_event_response(mock_mobilizon_success_answer, expected_result):
     """
-    Testing a minimal event that is valid in Mobilizon
+    Testing the request and parsing logic
     """
-    assert get_mobilizon_future_events() == [
-        MobilizonEvent(
-            name="test event",
-            description=None,
-            begin_datetime=arrow.get("2021-05-23T12:15:00Z"),
-            end_datetime=arrow.get("2021-05-23T15:15:00Z"),
-            mobilizon_link="https://apero.bzh/events/1e2e5943-4a5c-497a-b65d-90457b715d7b",
-            mobilizon_id="1e2e5943-4a5c-497a-b65d-90457b715d7b",
-            thumbnail_link=None,
-            location=None,
-            publication_time=None,
-            publication_status=PublicationStatus.WAITING,
-        )
-    ]
+    assert get_mobilizon_future_events() == expected_result
