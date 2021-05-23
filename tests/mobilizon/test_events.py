@@ -1,4 +1,5 @@
 import pytest
+import arrow
 
 from mobilizon_bots.event.event import PublicationStatus, MobilizonEvent
 from mobilizon_bots.mobilizon.events import get_mobilizon_future_events
@@ -23,8 +24,15 @@ def test_get_mobilizon_future_events(mock_mobilizon_success_answer):
                     "organizedEvents": {
                         "elements": [
                             {
-                                "id": "57194",
+                                "beginsOn": "2021-05-23T12:15:00Z",
+                                "description": None,
+                                "endsOn": "2021-05-23T15:15:00Z",
+                                "onlineAddress": None,
+                                "options": {"showEndTime": True, "showStartTime": True},
+                                "physicalAddress": None,
+                                "picture": None,
                                 "title": "test event",
+                                "url": "https://apero.bzh/events/1e2e5943-4a5c-497a-b65d-90457b715d7b",
                                 "uuid": "1e2e5943-4a5c-497a-b65d-90457b715d7b",
                             }
                         ]
@@ -42,9 +50,9 @@ def test_simple_event(mock_mobilizon_success_answer):
         MobilizonEvent(
             name="test event",
             description=None,
-            begin_datetime=None,
-            end_datetime=None,
-            mobilizon_link=None,
+            begin_datetime=arrow.get("2021-05-23T12:15:00Z"),
+            end_datetime=arrow.get("2021-05-23T15:15:00Z"),
+            mobilizon_link="https://apero.bzh/events/1e2e5943-4a5c-497a-b65d-90457b715d7b",
             mobilizon_id="1e2e5943-4a5c-497a-b65d-90457b715d7b",
             thumbnail_link=None,
             location=None,

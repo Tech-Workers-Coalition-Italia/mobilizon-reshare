@@ -19,9 +19,9 @@ class MobilizonEvent:
 
     name: str
     description: Optional[str]
-    begin_datetime: Optional[arrow.Arrow]
-    end_datetime: Optional[arrow.Arrow]
-    mobilizon_link: Optional[str]
+    begin_datetime: arrow.Arrow
+    end_datetime: arrow.Arrow
+    mobilizon_link: str
     mobilizon_id: str
     thumbnail_link: Optional[str] = None
     location: Optional[str] = None
@@ -30,8 +30,8 @@ class MobilizonEvent:
     last_accessed: arrow.Arrow = field(compare=False, default=None)
 
     def __post_init__(self):
-        if self.begin_datetime and self.end_datetime:
-            assert self.begin_datetime < self.end_datetime
+
+        assert self.begin_datetime < self.end_datetime
         if self.publication_time:
             assert self.publication_status in [
                 PublicationStatus.COMPLETED,
