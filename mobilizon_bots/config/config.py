@@ -28,10 +28,13 @@ def build_settings(
 
 
 def build_and_validate_settings(settings_files: List[str] = None):
+    # TODO comment everything
 
     base_validators = (
         [
+            # strategy to decide events to publish
             Validator("selection.strategy", must_exist=True),
+            # url of the main Mobilizon instance to download events from
             Validator("source.mobilizon.url", must_exist=True),
         ]
         + [
