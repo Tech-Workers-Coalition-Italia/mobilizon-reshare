@@ -69,6 +69,20 @@ query_future_events = """{{
           }}"""
 
 
+def get_unpublished_events(published_events: List[MobilizonEvent]):
+    # I take all the future events
+    future_events = get_mobilizon_future_events()
+    # I get the ids of all the published events coming from the DB
+    published_events_id = set(map(lambda x: x.mobilizon_id, published_events))
+    # I keep the future events only the ones that haven't been published
+    # Note: some events might exist in the DB and be unpublished. Here they should be ignored because the information
+    # in the DB might be old and the event might have been updated.
+    # We assume the published_events list doesn't contain such events.
+    return list(
+        filter(lambda x: x.mobilizon_id not in published_events_id, future_events)
+    )
+
+
 def get_mobilizon_future_events(
     page: int = 1, from_date: Optional[arrow.Arrow] = None
 ) -> List[MobilizonEvent]:
