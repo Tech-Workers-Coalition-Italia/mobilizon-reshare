@@ -10,9 +10,7 @@ logger = logging.getLogger(__name__)
 
 
 class AbstractMessenger(ABC):
-    def __init__(self, credentials: dict, destination: dict, message: str):
-        self.credentials = credentials
-        self.destination = destination
+    def __init__(self, message: str):
         self.message = message
 
     def __repr__(self):
@@ -51,9 +49,11 @@ class AbstractMessenger(ABC):
         return True
 
     @abstractmethod
-    def validate_credentials(self):
+    def validate_credentials(self) -> None:
         """
         Validates credentials.
+        Should raise ``PublisherError`` (or one of its subclasses) if
+        credentials are not valid.
         """
         raise NotImplementedError
 
@@ -74,9 +74,11 @@ class AbstractMessenger(ABC):
         return True
 
     @abstractmethod
-    def validate_message(self):
+    def validate_message(self) -> None:
         """
         Validates messenger's message.
+        Should raise ``PublisherError`` (or one of its subclasses) if message
+        is not valid.
         """
         raise NotImplementedError
 
@@ -89,16 +91,13 @@ class AbstractPublisher(AbstractMessenger):
     process for events and credentials, text formatting, posting, etc.
 
     Class attributes:
-        - ``credentials``: a ``dict`` containing every useful info that the
-            current publisher will need to correctly login to its platform
         - ``event``: a ``MobilizonEvent`` containing every useful info from
             the event
     """
 
-    def __init__(self, credentials: dict, destination: dict, event: MobilizonEvent):
-        msg = self.get_message_from_event()
-        super().__init__(credentials, destination, msg)
+    def __init__(self, event: MobilizonEvent):
         self.event = event
+        super().__init__(message=self.get_message_from_event())
 
     def is_event_valid(self) -> bool:
         try:
@@ -108,9 +107,11 @@ class AbstractPublisher(AbstractMessenger):
         return True
 
     @abstractmethod
-    def validate_event(self):
+    def validate_event(self) -> None:
         """
         Validates publisher's event.
+        Should raise ``PublisherError`` (or one of its subclasses) if event
+        is not valid.
         """
         raise NotImplementedError
 
