@@ -87,6 +87,7 @@ def get_mobilizon_future_events(
 ) -> List[MobilizonEvent]:
 
     url = settings["source"]["mobilizon"]["url"]
+    # TODO add group as parameter from config
     query = query_future_events.format(
         group="test", page=page, afterDatetime=from_date or arrow.now().isoformat()
     )
