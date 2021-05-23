@@ -30,7 +30,6 @@ def parse_event(data):
         description=data.get("description", None),
         begin_datetime=arrow.get(data["beginsOn"]) if "beginsOn" in data else None,
         end_datetime=arrow.get(data["endsOn"]) if "endsOn" in data else None,
-        last_accessed=arrow.now(),
         mobilizon_link=data.get("url", None),
         mobilizon_id=data["uuid"],
         thumbnail_link=parse_picture(data),

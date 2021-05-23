@@ -1,4 +1,4 @@
-from dataclasses import dataclass, asdict, field
+from dataclasses import dataclass, asdict
 from enum import Enum
 from typing import Optional
 
@@ -27,7 +27,6 @@ class MobilizonEvent:
     location: Optional[str] = None
     publication_time: Optional[arrow.Arrow] = None
     publication_status: PublicationStatus = PublicationStatus.WAITING
-    last_accessed: arrow.Arrow = field(compare=False, default=None)
 
     def __post_init__(self):
 
