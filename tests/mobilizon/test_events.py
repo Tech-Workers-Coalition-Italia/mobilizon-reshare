@@ -5,6 +5,7 @@ from mobilizon_bots.event.event import PublicationStatus, MobilizonEvent
 from mobilizon_bots.mobilizon.events import (
     get_mobilizon_future_events,
     MobilizonRequestFailed,
+    get_unpublished_events,
 )
 
 simple_event_element = {
@@ -93,3 +94,18 @@ def test_event_response(mock_mobilizon_success_answer, expected_result):
 def test_failure(mock_mobilizon_failure_answer):
     with pytest.raises(MobilizonRequestFailed):
         get_mobilizon_future_events()
+
+
+@pytest.mark.parametrize(
+    "mobilizon_answer, published_events,expected_result",
+    [
+        [{"data": {"group": {"organizedEvents": {"elements": []}}}}, [], []],
+        [simple_event_response, [], [simple_event]],
+        [two_events_response, [], [simple_event, full_event]],
+        [two_events_response, [simple_event], [full_event]],
+    ],
+)
+def test_get_unpublished_events(
+    mock_mobilizon_success_answer, published_events, expected_result
+):
+    assert get_unpublished_events(published_events) == expected_result
