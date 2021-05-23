@@ -1,4 +1,4 @@
-from dataclasses import dataclass, asdict
+from dataclasses import dataclass, asdict, field
 from enum import Enum
 from typing import Optional
 
@@ -18,19 +18,20 @@ class MobilizonEvent:
     """Class representing an event retrieved from Mobilizon."""
 
     name: str
-    description: str
-    begin_datetime: arrow.Arrow
-    end_datetime: arrow.Arrow
-    last_accessed: arrow.Arrow
-    mobilizon_link: str
+    description: Optional[str]
+    begin_datetime: Optional[arrow.Arrow]
+    end_datetime: Optional[arrow.Arrow]
+    mobilizon_link: Optional[str]
     mobilizon_id: str
     thumbnail_link: Optional[str] = None
     location: Optional[str] = None
     publication_time: Optional[arrow.Arrow] = None
     publication_status: PublicationStatus = PublicationStatus.WAITING
+    last_accessed: arrow.Arrow = field(compare=False, default=None)
 
     def __post_init__(self):
-        assert self.begin_datetime < self.end_datetime
+        if self.begin_datetime and self.end_datetime:
+            assert self.begin_datetime < self.end_datetime
         if self.publication_time:
             assert self.publication_status in [
                 PublicationStatus.COMPLETED,

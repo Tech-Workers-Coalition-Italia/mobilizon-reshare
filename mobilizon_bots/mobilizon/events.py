@@ -1,8 +1,10 @@
 from typing import List, Optional
 
-from mobilizon_bots.event.event import MobilizonEvent, PublicationStatus
-import requests
 import arrow
+import requests
+
+from mobilizon_bots.config.config import settings
+from mobilizon_bots.event.event import MobilizonEvent, PublicationStatus
 
 
 def parse_location(data):
@@ -19,11 +21,11 @@ def parse_picture(data):
 def parse_event(data):
     return MobilizonEvent(
         name=data["title"],
-        description=data["description"],
-        begin_datetime=arrow.get(data["beginsOn"]),
-        end_datetime=arrow.get(data["endsOn"]),
+        description=data.get("description", None),
+        begin_datetime=arrow.get(data["beginsOn"]) if "beginsOn" in data else None,
+        end_datetime=arrow.get(data["endsOn"]) if "endsOn" in data else None,
         last_accessed=arrow.now(),
-        mobilizon_link=data["url"],
+        mobilizon_link=data.get("url", None),
         mobilizon_id=data["uuid"],
         thumbnail_link=parse_picture(data),
         location=parse_location(data),
@@ -64,15 +66,12 @@ query_future_events = """{{
 def get_mobilizon_future_events(
     page: int = 1, from_date: Optional[arrow.Arrow] = None
 ) -> List[MobilizonEvent]:
-    url = "https://apero.bzh/api"
+
+    url = settings["source"]["mobilizon"]["url"]
     query = query_future_events.format(
         group="test", page=page, afterDatetime=from_date or arrow.now().isoformat()
     )
-
     r = requests.post(url, json={"query": query})
     return list(
         map(parse_event, r.json()["data"]["group"]["organizedEvents"]["elements"])
     )
-
-
-get_mobilizon_future_events()
