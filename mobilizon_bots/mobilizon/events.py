@@ -1,3 +1,4 @@
+from http import HTTPStatus
 from typing import List, Optional
 
 import arrow
@@ -5,6 +6,11 @@ import requests
 
 from mobilizon_bots.config.config import settings
 from mobilizon_bots.event.event import MobilizonEvent, PublicationStatus
+
+
+class MobilizonRequestFailed(Exception):
+    # TODO move to an error module
+    pass
 
 
 def parse_location(data):
@@ -72,6 +78,11 @@ def get_mobilizon_future_events(
         group="test", page=page, afterDatetime=from_date or arrow.now().isoformat()
     )
     r = requests.post(url, json={"query": query})
+    if r.status_code != HTTPStatus.OK:
+        raise MobilizonRequestFailed(
+            f"Request for events failed with code:{r.status_code}"
+        )
+
     return list(
         map(parse_event, r.json()["data"]["group"]["organizedEvents"]["elements"])
     )

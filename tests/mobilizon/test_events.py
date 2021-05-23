@@ -2,7 +2,10 @@ import pytest
 import arrow
 
 from mobilizon_bots.event.event import PublicationStatus, MobilizonEvent
-from mobilizon_bots.mobilizon.events import get_mobilizon_future_events
+from mobilizon_bots.mobilizon.events import (
+    get_mobilizon_future_events,
+    MobilizonRequestFailed,
+)
 
 simple_event_element = {
     "beginsOn": "2021-05-23T12:15:00Z",
@@ -85,3 +88,8 @@ def test_event_response(mock_mobilizon_success_answer, expected_result):
     Testing the request and parsing logic
     """
     assert get_mobilizon_future_events() == expected_result
+
+
+def test_failure(mock_mobilizon_failure_answer):
+    with pytest.raises(MobilizonRequestFailed):
+        get_mobilizon_future_events()
