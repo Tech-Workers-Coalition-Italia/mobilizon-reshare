@@ -24,3 +24,7 @@ class InvalidMessage(PublisherError):
 
 class InvalidResponse(PublisherError):
     """ Publisher receives an invalid response from its service """
+
+
+class InvalidSettings(PublisherError):
+    """ Publisher settings are either missing or badly configured """
