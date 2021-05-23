@@ -16,7 +16,7 @@ simple_event_element = {
     "physicalAddress": None,
     "picture": None,
     "title": "test event",
-    "url": "https://apero.bzh/events/1e2e5943-4a5c-497a-b65d-90457b715d7b",
+    "url": "https://some_mobilizon/events/1e2e5943-4a5c-497a-b65d-90457b715d7b",
     "uuid": "1e2e5943-4a5c-497a-b65d-90457b715d7b",
 }
 simple_event_response = {
@@ -27,12 +27,12 @@ full_event_element = {
     "beginsOn": "2021-05-25T15:15:00Z",
     "description": "<p>a description</p>",
     "endsOn": "2021-05-25T16:15:00Z",
-    "onlineAddress": "http://www.google.com/",
+    "onlineAddress": "http://some_location",
     "options": {"showEndTime": True, "showStartTime": True},
     "physicalAddress": None,
     "picture": None,
     "title": "full event",
-    "url": "https://apero.bzh/events/56e7ca43-1b6b-4c50-8362-0439393197e6",
+    "url": "https://some_mobilizon/events/56e7ca43-1b6b-4c50-8362-0439393197e6",
     "uuid": "56e7ca43-1b6b-4c50-8362-0439393197e6",
 }
 full_event_response = {
@@ -52,7 +52,7 @@ simple_event = MobilizonEvent(
     description=None,
     begin_datetime=arrow.get("2021-05-23T12:15:00Z"),
     end_datetime=arrow.get("2021-05-23T15:15:00Z"),
-    mobilizon_link="https://apero.bzh/events/1e2e5943-4a5c-497a-b65d-90457b715d7b",
+    mobilizon_link="https://some_mobilizon/events/1e2e5943-4a5c-497a-b65d-90457b715d7b",
     mobilizon_id="1e2e5943-4a5c-497a-b65d-90457b715d7b",
     thumbnail_link=None,
     location=None,
@@ -65,10 +65,10 @@ full_event = MobilizonEvent(
     description="<p>a description</p>",
     begin_datetime=arrow.get("2021-05-25T15:15:00+00:00]"),
     end_datetime=arrow.get("2021-05-25T16:15:00+00:00"),
-    mobilizon_link="https://apero.bzh/events/56e7ca43-1b6b-4c50-8362-0439393197e6",
+    mobilizon_link="https://some_mobilizon/events/56e7ca43-1b6b-4c50-8362-0439393197e6",
     mobilizon_id="56e7ca43-1b6b-4c50-8362-0439393197e6",
     thumbnail_link=None,
-    location="http://www.google.com/",
+    location="http://some_location",
     publication_time=None,
     publication_status=PublicationStatus.WAITING,
 )
