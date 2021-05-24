@@ -8,6 +8,7 @@ db_path = "@format {this.local_state_dir}/{this.db_name}"
 
 [default.source.mobilizon]
 url=""
+group="my_group"
 
 [default.selection]
 strategy = "next_event"
