@@ -1,9 +1,10 @@
 from typing import Iterable
 
-from mobilizon_bots.publishers import abstract
+from .abstract import AbstractPublisher
+from .exceptions import PublisherError
 
 
-def run(publishers: Iterable[abstract.AbstractPublisher]) -> dict:
+def run(publishers: Iterable[AbstractPublisher]) -> dict:
     invalid_credentials, invalid_event = [], []
     for p in publishers:
         if not p.are_credentials_valid():
@@ -18,12 +19,16 @@ def run(publishers: Iterable[abstract.AbstractPublisher]) -> dict:
             "invalid_credentials": invalid_credentials,
             "invalid_event": invalid_event,
         }
+
     failed_publishers, successful_publishers = [], []
     for p in publishers:
-        if p.post():
-            successful_publishers.append(p)
-        else:
+        try:
+            p.post()
+        except PublisherError:
             failed_publishers.append(p)
+        else:
+            successful_publishers.append(p)
+
     if failed_publishers:
         return {
             "status": "fail",

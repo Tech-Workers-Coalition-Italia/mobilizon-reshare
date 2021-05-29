@@ -58,11 +58,11 @@ class AbstractMessenger(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    def post(self) -> bool:
+    def post(self) -> None:
         """
         Publishes the actual post on social media.
-        :return: True or False according to whether messenger was able to
-            complete its task
+        Should raise ``PublisherError`` (or one of its subclasses) if
+        anything goes wrong.
         """
         raise NotImplementedError
 

@@ -8,28 +8,23 @@ from .exceptions import (
     InvalidCredentials,
     InvalidEvent,
     InvalidResponse,
-    InvalidSettings,
 )
+
+CONF = settings.PUBLISHER.telegram
 
 
 class TelegramPublisher(AbstractPublisher):
-    def post(self):
-        attrs = self.get_attrs_from_conf()
+    def post(self) -> None:
         res = requests.post(
-            url=f"https://api.telegram.org/bot{attrs['token']}/sendMessage",
-            params={"chat_id": attrs["chat_id"], "text": self.message},
+            url=f"https://api.telegram.org/bot{CONF.token}/sendMessage",
+            params={"chat_id": CONF.chat_id, "text": self.message},
         )
-        try:
-            self._validate_response(res)
-            return True
-        except InvalidResponse:
-            return False
+        self._validate_response(res)
 
     def validate_credentials(self):
-        attrs = self.get_attrs_from_conf()
-        chat_id = attrs.get("chat_id")
-        token = attrs.get("token")
-        username = attrs.get("username")
+        chat_id = CONF.chat_id
+        token = CONF.token
+        username = CONF.username
         err = []
         if not chat_id:
             err.append("chat ID")
@@ -71,36 +66,6 @@ class TelegramPublisher(AbstractPublisher):
             )
 
         return data
-
-    def get_attrs_from_conf(self, log=None):
-        if log is None:
-            log = self._log_error
-        try:
-            conf = settings.PUBLISHER.telegram
-        except AttributeError:
-            conf = None
-            log(InvalidSettings, "Could not retrieve Telegram settings")
-        try:
-            chat_id = conf.chat_id
-        except AttributeError:
-            chat_id = ""
-            log(InvalidSettings, "Could not retrieve Telegram Chat ID")
-        try:
-            token = conf.token
-        except AttributeError:
-            token = ""
-            log(InvalidSettings, "Could not retrieve Telegram Token")
-        try:
-            username = conf.username
-        except AttributeError:
-            username = ""
-            log(InvalidSettings, "Could not retrieve Telegram Username")
-        return {
-            "conf": conf,
-            "chat_id": chat_id,
-            "token": token,
-            "username": username,
-        }
 
     def get_message_from_event(self) -> str:
         # TODO implement
