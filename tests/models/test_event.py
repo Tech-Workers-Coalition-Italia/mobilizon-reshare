@@ -11,7 +11,6 @@ async def test_event_create(event_model_generator):
     event_model = event_model_generator()
     await event_model.save()
     event_db = await Event.filter(name="event1").first()
-    assert event_db.utcoffset == 360
     assert event_db.begin_datetime == datetime(
         2021,
         5,

@@ -112,10 +112,6 @@ def event_model_generator():
                 2021, 5, 10, hour=0, minute=0, second=0, microsecond=0
             ),
             end_datetime=begin_date + timedelta(hours=2),
-            last_accessed=datetime(
-                2021, 5, 5, hour=0, minute=20, second=0, microsecond=0
-            ),
-            utcoffset=360,
         )
 
     return _event_model_generator

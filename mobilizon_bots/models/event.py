@@ -15,9 +15,6 @@ class Event(Model):
 
     begin_datetime = fields.DatetimeField()
     end_datetime = fields.DatetimeField()
-    # UTC offset in seconds
-    utcoffset = fields.IntField()
-    last_accessed = fields.DatetimeField()
 
     def __str__(self):
         return self.name
