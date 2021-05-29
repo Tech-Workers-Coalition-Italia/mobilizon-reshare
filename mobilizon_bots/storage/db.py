@@ -32,6 +32,7 @@ class MobilizonBotsDB:
         )
         if not self.is_init:
             await Tortoise.generate_schemas()
+            self.is_init = True
             logger.info(f"Succesfully initialized database at {self.path}")
 
     @staticmethod

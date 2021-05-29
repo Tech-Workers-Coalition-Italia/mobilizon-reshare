@@ -1,6 +1,9 @@
-import pytest
-
 from datetime import datetime, timedelta, timezone
+
+import arrow
+import pytest
+import tortoise.timezone
+
 from mobilizon_bots.models.event import Event
 
 
@@ -8,7 +11,7 @@ from mobilizon_bots.models.event import Event
 async def test_event_create(event_model_generator):
     event_model = event_model_generator()
     await event_model.save()
-    event_db = await Event.filter(name="event1").first()
+    event_db = await Event.filter(name="event_1").first()
     assert event_db.begin_datetime == datetime(
         year=2021,
         month=1,
@@ -78,3 +81,22 @@ async def test_event_sort_by_date(event_model_generator):
     assert events[0].begin_datetime == today_utc - timedelta(days=1)
     assert events[1].begin_datetime == today_utc
     assert events[2].begin_datetime == today_utc + timedelta(days=1)
+
+
+@pytest.mark.asyncio
+async def test_mobilizon_event_to_model(event):
+    event_model = event.to_model()
+    await event_model.save()
+
+    event_db = await Event.all().first()
+    begin_date_utc = arrow.Arrow(year=2021, month=1, day=1, hour=10, minute=30)
+    begin_date_utc = begin_date_utc.astimezone(tortoise.timezone.get_default_timezone())
+
+    assert event_db.name == "test event"
+    assert event_db.description == "description of the event"
+    assert event_db.begin_datetime == begin_date_utc
+    assert event_db.end_datetime == begin_date_utc + timedelta(hours=1)
+    assert event_db.mobilizon_link == "http://some_link.com/123"
+    assert event_db.mobilizon_id == "12345"
+    assert event_db.thumbnail_link == "http://some_link.com/123.jpg"
+    assert event_db.location == "location"

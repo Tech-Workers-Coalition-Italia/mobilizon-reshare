@@ -1,10 +1,11 @@
 from dataclasses import dataclass, asdict
-from datetime import datetime
 from enum import IntEnum
 from typing import Optional
 
 import arrow
 from jinja2 import Template
+
+from mobilizon_bots.models.event import Event
 
 
 class PublicationStatus(IntEnum):
@@ -37,7 +38,7 @@ class MobilizonEvent:
     publication_status: PublicationStatus = PublicationStatus.WAITING
 
     def __post_init__(self):
-
+        assert self.begin_datetime.tzinfo == self.end_datetime.tzinfo
         assert self.begin_datetime < self.end_datetime
         if self.publication_time:
             assert self.publication_status in [
@@ -50,3 +51,15 @@ class MobilizonEvent:
 
     def format(self, pattern: Template) -> str:
         return self._fill_template(pattern)
+
+    def to_model(self) -> Event:
+        return Event(
+            name=self.name,
+            description=self.description,
+            mobilizon_id=self.mobilizon_id,
+            mobilizon_link=self.mobilizon_link,
+            thumbnail_link=self.thumbnail_link,
+            location=self.location,
+            begin_datetime=self.begin_datetime.astimezone(self.begin_datetime.tzinfo),
+            end_datetime=self.end_datetime.astimezone(self.end_datetime.tzinfo),
+        )

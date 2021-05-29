@@ -9,7 +9,6 @@ from dynaconf import settings
 from tortoise.contrib.test import finalizer, initializer
 
 from mobilizon_bots.config.config import build_and_validate_settings
-from mobilizon_bots.event.event import MobilizonEvent, PublicationStatus
 
 from mobilizon_bots.event.event import (
     MobilizonEvent,
@@ -67,19 +66,21 @@ def event_generator():
 
 @pytest.fixture()
 def event() -> MobilizonEvent:
-    begin_date = datetime(
-        year=2021,
-        month=1,
-        day=1,
-        hour=11,
-        minute=30,
-        tzinfo=timezone(timedelta(hours=1)),
+    begin_date = arrow.get(
+        datetime(
+            year=2021,
+            month=1,
+            day=1,
+            hour=11,
+            minute=30,
+            tzinfo=timezone(timedelta(hours=1)),
+        )
     )
     return MobilizonEvent(
         name="test event",
         description="description of the event",
-        begin_datetime=arrow.Arrow(year=2021, month=1, day=1, hour=11, minute=30),
-        end_datetime=arrow.Arrow(year=2021, month=1, day=1, hour=12, minute=30),
+        begin_datetime=begin_date,
+        end_datetime=begin_date.shift(hours=1),
         mobilizon_link="http://some_link.com/123",
         mobilizon_id="12345",
         thumbnail_link="http://some_link.com/123.jpg",
@@ -110,12 +111,12 @@ def event_model_generator():
         begin_date=datetime(year=2021, month=1, day=1, hour=11, minute=30),
     ):
         return Event(
-            name=f"event{idx}",
-            description=f"desc{idx}",
-            mobilizon_id=f"mobid{idx}",
-            mobilizon_link=f"moblink{idx}",
-            thumbnail_link=f"thumblink{idx}",
-            location=f"loc{idx}",
+            name=f"event_{idx}",
+            description=f"desc_{idx}",
+            mobilizon_id=f"mobid_{idx}",
+            mobilizon_link=f"moblink_{idx}",
+            thumbnail_link=f"thumblink_{idx}",
+            location=f"loc_{idx}",
             begin_datetime=begin_date,
             end_datetime=begin_date + timedelta(hours=2),
         )
@@ -128,7 +129,7 @@ def publisher_model_generator():
     def _publisher_model_generator(
         idx=1,
     ):
-        return Publisher(type=f"publisher{idx}", account_ref=f"account_ref{idx}")
+        return Publisher(type=f"publisher_{idx}", account_ref=f"account_ref_{idx}")
 
     return _publisher_model_generator
 
@@ -158,7 +159,7 @@ def notification_model_generator():
     ):
         return Notification(
             status=generate_notification_status(published),
-            message=f"message{idx}",
+            message=f"message_{idx}",
             publication_id=publication_id,
             target_id=target_id,
         )
