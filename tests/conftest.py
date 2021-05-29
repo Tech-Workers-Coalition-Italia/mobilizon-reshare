@@ -108,9 +108,7 @@ def event_model_generator():
             mobilizon_link=f"moblink{idx}",
             thumbnail_link=f"thumblink{idx}",
             location=f"loc{idx}",
-            begin_datetime=datetime(
-                2021, 5, 10, hour=0, minute=0, second=0, microsecond=0
-            ),
+            begin_datetime=begin_date,
             end_datetime=begin_date + timedelta(hours=2),
         )
 
