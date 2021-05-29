@@ -1,7 +1,7 @@
 import arrow
 import pkg_resources
 import os
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
 import pytest
 
@@ -67,6 +67,14 @@ def event_generator():
 
 @pytest.fixture()
 def event() -> MobilizonEvent:
+    begin_date = datetime(
+        year=2021,
+        month=1,
+        day=1,
+        hour=11,
+        minute=30,
+        tzinfo=timezone(timedelta(hours=1)),
+    )
     return MobilizonEvent(
         name="test event",
         description="description of the event",
