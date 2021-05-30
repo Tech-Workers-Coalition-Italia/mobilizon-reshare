@@ -144,13 +144,13 @@ def publisher_model_generator():
 @pytest.fixture()
 def publication_model_generator():
     def _publication_model_generator(
-        published=False,
+        status=PublicationStatus.WAITING,
         publication_time=datetime(year=2021, month=1, day=1, hour=11, minute=30),
         event_id=None,
         publisher_id=None,
     ):
         return Publication(
-            status=generate_publication_status(published),
+            status=status,
             timestamp=publication_time,
             event_id=event_id,
             publisher_id=publisher_id,
