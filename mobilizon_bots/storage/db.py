@@ -1,3 +1,5 @@
+import asyncio
+import atexit
 import logging
 
 from pathlib import Path
@@ -34,3 +36,10 @@ class MobilizonBotsDB:
             await Tortoise.generate_schemas()
             self.is_init = True
             logger.info(f"Succesfully initialized database at {self.path}")
+
+
+@atexit.register
+def gracefully_tear_down():
+    logger.info("Shutting down DB")
+    loop = asyncio.get_event_loop()
+    loop.run_until_complete(Tortoise.close_connections())
