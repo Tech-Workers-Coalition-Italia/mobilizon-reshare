@@ -1,7 +1,7 @@
 import arrow
 import pytest
 
-from mobilizon_bots.event.event_selector import SelectNextEventStrategy
+from mobilizon_bots.event.event_selection_strategies import SelectNextEventStrategy
 
 
 @pytest.mark.parametrize(
@@ -53,6 +53,7 @@ def test_window_simple_event_found(
     selected_event = SelectNextEventStrategy(
         minimum_break_between_events_in_minutes=desired_break_window_days * 24 * 60
     ).select(published_events, unpublished_events)
+
     assert selected_event is unpublished_events[0]
 
 

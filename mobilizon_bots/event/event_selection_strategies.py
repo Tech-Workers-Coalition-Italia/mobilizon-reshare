@@ -6,8 +6,21 @@ from mobilizon_bots.event.event import MobilizonEvent
 
 
 class EventSelectionStrategy(ABC):
-    @abstractmethod
     def select(
+        self,
+        published_events: List[MobilizonEvent],
+        unpublished_events: List[MobilizonEvent],
+    ) -> Optional[MobilizonEvent]:
+
+        if not self.is_in_publishing_window():
+            return None
+        return self._select(published_events, unpublished_events)
+
+    def is_in_publishing_window(self) -> bool:
+        return True
+
+    @abstractmethod
+    def _select(
         self,
         published_events: List[MobilizonEvent],
         unpublished_events: List[MobilizonEvent],
@@ -21,7 +34,7 @@ class SelectNextEventStrategy(EventSelectionStrategy):
             minimum_break_between_events_in_minutes
         )
 
-    def select(
+    def _select(
         self,
         published_events: List[MobilizonEvent],
         unpublished_events: List[MobilizonEvent],
@@ -60,4 +73,4 @@ class EventSelector:
     def select_event_to_publish(
         self, strategy: EventSelectionStrategy
     ) -> Optional[MobilizonEvent]:
-        return strategy.select(self.published_events, self.unpublished_events)
+        return strategy._select(self.published_events, self.unpublished_events)
