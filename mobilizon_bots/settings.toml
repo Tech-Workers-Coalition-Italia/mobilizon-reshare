@@ -74,3 +74,8 @@ DEBUG = true
 LOCAL_STATE_DIR = "/tmp/mobots"
 LOG_DIR = "/tmp/mobots"
 DB_PATH = ":memory:"
+
+
+[testing.publishing.window]
+begin=12
+end=19

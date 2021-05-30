@@ -1,11 +1,17 @@
 import arrow
 import pytest
 
+from mobilizon_bots.config.config import settings
 from mobilizon_bots.event.event import MobilizonEvent, PublicationStatus
 
 
 def generate_publication_status(published):
     return PublicationStatus.COMPLETED if published else PublicationStatus.WAITING
+
+
+@pytest.fixture(scope="session", autouse=True)
+def set_test_settings():
+    settings.configure(FORCE_ENV_FOR_DYNACONF="testing")
 
 
 @pytest.fixture

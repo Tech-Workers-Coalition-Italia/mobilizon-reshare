@@ -2,6 +2,7 @@ from abc import ABC, abstractmethod
 from typing import List, Optional
 import arrow
 
+from mobilizon_bots.config.config import settings
 from mobilizon_bots.event.event import MobilizonEvent
 
 
@@ -17,7 +18,10 @@ class EventSelectionStrategy(ABC):
         return self._select(published_events, unpublished_events)
 
     def is_in_publishing_window(self) -> bool:
-        return True
+        window_beginning = settings["publishing"]["window"]["begin"]
+        window_end = settings["publishing"]["window"]["end"]
+        now_hour = arrow.now().datetime.hour
+        return window_beginning <= now_hour < window_end
 
     @abstractmethod
     def _select(
