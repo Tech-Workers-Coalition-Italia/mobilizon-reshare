@@ -1,24 +1,11 @@
 import arrow
-import pkg_resources
 import pytest
-from dynaconf import settings
 
-from mobilizon_bots.config.config import build_and_validate_settings
 from mobilizon_bots.event.event import MobilizonEvent, PublicationStatus
 
 
 def generate_publication_status(published):
     return PublicationStatus.COMPLETED if published else PublicationStatus.WAITING
-
-
-@pytest.fixture(scope="session", autouse=True)
-def set_test_settings():
-    config_file = pkg_resources.resource_filename(
-        "tests.resources", "test_settings.toml"
-    )
-
-    settings.configure(FORCE_ENV_FOR_DYNACONF="testing")
-    build_and_validate_settings([config_file])
 
 
 @pytest.fixture

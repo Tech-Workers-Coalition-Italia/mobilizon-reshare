@@ -7,7 +7,7 @@ from mobilizon_bots.event.event_selection_strategies import SelectNextEventStrat
 @pytest.mark.parametrize(
     "desired_break_window_days,days_passed_from_publication", [[2, 1], [3, 2]]
 )
-def test_window_simple_no_event(
+def test_break_window_simple_no_event(
     event_generator, desired_break_window_days, days_passed_from_publication
 ):
     "Testing that the break between events is respected"
@@ -33,7 +33,7 @@ def test_window_simple_no_event(
 @pytest.mark.parametrize(
     "desired_break_window_days,days_passed_from_publication", [[1, 2], [2, 10], [4, 4]]
 )
-def test_window_simple_event_found(
+def test_break_window_simple_event_found(
     event_generator, desired_break_window_days, days_passed_from_publication,
 ):
     "Testing that the break between events is respected and an event is found"
@@ -60,7 +60,7 @@ def test_window_simple_event_found(
 @pytest.mark.parametrize(
     "desired_break_window_days,days_passed_from_publication", [[1, 2], [2, 10], [4, 4]]
 )
-def test_window_multi_event_found(
+def test_break_window_multi_event_found(
     event_generator, desired_break_window_days, days_passed_from_publication,
 ):
     "Testing that the break between events is respected when there are multiple events"
