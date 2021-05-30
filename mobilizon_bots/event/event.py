@@ -1,12 +1,22 @@
 from dataclasses import dataclass, asdict
-from enum import Enum
+from enum import IntEnum
 from typing import Optional
 
 import arrow
 from jinja2 import Template
+import tortoise.timezone
+
+from mobilizon_bots.models.event import Event
 
 
-class PublicationStatus(Enum):
+class PublicationStatus(IntEnum):
+    WAITING = 1
+    FAILED = 2
+    PARTIAL = 3
+    COMPLETED = 4
+
+
+class NotificationStatus(IntEnum):
     WAITING = 1
     FAILED = 2
     PARTIAL = 3
@@ -29,7 +39,7 @@ class MobilizonEvent:
     publication_status: PublicationStatus = PublicationStatus.WAITING
 
     def __post_init__(self):
-
+        assert self.begin_datetime.tzinfo == self.end_datetime.tzinfo
         assert self.begin_datetime < self.end_datetime
         if self.publication_time:
             assert self.publication_status in [
@@ -42,3 +52,36 @@ class MobilizonEvent:
 
     def format(self, pattern: Template) -> str:
         return self._fill_template(pattern)
+
+    def to_model(self) -> Event:
+        return Event(
+            name=self.name,
+            description=self.description,
+            mobilizon_id=self.mobilizon_id,
+            mobilizon_link=self.mobilizon_link,
+            thumbnail_link=self.thumbnail_link,
+            location=self.location,
+            begin_datetime=self.begin_datetime.astimezone(self.begin_datetime.tzinfo),
+            end_datetime=self.end_datetime.astimezone(self.end_datetime.tzinfo),
+        )
+
+    @staticmethod
+    def from_model(event: Event, tz: str = "UTC"):
+        # await Event.filter(id=event.id).values("id", "name", tournament="tournament__name")
+        return MobilizonEvent(
+            name=event.name,
+            description=event.description,
+            begin_datetime=arrow.get(
+                tortoise.timezone.localtime(value=event.begin_datetime, timezone=tz)
+            ),
+            end_datetime=arrow.get(
+                tortoise.timezone.localtime(value=event.end_datetime, timezone=tz)
+            ),
+            mobilizon_link=event.mobilizon_link,
+            mobilizon_id=event.mobilizon_id,
+            thumbnail_link=event.thumbnail_link,
+            location=event.location,
+            # TODO: Discuss publications
+            # publication_time=tortoise.timezone.localtime(value=event.publications, timezone=tz),
+            # publication_status=PublicationStatus.WAITING
+        )
