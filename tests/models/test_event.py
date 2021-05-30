@@ -4,6 +4,7 @@ import arrow
 import pytest
 import tortoise.timezone
 
+from mobilizon_bots.event.event import MobilizonEvent
 from mobilizon_bots.models.event import Event
 
 
@@ -100,3 +101,23 @@ async def test_mobilizon_event_to_model(event):
     assert event_db.mobilizon_id == "12345"
     assert event_db.thumbnail_link == "http://some_link.com/123.jpg"
     assert event_db.location == "location"
+
+
+@pytest.mark.asyncio
+async def test_mobilizon_event_from_model(event_model_generator):
+    event_model = event_model_generator()
+    await event_model.save()
+
+    event_db = await Event.all().first()
+    event = MobilizonEvent.from_model(event=event_db, tz="CET")
+
+    begin_date_utc = arrow.Arrow(year=2021, month=1, day=1, hour=11, minute=30)
+
+    assert event.name == "event_1"
+    assert event.description == "desc_1"
+    assert event.begin_datetime == begin_date_utc
+    assert event.end_datetime == begin_date_utc.shift(hours=2)
+    assert event.mobilizon_link == "moblink_1"
+    assert event.mobilizon_id == "mobid_1"
+    assert event.thumbnail_link == "thumblink_1"
+    assert event.location == "loc_1"

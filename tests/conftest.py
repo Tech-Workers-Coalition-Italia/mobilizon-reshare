@@ -108,7 +108,14 @@ def initialize_db_tests(request) -> None:
 def event_model_generator():
     def _event_model_generator(
         idx=1,
-        begin_date=datetime(year=2021, month=1, day=1, hour=11, minute=30),
+        begin_date=datetime(
+            year=2021,
+            month=1,
+            day=1,
+            hour=11,
+            minute=30,
+            tzinfo=timezone(timedelta(hours=0)),
+        ),
     ):
         return Event(
             name=f"event_{idx}",

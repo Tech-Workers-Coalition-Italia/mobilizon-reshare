@@ -4,6 +4,7 @@ from typing import Optional
 
 import arrow
 from jinja2 import Template
+import tortoise.timezone
 
 from mobilizon_bots.models.event import Event
 
@@ -62,4 +63,25 @@ class MobilizonEvent:
             location=self.location,
             begin_datetime=self.begin_datetime.astimezone(self.begin_datetime.tzinfo),
             end_datetime=self.end_datetime.astimezone(self.end_datetime.tzinfo),
+        )
+
+    @staticmethod
+    def from_model(event: Event, tz: str = "UTC"):
+        # await Event.filter(id=event.id).values("id", "name", tournament="tournament__name")
+        return MobilizonEvent(
+            name=event.name,
+            description=event.description,
+            begin_datetime=arrow.get(
+                tortoise.timezone.localtime(value=event.begin_datetime, timezone=tz)
+            ),
+            end_datetime=arrow.get(
+                tortoise.timezone.localtime(value=event.end_datetime, timezone=tz)
+            ),
+            mobilizon_link=event.mobilizon_link,
+            mobilizon_id=event.mobilizon_id,
+            thumbnail_link=event.thumbnail_link,
+            location=event.location,
+            # TODO: Discuss publications
+            # publication_time=tortoise.timezone.localtime(value=event.publications, timezone=tz),
+            # publication_status=PublicationStatus.WAITING
         )
