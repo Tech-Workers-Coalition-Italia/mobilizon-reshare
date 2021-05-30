@@ -1,8 +1,8 @@
 from dataclasses import dataclass, asdict
-from datetime import datetime
 from enum import Enum
 from typing import Optional
 
+import arrow
 from jinja2 import Template
 
 
@@ -18,18 +18,18 @@ class MobilizonEvent:
     """Class representing an event retrieved from Mobilizon."""
 
     name: str
-    description: str
-    begin_datetime: datetime
-    end_datetime: datetime
-    last_accessed: datetime
+    description: Optional[str]
+    begin_datetime: arrow.Arrow
+    end_datetime: arrow.Arrow
     mobilizon_link: str
     mobilizon_id: str
     thumbnail_link: Optional[str] = None
     location: Optional[str] = None
-    publication_time: Optional[datetime] = None
+    publication_time: Optional[arrow.Arrow] = None
     publication_status: PublicationStatus = PublicationStatus.WAITING
 
     def __post_init__(self):
+
         assert self.begin_datetime < self.end_datetime
         if self.publication_time:
             assert self.publication_status in [

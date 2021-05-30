@@ -6,6 +6,10 @@ log_dir = "/var/log/mobots"
 db_name = "events.db"
 db_path = "@format {this.local_state_dir}/{this.db_name}"
 
+[default.source.mobilizon]
+url="https://some_mobilizon"
+group="my_group"
+
 [default.selection]
 strategy = "next_event"
 
