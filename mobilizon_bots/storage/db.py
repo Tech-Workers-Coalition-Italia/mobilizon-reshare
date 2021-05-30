@@ -1,6 +1,12 @@
+import asyncio
+import atexit
+import logging
+
 from pathlib import Path
 
 from tortoise import Tortoise
+
+logger = logging.getLogger(__name__)
 
 
 class MobilizonBotsDB:
@@ -20,6 +26,9 @@ class MobilizonBotsDB:
         # TODO: Check if DB is openable/"queriable"
         return self.path.exists() and (not self.path.is_dir())
 
-    @staticmethod
-    async def tear_down():
-        await Tortoise.close_connections()
+
+@atexit.register
+def gracefully_tear_down():
+    logger.info("Shutting down DB")
+    loop = asyncio.get_event_loop()
+    loop.run_until_complete(Tortoise.close_connections())
