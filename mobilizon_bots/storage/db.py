@@ -34,8 +34,3 @@ class MobilizonBotsDB:
             await Tortoise.generate_schemas()
             self.is_init = True
             logger.info(f"Succesfully initialized database at {self.path}")
-
-    @staticmethod
-    async def tear_down():
-        await Tortoise.close_connections()
-        logger.info("Gracefully terminated database connections.")
