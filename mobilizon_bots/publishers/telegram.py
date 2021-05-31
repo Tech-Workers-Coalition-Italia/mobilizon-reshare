@@ -37,22 +37,24 @@ class TelegramPublisher(AbstractPublisher):
         if not username:
             err.append("username")
         if err:
-            self._log_error_and_raise(
-                InvalidCredentials, ", ".join(err) + " is/are missing"
+            self._log_error(
+                ", ".join(err) + " is/are missing",
+                raise_error=InvalidCredentials,
             )
 
         res = requests.get(f"https://api.telegram.org/bot{token}/getMe")
         data = self._validate_response(res)
 
         if not username == data.get("result", {}).get("username"):
-            self._log_error_and_raise(
-                InvalidBot, "Found a different bot than the expected one"
+            self._log_error(
+                "Found a different bot than the expected one",
+                raise_error=InvalidBot,
             )
 
     def validate_event(self) -> None:
         text = self.event.description
         if not (text and text.strip()):
-            self._log_error_and_raise(InvalidEvent, "No text was found")
+            self._log_error("No text was found", raise_error=InvalidEvent)
 
     def _validate_response(self, res):
         res.raise_for_status()
@@ -60,13 +62,15 @@ class TelegramPublisher(AbstractPublisher):
         try:
             data = res.json()
         except Exception as e:
-            self._log_error_and_raise(
-                InvalidResponse, f"Server returned invalid json data: {str(e)}"
+            self._log_error(
+                f"Server returned invalid json data: {str(e)}",
+                raise_error=InvalidResponse,
             )
 
         if not data.get("ok"):
-            self._log_error_and_raise(
-                InvalidResponse, f"Invalid request (response: {data})"
+            self._log_error(
+                f"Invalid request (response: {data})",
+                raise_error=InvalidResponse,
             )
 
         return data
