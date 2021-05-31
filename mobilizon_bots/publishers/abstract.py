@@ -2,14 +2,27 @@ import inspect
 import logging
 
 from abc import ABC, abstractmethod
+from dynaconf.utils.boxing import DynaBox
+from jinja2 import Environment, FileSystemLoader, Template
 
 from mobilizon_bots.event.event import MobilizonEvent
 from .exceptions import PublisherError
 
+JINJA_ENV = Environment(loader=FileSystemLoader("/"))
+
 logger = logging.getLogger(__name__)
 
 
-class AbstractMessenger(ABC):
+class AbstractNotifier(ABC):
+    """
+    Generic notifier class.
+    Shall be inherited from specific subclasses that will manage validation
+    process for messages and credentials, text formatting, posting, etc.
+
+    Attributes:
+        - ``message``: a formatted ``str``
+    """
+
     def __init__(self, message: str):
         self.message = message
 
@@ -17,6 +30,13 @@ class AbstractMessenger(ABC):
         return type(self).__name__
 
     __str__ = __repr__
+
+    @abstractmethod
+    def get_conf(self) -> DynaBox:
+        """
+        Retrieves class's settings.
+        """
+        raise NotImplementedError
 
     def _log_debug(self, msg, *args, **kwargs):
         self.__log(logging.DEBUG, msg, *args, **kwargs)
@@ -76,23 +96,23 @@ class AbstractMessenger(ABC):
     @abstractmethod
     def validate_message(self) -> None:
         """
-        Validates messenger's message.
+        Validates notifier's message.
         Should raise ``PublisherError`` (or one of its subclasses) if message
         is not valid.
         """
         raise NotImplementedError
 
 
-class AbstractPublisher(AbstractMessenger):
+class AbstractPublisher(AbstractNotifier):
     """
     Generic publisher class.
-
     Shall be inherited from specific subclasses that will manage validation
     process for events and credentials, text formatting, posting, etc.
 
-    Class attributes:
+    Attributes:
         - ``event``: a ``MobilizonEvent`` containing every useful info from
             the event
+        - ``message``: a formatted ``str``
     """
 
     def __init__(self, event: MobilizonEvent):
@@ -115,9 +135,14 @@ class AbstractPublisher(AbstractMessenger):
         """
         raise NotImplementedError
 
-    @abstractmethod
     def get_message_from_event(self) -> str:
         """
         Retrieves a message from the event itself.
         """
-        raise NotImplementedError
+        return self.event.format(self.get_message_template())
+
+    def get_message_template(self) -> Template:
+        """
+        Retrieves publisher's message template.
+        """
+        return JINJA_ENV.get_template(self.get_conf().msg_template_path)

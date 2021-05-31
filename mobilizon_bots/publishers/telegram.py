@@ -1,7 +1,9 @@
 import requests
 
-from mobilizon_bots.config.config import settings
+from dynaconf.utils.boxing import DynaBox
+from functools import lru_cache
 
+from mobilizon_bots.config.config import settings
 from .abstract import AbstractPublisher
 from .exceptions import (
     InvalidBot,
@@ -10,21 +12,29 @@ from .exceptions import (
     InvalidResponse,
 )
 
-CONF = settings.PUBLISHER.telegram
-
 
 class TelegramPublisher(AbstractPublisher):
+    """
+    Telegram publisher class.
+    """
+
+    @lru_cache
+    def get_conf(self) -> DynaBox:
+        return settings.PUBLISHER.telegram
+
     def post(self) -> None:
+        conf = self.get_conf()
         res = requests.post(
-            url=f"https://api.telegram.org/bot{CONF.token}/sendMessage",
-            params={"chat_id": CONF.chat_id, "text": self.message},
+            url=f"https://api.telegram.org/bot{conf.token}/sendMessage",
+            params={"chat_id": conf.chat_id, "text": self.message},
         )
         self._validate_response(res)
 
     def validate_credentials(self):
-        chat_id = CONF.chat_id
-        token = CONF.token
-        username = CONF.username
+        conf = self.get_conf()
+        chat_id = conf.chat_id
+        token = conf.token
+        username = conf.username
         err = []
         if not chat_id:
             err.append("chat ID")
@@ -67,10 +77,6 @@ class TelegramPublisher(AbstractPublisher):
 
         return data
 
-    def get_message_from_event(self) -> str:
-        # TODO implement
-        return self.event.description
-
-    def validate_message(self):
+    def validate_message(self) -> None:
         # TODO implement
         pass
