@@ -6,6 +6,10 @@ class PublisherError(Exception):
         super().__init__(message)
 
 
+class InvalidAttribute(PublisherError):
+    """ Publisher defined with invalid or missing attribute """
+
+
 class InvalidBot(PublisherError):
     """ Publisher refers to the wrong service bot """
 

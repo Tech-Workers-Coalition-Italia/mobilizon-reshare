@@ -1,9 +1,5 @@
 import requests
 
-from dynaconf.utils.boxing import DynaBox
-from functools import lru_cache
-
-from mobilizon_bots.config.config import settings
 from .abstract import AbstractPublisher
 from .exceptions import (
     InvalidBot,
@@ -18,12 +14,10 @@ class TelegramPublisher(AbstractPublisher):
     Telegram publisher class.
     """
 
-    @lru_cache
-    def get_conf(self) -> DynaBox:
-        return settings.PUBLISHER.telegram
+    _conf = ("publisher", "telegram")
 
     def post(self) -> None:
-        conf = self.get_conf()
+        conf = self.conf
         res = requests.post(
             url=f"https://api.telegram.org/bot{conf.token}/sendMessage",
             params={"chat_id": conf.chat_id, "text": self.message},
@@ -31,7 +25,7 @@ class TelegramPublisher(AbstractPublisher):
         self._validate_response(res)
 
     def validate_credentials(self):
-        conf = self.get_conf()
+        conf = self.conf
         chat_id = conf.chat_id
         token = conf.token
         username = conf.username

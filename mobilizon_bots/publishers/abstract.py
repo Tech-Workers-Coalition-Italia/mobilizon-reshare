@@ -5,8 +5,9 @@ from abc import ABC, abstractmethod
 from dynaconf.utils.boxing import DynaBox
 from jinja2 import Environment, FileSystemLoader, Template
 
+from mobilizon_bots.config.config import settings
 from mobilizon_bots.event.event import MobilizonEvent
-from .exceptions import PublisherError
+from .exceptions import PublisherError, InvalidAttribute
 
 JINJA_ENV = Environment(loader=FileSystemLoader("/"))
 
@@ -23,6 +24,11 @@ class AbstractNotifier(ABC):
         - ``message``: a formatted ``str``
     """
 
+    # Non-abstract subclasses should define ``_conf`` as a 2-tuple, where the
+    # first element is the type of class (either 'notifier' or 'publisher') and
+    # the second the name of its service (ie: 'facebook', 'telegram')
+    _conf = tuple()
+
     def __init__(self, message: str):
         self.message = message
 
@@ -31,12 +37,24 @@ class AbstractNotifier(ABC):
 
     __str__ = __repr__
 
-    @abstractmethod
-    def get_conf(self) -> DynaBox:
+    @property
+    def conf(self) -> DynaBox:
         """
         Retrieves class's settings.
         """
-        raise NotImplementedError
+        cls = type(self)
+        if cls in (AbstractPublisher, AbstractNotifier):
+            raise InvalidAttribute(
+                "Abstract classes cannot access notifiers/publishers' settings"
+            )
+        try:
+            t, n = cls._conf or tuple()  # Avoid unpacking ``None``
+            return settings[t][n]
+        except (KeyError, ValueError):
+            raise InvalidAttribute(
+                f"Class {cls.__name__} has invalid ``_conf`` attribute"
+                f" (should be 2-tuple)"
+            )
 
     def _log_debug(self, msg, *args, **kwargs):
         self.__log(logging.DEBUG, msg, *args, **kwargs)
@@ -115,6 +133,8 @@ class AbstractPublisher(AbstractNotifier):
         - ``message``: a formatted ``str``
     """
 
+    _conf = tuple()
+
     def __init__(self, event: MobilizonEvent):
         self.event = event
         super().__init__(message=self.get_message_from_event())
@@ -145,4 +165,4 @@ class AbstractPublisher(AbstractNotifier):
         """
         Retrieves publisher's message template.
         """
-        return JINJA_ENV.get_template(self.get_conf().msg_template_path)
+        return JINJA_ENV.get_template(self.conf.msg_template_path)
