@@ -1,15 +1,15 @@
 import arrow
 import pytest
 from unittest.mock import patch
+
+from mobilizon_bots.config.config import settings
 from mobilizon_bots.event.event_selection_strategies import SelectNextEventStrategy
 
 
 @pytest.fixture
-def mock_publication_window(settings_mocker, publication_window):
+def mock_publication_window(publication_window):
     begin, end = publication_window
-    settings_mocker(
-        {"publishing.window.begin": begin, "publishing.window.end": end}
-    )
+    settings.update({"publishing.window.begin": begin, "publishing.window.end": end})
 
 
 @pytest.mark.parametrize("current_hour", [10])
@@ -130,10 +130,9 @@ def mock_arrow_now(current_hour):
 
 @pytest.mark.parametrize("current_hour", [14, 15, 16, 18])
 @pytest.mark.parametrize("publication_window", [(14, 19)])
-def test_publishing_window_true(mock_arrow_now, mock_publication_window):
+def test_publishing_inner_window_true(mock_arrow_now, mock_publication_window):
     """
-    Testing that the window check correctly returns True when in publishing window. The window is set in the
-    settings.toml under the testing environment.
+    Testing that the window check correctly returns True when in an inner publishing window.
     """
     assert SelectNextEventStrategy(
         minimum_break_between_events_in_minutes=1
@@ -142,9 +141,31 @@ def test_publishing_window_true(mock_arrow_now, mock_publication_window):
 
 @pytest.mark.parametrize("current_hour", [2, 10, 11, 19])
 @pytest.mark.parametrize("publication_window", [(14, 19)])
-def test_publishing_window_false(mock_arrow_now, mock_publication_window):
+def test_publishing_inner_window_false(mock_arrow_now, mock_publication_window):
     """
-    Testing that the window check correctly returns False when not in publishing window.
+    Testing that the window check correctly returns False when not in an inner publishing window.
+    """
+    assert not SelectNextEventStrategy(
+        minimum_break_between_events_in_minutes=1
+    ).is_in_publishing_window()
+
+
+@pytest.mark.parametrize("current_hour", [2, 10, 11, 19])
+@pytest.mark.parametrize("publication_window", [(19, 14)])
+def test_publishing_outer_window_true(mock_arrow_now, mock_publication_window):
+    """
+    Testing that the window check correctly returns True when in an outer publishing window.
+    """
+    assert SelectNextEventStrategy(
+        minimum_break_between_events_in_minutes=1
+    ).is_in_publishing_window()
+
+
+@pytest.mark.parametrize("current_hour", [14, 15, 16, 18])
+@pytest.mark.parametrize("publication_window", [(19, 14)])
+def test_publishing_outer_window_false(mock_arrow_now, mock_publication_window):
+    """
+    Testing that the window check correctly returns False when not in an outer publishing window.
     """
     assert not SelectNextEventStrategy(
         minimum_break_between_events_in_minutes=1
