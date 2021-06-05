@@ -21,7 +21,10 @@ class EventSelectionStrategy(ABC):
         window_beginning = settings["publishing"]["window"]["begin"]
         window_end = settings["publishing"]["window"]["end"]
         now_hour = arrow.now().datetime.hour
-        return window_beginning <= now_hour < window_end
+        if window_beginning <= window_end:
+            return window_beginning <= now_hour < window_end
+        else:
+            return window_beginning > now_hour >= window_end
 
     @abstractmethod
     def _select(

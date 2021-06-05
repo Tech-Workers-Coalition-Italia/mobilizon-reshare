@@ -4,6 +4,14 @@ from unittest.mock import patch
 from mobilizon_bots.event.event_selection_strategies import SelectNextEventStrategy
 
 
+@pytest.fixture
+def mock_publication_window(settings_mocker, publication_window):
+    begin, end = publication_window
+    settings_mocker(
+        {"publishing.window.begin": begin, "publishing.window.end": end}
+    )
+
+
 @pytest.mark.parametrize("current_hour", [10])
 @pytest.mark.parametrize(
     "desired_break_window_days,days_passed_from_publication", [[2, 1], [3, 2]]
@@ -121,7 +129,8 @@ def mock_arrow_now(current_hour):
 
 
 @pytest.mark.parametrize("current_hour", [14, 15, 16, 18])
-def test_publishing_window_true(mock_arrow_now):
+@pytest.mark.parametrize("publication_window", [(14, 19)])
+def test_publishing_window_true(mock_arrow_now, mock_publication_window):
     """
     Testing that the window check correctly returns True when in publishing window. The window is set in the
     settings.toml under the testing environment.
@@ -132,10 +141,10 @@ def test_publishing_window_true(mock_arrow_now):
 
 
 @pytest.mark.parametrize("current_hour", [2, 10, 11, 19])
-def test_publishing_window_false(mock_arrow_now):
+@pytest.mark.parametrize("publication_window", [(14, 19)])
+def test_publishing_window_false(mock_arrow_now, mock_publication_window):
     """
-    Testing that the window check correctly returns False when in publishing window. The window is set in the
-    settings.toml under the testing environment.
+    Testing that the window check correctly returns False when not in publishing window.
     """
     assert not SelectNextEventStrategy(
         minimum_break_between_events_in_minutes=1
