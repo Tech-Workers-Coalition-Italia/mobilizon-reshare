@@ -2,6 +2,7 @@ from abc import ABC, abstractmethod
 from typing import List, Optional
 import arrow
 
+from mobilizon_bots.config.config import settings
 from mobilizon_bots.event.event import MobilizonEvent
 
 
@@ -16,11 +17,6 @@ class EventSelectionStrategy(ABC):
 
 
 class SelectNextEventStrategy(EventSelectionStrategy):
-    def __init__(self, minimum_break_between_events_in_minutes: int):
-        self.minimum_break_between_events_in_minutes = (
-            minimum_break_between_events_in_minutes
-        )
-
     def select(
         self,
         published_events: List[MobilizonEvent],
@@ -37,7 +33,9 @@ class SelectNextEventStrategy(EventSelectionStrategy):
         )
         if (
             last_published_event.publication_time.shift(
-                minutes=self.minimum_break_between_events_in_minutes
+                minutes=settings[
+                    "selection.strategy_options.break_between_events_in_minutes"
+                ]
             )
             > now
         ):
@@ -61,3 +59,14 @@ class EventSelector:
         self, strategy: EventSelectionStrategy
     ) -> Optional[MobilizonEvent]:
         return strategy.select(self.published_events, self.unpublished_events)
+
+
+STRATEGY_NAME_TO_STRATEGY_CLASS = {"next_event": SelectNextEventStrategy}
+
+
+def select_event_to_publish(
+    published_events: List[MobilizonEvent], unpublished_events: List[MobilizonEvent],
+):
+
+    strategy = STRATEGY_NAME_TO_STRATEGY_CLASS[settings["selection"]["strategy"]]()
+    return strategy.select(published_events, unpublished_events)
