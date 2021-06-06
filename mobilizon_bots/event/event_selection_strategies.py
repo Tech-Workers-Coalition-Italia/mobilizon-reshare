@@ -24,7 +24,7 @@ class EventSelectionStrategy(ABC):
         if window_beginning <= window_end:
             return window_beginning <= now_hour < window_end
         else:
-            return window_beginning > now_hour >= window_end
+            return now_hour >= window_beginning or now_hour < window_end
 
     @abstractmethod
     def _select(
