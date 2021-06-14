@@ -14,6 +14,11 @@ to publish an event, with the minimization of human effort as its first priority
 
 ## Configuration
 
+The configuration is implemented through Dynaconf. It allows a variety of ways to specify configuration keys. 
+Refer to their [documentation](https://www.dynaconf.com/) to discover how configuration files and environment variables can be specified. 
+
+We provide a sample configuration in the [settings.toml](https://github.com/Tech-Workers-Coalition-Italia/mobilizon-bots/blob/master/mobilizon_bots/settings.toml) file.  
+
 ### Event selection
 
 ### Publishers
@@ -24,6 +29,8 @@ to publish an event, with the minimization of human effort as its first priority
 
 
 # Contributing 
+
+We welcome contributions from anybody. Currently our process is not structured yet but feel free to open or take issues through Github in case you want to help us.
 
 ## Core Concepts
 
