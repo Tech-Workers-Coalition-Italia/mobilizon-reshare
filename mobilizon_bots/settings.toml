@@ -1,8 +1,8 @@
 [default]
 debug = true
 default = true
-local_state_dir = "/var/mobots"
-log_dir = "/var/log/mobots"
+local_state_dir = "/var/mobilizon_bots"
+log_dir = "/var/log/mobilizon_bots"
 db_name = "events.db"
 db_path = "@format {this.local_state_dir}/{this.db_name}"
 
@@ -52,7 +52,7 @@ class = "logging.StreamHandler"
 formatter = "standard"
 stream = "ext://sys.stderr"
 
-[default.logging.handlers.logfile]
+[default.logging.handlers.file]
 level = "DEBUG"
 class = "logging.handlers.RotatingFileHandler"
 formatter = "standard"
@@ -63,7 +63,7 @@ encoding = "utf8"
 
 [default.logging.root]
 level = "DEBUG"
-handlers = ['console', 'logfile']
+handlers = ['console', 'file']
 
 [testing]
 DEBUG = true
