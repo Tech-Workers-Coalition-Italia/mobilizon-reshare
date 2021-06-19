@@ -136,7 +136,7 @@ def publisher_model_generator():
     def _publisher_model_generator(
         idx=1,
     ):
-        return Publisher(type=f"publisher_{idx}", account_ref=f"account_ref_{idx}")
+        return Publisher(name=f"publisher_{idx}", account_ref=f"account_ref_{idx}")
 
     return _publisher_model_generator
 

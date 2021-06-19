@@ -8,7 +8,7 @@ from mobilizon_bots.storage.query import get_published_events
 
 
 @pytest.mark.asyncio
-async def test_get_unpublished_events(
+async def test_get_published_events(
     publisher_model_generator, publication_model_generator, event_model_generator
 ):
     today = datetime(
