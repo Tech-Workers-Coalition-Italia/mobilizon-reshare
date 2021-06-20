@@ -1,7 +1,8 @@
 from typing import Iterable, Optional
 
-from mobilizon_bots.event.event import MobilizonEvent, PublicationStatus
+from mobilizon_bots.event.event import MobilizonEvent
 from mobilizon_bots.models.event import Event
+from mobilizon_bots.models.publication import PublicationStatus
 from mobilizon_bots.models.publisher import Publisher
 
 
