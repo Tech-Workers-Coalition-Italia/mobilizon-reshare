@@ -11,11 +11,10 @@ from tortoise.contrib.test import finalizer, initializer
 from mobilizon_bots.config.config import build_and_validate_settings
 
 from mobilizon_bots.event.event import (
-    MobilizonEvent,
-    NotificationStatus,
+    MobilizonEvent
 )
 from mobilizon_bots.models.event import Event
-from mobilizon_bots.models.notification import Notification
+from mobilizon_bots.models.notification import Notification, NotificationStatus
 from mobilizon_bots.models.publication import Publication, PublicationStatus
 from mobilizon_bots.models.publisher import Publisher
 

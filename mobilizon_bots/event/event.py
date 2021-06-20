@@ -1,5 +1,4 @@
 from dataclasses import dataclass, asdict
-from enum import IntEnum
 from typing import Optional
 
 import arrow
@@ -8,13 +7,6 @@ from jinja2 import Template
 
 from mobilizon_bots.models.event import Event
 from mobilizon_bots.models.publication import PublicationStatus
-
-
-class NotificationStatus(IntEnum):
-    WAITING = 1
-    FAILED = 2
-    PARTIAL = 3
-    COMPLETED = 4
 
 
 @dataclass
