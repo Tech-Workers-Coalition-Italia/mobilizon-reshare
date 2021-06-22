@@ -6,6 +6,7 @@ import tortoise.timezone
 
 from mobilizon_bots.event.event import MobilizonEvent
 from mobilizon_bots.models.event import Event
+from mobilizon_bots.models.publication import PublicationStatus
 
 
 @pytest.mark.asyncio
@@ -104,11 +105,36 @@ async def test_mobilizon_event_to_model(event):
 
 
 @pytest.mark.asyncio
-async def test_mobilizon_event_from_model(event_model_generator):
+async def test_mobilizon_event_from_model(
+    event_model_generator, publication_model_generator, publisher_model_generator
+):
     event_model = event_model_generator()
     await event_model.save()
 
-    event_db = await Event.all().first()
+    publisher_model = publisher_model_generator()
+    await publisher_model.save()
+    publisher_model_2 = publisher_model_generator(idx=2)
+    await publisher_model_2.save()
+
+    publication = publication_model_generator(
+        status=PublicationStatus.WAITING,
+        event_id=event_model.id,
+        publisher_id=publisher_model.id,
+    )
+    await publication.save()
+    publication_2 = publication_model_generator(
+        status=PublicationStatus.COMPLETED,
+        event_id=event_model.id,
+        publisher_id=publisher_model_2.id,
+    )
+    await publication_2.save()
+
+    event_db = (
+        await Event.all()
+        .prefetch_related("publications")
+        .prefetch_related("publications__publisher")
+        .first()
+    )
     event = MobilizonEvent.from_model(event=event_db, tz="CET")
 
     begin_date_utc = arrow.Arrow(year=2021, month=1, day=1, hour=11, minute=30)
@@ -121,3 +147,5 @@ async def test_mobilizon_event_from_model(event_model_generator):
     assert event.mobilizon_id == "mobid_1"
     assert event.thumbnail_link == "thumblink_1"
     assert event.location == "loc_1"
+    assert event.publication_time[publisher_model.name] == publication.timestamp
+    assert event.publication_status == PublicationStatus.PARTIAL

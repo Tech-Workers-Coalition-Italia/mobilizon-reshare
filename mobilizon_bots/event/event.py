@@ -21,7 +21,7 @@ class MobilizonEvent:
     mobilizon_id: str
     thumbnail_link: Optional[str] = None
     location: Optional[str] = None
-    publication_time: Optional[arrow.Arrow] = None
+    publication_time: Optional[dict[str, arrow.Arrow]] = None
     publication_status: PublicationStatus = PublicationStatus.WAITING
 
     def __post_init__(self):
@@ -53,7 +53,12 @@ class MobilizonEvent:
 
     @staticmethod
     def from_model(event: Event, tz: str = "UTC"):
-        # await Event.filter(id=event.id).values("id", "name", tournament="tournament__name")
+        unique_statuses = set(pub.status for pub in event.publications)
+        publication_status = (
+            unique_statuses.pop()
+            if len(unique_statuses) == 1
+            else PublicationStatus.PARTIAL
+        )
         return MobilizonEvent(
             name=event.name,
             description=event.description,
@@ -67,7 +72,14 @@ class MobilizonEvent:
             mobilizon_id=event.mobilizon_id,
             thumbnail_link=event.thumbnail_link,
             location=event.location,
-            # TODO: Discuss publications
-            # publication_time=tortoise.timezone.localtime(value=event.publications, timezone=tz),
-            # publication_status=PublicationStatus.WAITING
+            # TODO: Discuss publications (both time and status)
+            publication_time={
+                pub.publisher.name: arrow.get(
+                    tortoise.timezone.localtime(value=pub.timestamp, timezone=tz)
+                )
+                for pub in event.publications
+            }
+            if publication_status != PublicationStatus.WAITING
+            else None,
+            publication_status=publication_status,
         )
