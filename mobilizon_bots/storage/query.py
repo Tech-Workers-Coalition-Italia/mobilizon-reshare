@@ -26,5 +26,11 @@ async def get_published_events() -> Iterable[MobilizonEvent]:
         ])
 
 
+async def get_unpublished_events() -> Iterable[MobilizonEvent]:
+    return await events_with_status([
+            PublicationStatus.WAITING,
+        ])
+
+
 async def create_publisher(name: str, account_ref: Optional[str] = None) -> None:
     await Publisher.create(name=name, account_ref=account_ref)
