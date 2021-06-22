@@ -3,8 +3,14 @@ from datetime import datetime, timedelta, timezone
 import arrow
 import pytest
 
-from mobilizon_bots.event.event import PublicationStatus
-from mobilizon_bots.storage.query import get_published_events, get_unpublished_events
+from mobilizon_bots.event.event import MobilizonEvent
+from mobilizon_bots.models.publication import PublicationStatus
+
+from mobilizon_bots.storage.query import (
+    get_published_events,
+    get_unpublished_events,
+    create_unpublished_events,
+)
 
 
 @pytest.fixture(scope="module")
@@ -95,3 +101,36 @@ async def test_get_unpublished_events(
 
     assert published_events[0].name == events[0].name
     assert published_events[0].begin_datetime == arrow.get(today)
+
+
+@pytest.mark.asyncio
+async def test_create_unpublished_events(
+    publisher_model_generator,
+    publication_model_generator,
+    event_model_generator,
+    event_generator,
+    setup,
+):
+    events, publications, publishers, today = await setup(
+        publisher_model_generator, publication_model_generator, event_model_generator
+    )
+
+    event_4 = event_generator(begin_date=arrow.get(today + timedelta(days=6)))
+    event_5 = event_generator(
+        begin_date=arrow.get(today + timedelta(days=12)), mobilizon_id="67890"
+    )
+
+    await events[0].fetch_related("publications")
+    await events[0].fetch_related("publications__publisher")
+    events_from_internet = [MobilizonEvent.from_model(events[0]), event_4, event_5]
+
+    await create_unpublished_events(
+        unpublished_events=events_from_internet,
+        active_publishers=["publisher_1", "publisher_2"],
+    )
+    unpublished_events = list(await get_unpublished_events())
+
+    assert len(unpublished_events) == 3
+    assert unpublished_events[0].mobilizon_id == events[0].mobilizon_id
+    assert unpublished_events[1].mobilizon_id == "12345"
+    assert unpublished_events[2].mobilizon_id == "67890"
