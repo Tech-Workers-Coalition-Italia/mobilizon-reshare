@@ -125,7 +125,7 @@ async def test_create_unpublished_events(
     events_from_internet = [MobilizonEvent.from_model(events[0]), event_4, event_5]
 
     await create_unpublished_events(
-        unpublished_events=events_from_internet,
+        unpublished_mobilizon_events=events_from_internet,
         active_publishers=["publisher_1", "publisher_2"],
     )
     unpublished_events = list(await get_unpublished_events())

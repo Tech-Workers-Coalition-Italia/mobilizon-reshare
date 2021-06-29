@@ -40,18 +40,19 @@ async def get_unpublished_events() -> Iterable[MobilizonEvent]:
 
 @atomic("models")
 async def create_unpublished_events(
-    unpublished_events: Iterable[MobilizonEvent], active_publishers: Iterable[str]
+    unpublished_mobilizon_events: Iterable[MobilizonEvent],
+    active_publishers: Iterable[str],
 ) -> None:
     # We store only new events, i.e. events whose mobilizon_id wasn't found in the DB.
-    db_unpublished_events_mobilizon_ids = map(
-        lambda event: event.mobilizon_id, await get_unpublished_events()
+    unpublished_event_models = set(
+        map(lambda event: event.mobilizon_id, await get_unpublished_events())
     )
-    absent_events = filter(
-        lambda event: event.mobilizon_id not in db_unpublished_events_mobilizon_ids,
-        unpublished_events,
+    unpublished_events = filter(
+        lambda event: event.mobilizon_id not in unpublished_event_models,
+        unpublished_mobilizon_events,
     )
 
-    for event in absent_events:
+    for event in unpublished_events:
         event_model = event.to_model()
         await event_model.save()
 
