@@ -20,7 +20,9 @@ def test_window_simple_no_event(
     published_events = [
         event_generator(
             published=True,
-            publication_time=arrow.now().shift(days=-days_passed_from_publication),
+            publication_time={
+                "telegram": arrow.now().shift(days=-days_passed_from_publication)
+            },
         )
     ]
 
@@ -34,7 +36,9 @@ def test_window_simple_no_event(
     "desired_break_window_days,days_passed_from_publication", [[1, 2], [2, 10], [4, 4]]
 )
 def test_window_simple_event_found(
-    event_generator, desired_break_window_days, days_passed_from_publication,
+    event_generator,
+    desired_break_window_days,
+    days_passed_from_publication,
 ):
     "Testing that the break between events is respected and an event is found"
     unpublished_events = [
@@ -46,7 +50,9 @@ def test_window_simple_event_found(
     published_events = [
         event_generator(
             published=True,
-            publication_time=arrow.now().shift(days=-days_passed_from_publication),
+            publication_time={
+                "telegram": arrow.now().shift(days=-days_passed_from_publication)
+            },
         )
     ]
 
@@ -60,7 +66,9 @@ def test_window_simple_event_found(
     "desired_break_window_days,days_passed_from_publication", [[1, 2], [2, 10], [4, 4]]
 )
 def test_window_multi_event_found(
-    event_generator, desired_break_window_days, days_passed_from_publication,
+    event_generator,
+    desired_break_window_days,
+    days_passed_from_publication,
 ):
     "Testing that the break between events is respected when there are multiple events"
     unpublished_events = [
@@ -80,15 +88,21 @@ def test_window_multi_event_found(
     published_events = [
         event_generator(
             published=True,
-            publication_time=arrow.now().shift(days=-days_passed_from_publication),
+            publication_time={
+                "telegram": arrow.now().shift(days=-days_passed_from_publication)
+            },
         ),
         event_generator(
             published=True,
-            publication_time=arrow.now().shift(days=-days_passed_from_publication - 2),
+            publication_time={
+                "telegram": arrow.now().shift(days=-days_passed_from_publication - 2)
+            },
         ),
         event_generator(
             published=True,
-            publication_time=arrow.now().shift(days=-days_passed_from_publication - 4),
+            publication_time={
+                "telegram": arrow.now().shift(days=-days_passed_from_publication - 4)
+            },
         ),
     ]
 

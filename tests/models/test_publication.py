@@ -3,8 +3,7 @@ import pytest
 from datetime import datetime
 from tortoise import timezone
 
-from mobilizon_bots.event.event import PublicationStatus
-from mobilizon_bots.models.publication import Publication
+from mobilizon_bots.models.publication import Publication, PublicationStatus
 
 
 @pytest.mark.asyncio

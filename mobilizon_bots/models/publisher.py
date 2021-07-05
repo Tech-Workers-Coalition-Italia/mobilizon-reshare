@@ -4,8 +4,11 @@ from tortoise.models import Model
 
 class Publisher(Model):
     id = fields.UUIDField(pk=True)
-    type = fields.CharField(max_length=255)
-    account_ref = fields.CharField(max_length=512)
+    name = fields.CharField(max_length=256)
+    # TODO: What to do with this?
+    account_ref = fields.TextField(null=True)
+
+    publications: fields.ReverseRelation["Publication"]
 
     def __str__(self):
         return f"{self.id}"

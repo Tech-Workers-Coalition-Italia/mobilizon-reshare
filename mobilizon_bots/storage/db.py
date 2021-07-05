@@ -6,6 +6,9 @@ from pathlib import Path
 
 from tortoise import Tortoise
 
+from mobilizon_bots.config.publishers import publisher_names
+from mobilizon_bots.storage.query import create_publisher
+
 logger = logging.getLogger(__name__)
 
 
@@ -18,7 +21,6 @@ class MobilizonBotsDB:
             self.path.parent.mkdir(parents=True, exist_ok=True)
 
     async def setup(self):
-        # TODO: Caricare i publishers.
         await Tortoise.init(
             db_url=f"sqlite:///{self.path}",
             modules={
@@ -34,6 +36,10 @@ class MobilizonBotsDB:
         )
         if not self.is_init:
             await Tortoise.generate_schemas()
+            for name in publisher_names:
+                logging.info(f"Creating {name} publisher")
+                # TODO: Deal with account_ref
+                await create_publisher(name)
             self.is_init = True
             logger.info(f"Succesfully initialized database at {self.path}")
 
