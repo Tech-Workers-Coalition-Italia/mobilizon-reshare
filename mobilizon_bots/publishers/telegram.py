@@ -57,7 +57,13 @@ class TelegramPublisher(AbstractPublisher):
             self._log_error("No text was found", raise_error=InvalidEvent)
 
     def _validate_response(self, res):
-        res.raise_for_status()
+        try:
+            res.raise_for_status()
+        except requests.exceptions.HTTPError as e:
+            self._log_error(
+                f"Server returned invalid data: {str(e)}",
+                raise_error=InvalidResponse,
+            )
 
         try:
             data = res.json()
