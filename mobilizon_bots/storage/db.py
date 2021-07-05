@@ -41,5 +41,6 @@ class MobilizonBotsDB:
 @atexit.register
 def gracefully_tear_down():
     logger.info("Shutting down DB")
-    loop = asyncio.get_event_loop()
-    loop.run_until_complete(Tortoise.close_connections())
+    loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(loop)
+    asyncio.run(Tortoise.close_connections())

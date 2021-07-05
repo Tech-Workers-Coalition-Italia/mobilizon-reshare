@@ -4,6 +4,7 @@ from pathlib import Path
 from tortoise import run_async
 
 from mobilizon_bots.config.config import settings
+from mobilizon_bots.mobilizon.events import get_unpublished_events
 from mobilizon_bots.storage.db import MobilizonBotsDB
 from mobilizon_bots.storage.query import get_published_events
 
@@ -18,7 +19,7 @@ async def main():
     logging.config.dictConfig(settings.logging)
     db = MobilizonBotsDB(Path(settings.db_path))
     await db.setup()
-    published_events = get_published_events()
+    published_events = await get_published_events()
     unpublished_events = get_unpublished_events(published_events)
     event = select_event_to_publish()
     result = PublisherCoordinator(event).publish() if event else exit(0)
