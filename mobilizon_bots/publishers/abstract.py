@@ -71,13 +71,11 @@ class AbstractNotifier(ABC):
     def _log_critical(self, msg, *args, **kwargs):
         self.__log(logging.CRITICAL, msg, *args, **kwargs)
 
-    def __log(self, level, msg, *args, **kwargs):
+    def __log(self, level, msg, raise_error: PublisherError = None, *args, **kwargs):
         method = inspect.currentframe().f_back.f_back.f_code.co_name
         logger.log(level, f"{self}.{method}(): {msg}", *args, **kwargs)
-
-    def _log_error_and_raise(self, error_class, message):
-        self._log_error(message)
-        raise error_class(message)
+        if raise_error is not None:
+            raise raise_error(msg)
 
     def are_credentials_valid(self) -> bool:
         try:
