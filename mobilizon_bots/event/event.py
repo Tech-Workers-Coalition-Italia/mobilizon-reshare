@@ -6,7 +6,7 @@ import tortoise.timezone
 from jinja2 import Template
 
 from mobilizon_bots.models.event import Event
-from mobilizon_bots.models.publication import PublicationStatus
+from mobilizon_bots.models.publication import PublicationStatus, Publication
 
 
 @dataclass
@@ -52,13 +52,25 @@ class MobilizonEvent:
         )
 
     @staticmethod
+    def compute_status(publications: list[Publication]):
+        unique_statuses = set(pub.status for pub in publications)
+        assert PublicationStatus.PARTIAL not in unique_statuses
+
+        if PublicationStatus.FAILED in unique_statuses:
+            return PublicationStatus.FAILED
+        elif unique_statuses == {
+            PublicationStatus.COMPLETED,
+            PublicationStatus.WAITING,
+        }:
+            return PublicationStatus.PARTIAL
+        elif len(unique_statuses) == 1:
+            return unique_statuses.pop()
+
+        raise ValueError(f"Illegal combination of PublicationStatus: {unique_statuses}")
+
+    @staticmethod
     def from_model(event: Event, tz: str = "UTC"):
-        unique_statuses = set(pub.status for pub in event.publications)
-        publication_status = (
-            unique_statuses.pop()
-            if len(unique_statuses) == 1
-            else PublicationStatus.PARTIAL
-        )
+        publication_status = MobilizonEvent.compute_status(list(event.publications))
         return MobilizonEvent(
             name=event.name,
             description=event.description,

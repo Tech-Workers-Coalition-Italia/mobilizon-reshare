@@ -54,7 +54,7 @@ def setup():
         publication_4 = publication_model_generator(
             event_id=event_3.id,
             publisher_id=publisher_2.id,
-            status=PublicationStatus.PARTIAL,
+            status=PublicationStatus.WAITING,
         )
         await publication_1.save()
         await publication_2.save()
@@ -79,13 +79,11 @@ async def test_get_published_events(
     )
 
     published_events = list(await get_published_events())
-    assert len(published_events) == 2
+    assert len(published_events) == 1
 
-    assert published_events[0].name == events[2].name
-    assert published_events[1].name == events[0].name
+    assert published_events[0].name == events[0].name
 
-    assert published_events[0].begin_datetime == arrow.get(today + timedelta(days=-2))
-    assert published_events[1].begin_datetime == arrow.get(today)
+    assert published_events[0].begin_datetime == arrow.get(today)
 
 
 @pytest.mark.asyncio
@@ -97,10 +95,12 @@ async def test_get_unpublished_events(
     )
 
     published_events = list(await get_unpublished_events())
-    assert len(published_events) == 1
+    assert len(published_events) == 2
 
-    assert published_events[0].name == events[0].name
-    assert published_events[0].begin_datetime == arrow.get(today)
+    assert published_events[0].name == events[2].name
+    assert published_events[1].name == events[0].name
+    assert published_events[0].begin_datetime == events[2].begin_datetime
+    assert published_events[1].begin_datetime == events[0].begin_datetime
 
 
 @pytest.mark.asyncio
@@ -130,7 +130,8 @@ async def test_create_unpublished_events(
     )
     unpublished_events = list(await get_unpublished_events())
 
-    assert len(unpublished_events) == 3
-    assert unpublished_events[0].mobilizon_id == events[0].mobilizon_id
-    assert unpublished_events[1].mobilizon_id == "12345"
-    assert unpublished_events[2].mobilizon_id == "67890"
+    assert len(unpublished_events) == 4
+    assert unpublished_events[0].mobilizon_id == "mobid_3"
+    assert unpublished_events[1].mobilizon_id == "mobid_1"
+    assert unpublished_events[2].mobilizon_id == "12345"
+    assert unpublished_events[3].mobilizon_id == "67890"
