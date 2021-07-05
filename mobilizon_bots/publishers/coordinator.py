@@ -4,20 +4,27 @@ from mobilizon_bots.config.config import settings
 from mobilizon_bots.config.publishers import get_active_publishers
 from mobilizon_bots.event.event import MobilizonEvent, PublicationStatus
 from .exceptions import PublisherError
+from .abstract import AbstractPublisher
 from .telegram import TelegramPublisher
 
 KEY2CLS = {"telegram": TelegramPublisher}
 
 
 @dataclass
-class PublisherCoordinatorResult:
+class PublisherReport:
     status: PublicationStatus
-    description: str
-    invalid_credentials_publishers: list = field(default_factory=[])
-    invalid_event_publishers: list = field(default_factory=[])
-    invalid_msg_publishers: list = field(default_factory=[])
-    failed_publishers: list = field(default_factory=[])
-    successful_publishers: list = field(default_factory=[])
+    reason: str
+    publisher: AbstractPublisher
+    event: MobilizonEvent
+
+
+@dataclass
+class PublisherCoordinatorReport:
+    reports: list = field(default_factory=[])
+
+    @property
+    def successful(self):
+        return all(r.status == PublicationStatus.COMPLETED for r in self.reports)
 
 
 class PublisherCoordinator:
@@ -26,49 +33,73 @@ class PublisherCoordinator:
             KEY2CLS[pn](event) for pn in get_active_publishers(settings)
         )
 
-    def run(self) -> PublisherCoordinatorResult:
+    def run(self) -> PublisherCoordinatorReport:
         invalid_credentials, invalid_event, invalid_msg = self._validate()
         if invalid_credentials or invalid_event or invalid_msg:
-            return PublisherCoordinatorResult(
-                status=PublicationStatus.FAILED,
-                description="Validation failed for at least 1 publisher",
-                invalid_credentials_publishers=invalid_credentials,
-                invalid_event_publishers=invalid_event,
-                invalid_msg_publishers=invalid_msg,
+            return PublisherCoordinatorReport(
+                reports=invalid_credentials + invalid_event + invalid_msg
             )
 
-        failed_publishers, successful_publishers = self._post()
+        failed_publishers = self._post()
         if failed_publishers:
-            return PublisherCoordinatorResult(
-                status=PublicationStatus.FAILED,
-                description="Posting failed for at least 1 publisher",
-                failed_publishers=failed_publishers,
-                successful_publishers=successful_publishers,
-            )
+            return PublisherCoordinatorReport(reports=failed_publishers)
 
-        return PublisherCoordinatorResult(
-            status=PublicationStatus.COMPLETED,
-            description="https://www.youtube.com/watch?v=2lHgmC6PBBE",
+        return PublisherCoordinatorReport(
+            reports=[
+                PublisherReport(
+                    status=PublicationStatus.COMPLETED,
+                    reason="",
+                    publisher=p,
+                    event=p.event,
+                )
+                for p in self.publishers
+            ],
         )
 
     def _post(self):
-        failed_publishers, successful_publishers = [], []
+        failed_publishers = []
         for p in self.publishers:
             try:
                 p.post()
-            except PublisherError:
-                failed_publishers.append(p)
-            else:
-                successful_publishers.append(p)
-        return failed_publishers, successful_publishers
+            except PublisherError as e:
+                failed_publishers.append(
+                    PublisherReport(
+                        status=PublicationStatus.FAILED,
+                        reason=repr(e),
+                        publisher=p,
+                        event=p.event,
+                    )
+                )
+        return failed_publishers
 
     def _validate(self):
         invalid_credentials, invalid_event, invalid_msg = [], [], []
         for p in self.publishers:
             if not p.are_credentials_valid():
-                invalid_credentials.append(p)
+                invalid_credentials.append(
+                    PublisherReport(
+                        status=PublicationStatus.FAILED,
+                        reason="Invalid credentials",
+                        publisher=p,
+                        event=p.event,
+                    )
+                )
             if not p.is_event_valid():
-                invalid_event.append(p)
+                invalid_event.append(
+                    PublisherReport(
+                        status=PublicationStatus.FAILED,
+                        reason="Invalid event",
+                        publisher=p,
+                        event=p.event,
+                    )
+                )
             if not p.is_message_valid():
-                invalid_msg.append(p)
+                invalid_msg.append(
+                    PublisherReport(
+                        status=PublicationStatus.FAILED,
+                        reason="Invalid message",
+                        publisher=p,
+                        event=p.event,
+                    )
+                )
         return invalid_credentials, invalid_event, invalid_msg
