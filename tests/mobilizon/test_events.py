@@ -57,8 +57,6 @@ simple_event = MobilizonEvent(
     mobilizon_id="1e2e5943-4a5c-497a-b65d-90457b715d7b",
     thumbnail_link=None,
     location=None,
-    publication_time=None,
-    publication_status=PublicationStatus.WAITING,
 )
 
 full_event = MobilizonEvent(
@@ -70,8 +68,6 @@ full_event = MobilizonEvent(
     mobilizon_id="56e7ca43-1b6b-4c50-8362-0439393197e6",
     thumbnail_link=None,
     location="http://some_location",
-    publication_time=None,
-    publication_status=PublicationStatus.WAITING,
 )
 
 

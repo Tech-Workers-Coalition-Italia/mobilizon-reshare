@@ -32,7 +32,9 @@ def test_break_window_simple_no_event(
     published_events = [
         event_generator(
             published=True,
-            publication_time=arrow.now().shift(days=-days_passed_from_publication),
+            publication_time={
+                "telegram": arrow.now().shift(days=-days_passed_from_publication)
+            },
         )
     ]
 
@@ -62,7 +64,9 @@ def test_break_window_simple_event_found(
     published_events = [
         event_generator(
             published=True,
-            publication_time=arrow.now().shift(days=-days_passed_from_publication),
+            publication_time={
+                "telegram": arrow.now().shift(days=-days_passed_from_publication)
+            },
         )
     ]
 
@@ -101,15 +105,21 @@ def test_break_window_multi_event_found(
     published_events = [
         event_generator(
             published=True,
-            publication_time=arrow.now().shift(days=-days_passed_from_publication),
+            publication_time={
+                "telegram": arrow.now().shift(days=-days_passed_from_publication)
+            },
         ),
         event_generator(
             published=True,
-            publication_time=arrow.now().shift(days=-days_passed_from_publication - 2),
+            publication_time={
+                "telegram": arrow.now().shift(days=-days_passed_from_publication - 2)
+            },
         ),
         event_generator(
             published=True,
-            publication_time=arrow.now().shift(days=-days_passed_from_publication - 4),
+            publication_time={
+                "telegram": arrow.now().shift(days=-days_passed_from_publication - 4)
+            },
         ),
     ]
 

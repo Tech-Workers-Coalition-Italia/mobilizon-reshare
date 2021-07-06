@@ -1,25 +1,20 @@
-import logging.config
-import sys
-from argparse import ArgumentParser
+import asyncio
 
-from mobilizon_bots.config.config import settings
+import click
 
-logger = logging.getLogger(__name__)
+from mobilizon_bots.main import main
 
 
-def command_line():
-    parser = ArgumentParser()
+@click.group()
+def mobilizon_bots():
+    pass
 
-    return parser.parse_args()
 
+@mobilizon_bots.command()
+def start():
 
-def run():
-    logging.config.dictConfig(settings.logging)
-    logger.debug("Test message debug")
-    logger.info("Test message info")
-    logger.error("Test message error")
-    sys.exit(0)
+    asyncio.run(main())
 
 
 if __name__ == "__main__":
-    run()
+    mobilizon_bots()

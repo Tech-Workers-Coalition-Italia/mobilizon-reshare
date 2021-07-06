@@ -11,6 +11,7 @@ class EventSelectionStrategy(ABC):
         self,
         published_events: List[MobilizonEvent],
         unpublished_events: List[MobilizonEvent],
+        publisher_name: str,
     ) -> Optional[MobilizonEvent]:
 
         if not self.is_in_publishing_window():
@@ -45,18 +46,19 @@ class SelectNextEventStrategy(EventSelectionStrategy):
         self,
         published_events: List[MobilizonEvent],
         unpublished_events: List[MobilizonEvent],
+        publisher_name: str = "telegram",
     ) -> Optional[MobilizonEvent]:
 
         last_published_event = published_events[-1]
         first_unpublished_event = unpublished_events[0]
         now = arrow.now()
-        assert last_published_event.publication_time < now, (
+        assert last_published_event.publication_time[publisher_name] < now, (
             f"Last published event has been published in the future\n"
-            f"{last_published_event.publication_time}\n"
+            f"{last_published_event.publication_time[publisher_name]}\n"
             f"{now}"
         )
         if (
-            last_published_event.publication_time.shift(
+            last_published_event.publication_time[publisher_name].shift(
                 minutes=self.minimum_break_between_events_in_minutes
             )
             > now
