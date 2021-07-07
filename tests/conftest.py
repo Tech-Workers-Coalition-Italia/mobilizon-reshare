@@ -130,9 +130,7 @@ def event_model_generator():
 
 @pytest.fixture()
 def publisher_model_generator():
-    def _publisher_model_generator(
-        idx=1,
-    ):
+    def _publisher_model_generator(idx=1,):
         return Publisher(name=f"publisher_{idx}", account_ref=f"account_ref_{idx}")
 
     return _publisher_model_generator

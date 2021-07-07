@@ -13,8 +13,13 @@ group="my_group"
 [default.selection]
 strategy = "next_event"
 
+
+[default.publishing.window]
+begin=12
+end=18
+
 [default.selection.strategy_options]
-break_between_events_in_minutes =5
+break_between_events_in_minutes =60
 
 [default.publisher.telegram]
 active=true
@@ -69,9 +74,3 @@ encoding = "utf8"
 [default.logging.root]
 level = "DEBUG"
 handlers = ['console', 'file']
-
-[testing]
-DEBUG = true
-LOCAL_STATE_DIR = "/tmp/mobots"
-LOG_DIR = "/tmp/mobots"
-DB_PATH = ":memory:"

@@ -13,12 +13,20 @@ group="my_group"
 [default.selection]
 strategy = "next_event"
 
+
+[default.publishing.window]
+begin=12
+end=18
+
 [default.selection.strategy_options]
 break_between_events_in_minutes =5
 
 [default.publisher.telegram]
 active=true
 chat_id="xxx"
+msg_template_path="xxx"
+token="xxx"
+username="xxx"
 [default.publisher.facebook]
 active=false
 [default.publisher.zulip]
@@ -31,6 +39,8 @@ active=false
 [default.notifier.telegram]
 active=true
 chat_id="xxx"
+token="xxx"
+username="xxx"
 [default.notifier.zulip]
 active=false
 [default.notifier.twitter]

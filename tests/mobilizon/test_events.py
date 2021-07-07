@@ -1,7 +1,7 @@
 import pytest
 import arrow
 
-from mobilizon_bots.event.event import MobilizonEvent
+from mobilizon_bots.event.event import PublicationStatus, MobilizonEvent
 from mobilizon_bots.mobilizon.events import (
     get_mobilizon_future_events,
     MobilizonRequestFailed,

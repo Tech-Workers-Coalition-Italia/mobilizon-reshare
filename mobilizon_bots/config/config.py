@@ -42,6 +42,16 @@ def build_and_validate_settings(settings_files: List[str] = None):
         [
             # strategy to decide events to publish
             Validator("selection.strategy", must_exist=True, is_type_of=str),
+            Validator(
+                "publishing.window.begin",
+                must_exist=True,
+                is_type_of=int,
+                gte=0,
+                lte=24,
+            ),
+            Validator(
+                "publishing.window.end", must_exist=True, is_type_of=int, gte=0, lte=24
+            ),
             # url of the main Mobilizon instance to download events from
             Validator("source.mobilizon.url", must_exist=True, is_type_of=str),
             Validator("source.mobilizon.group", must_exist=True, is_type_of=str),

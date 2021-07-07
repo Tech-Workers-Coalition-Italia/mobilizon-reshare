@@ -17,7 +17,7 @@ click = "^8.0.1"
 [tool.poetry.dev-dependencies]
 asynctest = "^0.13"
 pytest = "^5.3"
-responses = "^0.13"
+responses = "^0.13.3"
 pytest-asyncio = "^0.10"
 
 [build-system]

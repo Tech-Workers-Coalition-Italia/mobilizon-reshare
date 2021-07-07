@@ -2,16 +2,35 @@ from abc import ABC, abstractmethod
 from typing import List, Optional
 import arrow
 
+from mobilizon_bots.config.config import settings
 from mobilizon_bots.event.event import MobilizonEvent
 
 
 class EventSelectionStrategy(ABC):
-    @abstractmethod
     def select(
         self,
         published_events: List[MobilizonEvent],
         unpublished_events: List[MobilizonEvent],
-        publisher_name: str,
+    ) -> Optional[MobilizonEvent]:
+
+        if not self.is_in_publishing_window():
+            return None
+        return self._select(published_events, unpublished_events)
+
+    def is_in_publishing_window(self) -> bool:
+        window_beginning = settings["publishing"]["window"]["begin"]
+        window_end = settings["publishing"]["window"]["end"]
+        now_hour = arrow.now().datetime.hour
+        if window_beginning <= window_end:
+            return window_beginning <= now_hour < window_end
+        else:
+            return now_hour >= window_beginning or now_hour < window_end
+
+    @abstractmethod
+    def _select(
+        self,
+        published_events: List[MobilizonEvent],
+        unpublished_events: List[MobilizonEvent],
     ) -> Optional[MobilizonEvent]:
         pass
 
@@ -22,7 +41,7 @@ class SelectNextEventStrategy(EventSelectionStrategy):
             minimum_break_between_events_in_minutes
         )
 
-    def select(
+    def _select(
         self,
         published_events: List[MobilizonEvent],
         unpublished_events: List[MobilizonEvent],
@@ -62,4 +81,4 @@ class EventSelector:
     def select_event_to_publish(
         self, strategy: EventSelectionStrategy
     ) -> Optional[MobilizonEvent]:
-        return strategy.select(self.published_events, self.unpublished_events)
+        return strategy._select(self.published_events, self.unpublished_events)
