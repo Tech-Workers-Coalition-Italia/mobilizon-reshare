@@ -19,7 +19,6 @@ def test_event():
             "description": "TestDescr",
             "begin_datetime": now,
             "end_datetime": now + timedelta(hours=1),
-            "last_accessed": now,
             "mobilizon_link": "",
             "mobilizon_id": "",
         }

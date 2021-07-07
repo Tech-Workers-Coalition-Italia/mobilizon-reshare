@@ -11,7 +11,6 @@ class EventSelectionStrategy(ABC):
         self,
         published_events: List[MobilizonEvent],
         unpublished_events: List[MobilizonEvent],
-        publisher_name: str,
     ) -> Optional[MobilizonEvent]:
 
         if not self.is_in_publishing_window():
