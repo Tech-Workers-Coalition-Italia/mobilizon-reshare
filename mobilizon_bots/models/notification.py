@@ -1,7 +1,14 @@
+from enum import IntEnum
+
 from tortoise import fields
 from tortoise.models import Model
 
-from mobilizon_bots.event.event import NotificationStatus
+
+class NotificationStatus(IntEnum):
+    WAITING = 1
+    FAILED = 2
+    PARTIAL = 3
+    COMPLETED = 4
 
 
 class Notification(Model):

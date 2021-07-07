@@ -10,14 +10,10 @@ from tortoise.contrib.test import finalizer, initializer
 
 from mobilizon_bots.config.config import build_and_validate_settings
 
-from mobilizon_bots.event.event import (
-    MobilizonEvent,
-    PublicationStatus,
-    NotificationStatus,
-)
+from mobilizon_bots.event.event import MobilizonEvent
 from mobilizon_bots.models.event import Event
-from mobilizon_bots.models.notification import Notification
-from mobilizon_bots.models.publication import Publication
+from mobilizon_bots.models.notification import Notification, NotificationStatus
+from mobilizon_bots.models.publication import Publication, PublicationStatus
 from mobilizon_bots.models.publisher import Publisher
 
 
@@ -45,6 +41,7 @@ def event_generator():
         begin_date=arrow.Arrow(year=2021, month=1, day=1, hour=11, minute=30),
         published=False,
         publication_time=None,
+        mobilizon_id="12345",
     ):
 
         return MobilizonEvent(
@@ -53,7 +50,7 @@ def event_generator():
             begin_datetime=begin_date,
             end_datetime=begin_date.shift(hours=2),
             mobilizon_link="http://some_link.com/123",
-            mobilizon_id="12345",
+            mobilizon_id=mobilizon_id,
             thumbnail_link="http://some_link.com/123.jpg",
             location="location",
             publication_status=generate_publication_status(published),
@@ -134,7 +131,7 @@ def event_model_generator():
 @pytest.fixture()
 def publisher_model_generator():
     def _publisher_model_generator(idx=1,):
-        return Publisher(type=f"publisher_{idx}", account_ref=f"account_ref_{idx}")
+        return Publisher(name=f"publisher_{idx}", account_ref=f"account_ref_{idx}")
 
     return _publisher_model_generator
 

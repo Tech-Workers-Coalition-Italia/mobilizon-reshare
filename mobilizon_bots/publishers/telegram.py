@@ -1,50 +1,80 @@
 import requests
 
 from .abstract import AbstractPublisher
+from .exceptions import (
+    InvalidBot,
+    InvalidCredentials,
+    InvalidEvent,
+    InvalidResponse,
+)
 
 
 class TelegramPublisher(AbstractPublisher):
-    def post(self) -> bool:
-        chat_id = self.credentials["chat_id"]
-        text = self.event["text"]
-        token = self.credentials["token"]
-        post_params_kwargs = self.event.get("post_params_kwargs")
-        res = requests.post(
-            url=f"https://api.telegram.org/bot{token}/sendMessage",
-            params=dict(chat_id=chat_id, text=text, **post_params_kwargs),
-        )
-        return self._validate_response(res)
+    """
+    Telegram publisher class.
+    """
 
-    def validate_credentials(self) -> bool:
-        chat_id = self.credentials.get("chat_id")
-        token = self.credentials.get("token")
-        username = self.credentials.get("username")
-        if all([chat_id, token, username]):
-            # TODO: add composable errors to highlight which credentials are missing
-            self._log_error_and_raise("Some credentials are missing")
+    _conf = ("publisher", "telegram")
+
+    def post(self) -> None:
+        conf = self.conf
+        res = requests.post(
+            url=f"https://api.telegram.org/bot{conf.token}/sendMessage",
+            params={"chat_id": conf.chat_id, "text": self.message},
+        )
+        self._validate_response(res)
+
+    def validate_credentials(self):
+        conf = self.conf
+        chat_id = conf.chat_id
+        token = conf.token
+        username = conf.username
+        err = []
+        if not chat_id:
+            err.append("chat ID")
+        if not token:
+            err.append("token")
+        if not username:
+            err.append("username")
+        if err:
+            self._log_error(
+                ", ".join(err) + " is/are missing",
+                raise_error=InvalidCredentials,
+            )
 
         res = requests.get(f"https://api.telegram.org/bot{token}/getMe")
         data = self._validate_response(res)
 
         if not username == data.get("result", {}).get("username"):
-            self._log_error_and_raise("Found a different bot than the expected one")
-        return data
+            self._log_error(
+                "Found a different bot than the expected one",
+                raise_error=InvalidBot,
+            )
 
-    def validate_event(self) -> bool:
-        text = self.event.get("text")
+    def validate_event(self) -> None:
+        text = self.event.description
         if not (text and text.strip()):
-            self._log_error_and_raise("No text was found. Invalid event")
+            self._log_error("No text was found", raise_error=InvalidEvent)
 
     def _validate_response(self, res):
         res.raise_for_status()
 
         try:
             data = res.json()
-        except ValueError as e:
-            self._log_error("Server returned invalid json data")
-            raise ValueError from e
+        except Exception as e:
+            self._log_error(
+                f"Server returned invalid json data: {str(e)}",
+                raise_error=InvalidResponse,
+            )
 
         if not data.get("ok"):
-            raise ValueError(f"Invalid request (response: {data})")
+            self._log_error(
+                f"Invalid request (response: {data})",
+                raise_error=InvalidResponse,
+            )
 
         return data
+
+    def validate_message(self) -> None:
+        # TODO implement
+        pass

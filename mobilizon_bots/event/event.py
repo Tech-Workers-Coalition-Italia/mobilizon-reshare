@@ -1,26 +1,12 @@
 from dataclasses import dataclass, asdict
-from enum import IntEnum
 from typing import Optional
 
 import arrow
-from jinja2 import Template
 import tortoise.timezone
+from jinja2 import Template
 
 from mobilizon_bots.models.event import Event
-
-
-class PublicationStatus(IntEnum):
-    WAITING = 1
-    FAILED = 2
-    PARTIAL = 3
-    COMPLETED = 4
-
-
-class NotificationStatus(IntEnum):
-    WAITING = 1
-    FAILED = 2
-    PARTIAL = 3
-    COMPLETED = 4
+from mobilizon_bots.models.publication import PublicationStatus, Publication
 
 
 @dataclass
@@ -35,7 +21,7 @@ class MobilizonEvent:
     mobilizon_id: str
     thumbnail_link: Optional[str] = None
     location: Optional[str] = None
-    publication_time: Optional[arrow.Arrow] = None
+    publication_time: Optional[dict[str, arrow.Arrow]] = None
     publication_status: PublicationStatus = PublicationStatus.WAITING
 
     def __post_init__(self):
@@ -66,8 +52,25 @@ class MobilizonEvent:
         )
 
     @staticmethod
+    def compute_status(publications: list[Publication]):
+        unique_statuses = set(pub.status for pub in publications)
+        assert PublicationStatus.PARTIAL not in unique_statuses
+
+        if PublicationStatus.FAILED in unique_statuses:
+            return PublicationStatus.FAILED
+        elif unique_statuses == {
+            PublicationStatus.COMPLETED,
+            PublicationStatus.WAITING,
+        }:
+            return PublicationStatus.PARTIAL
+        elif len(unique_statuses) == 1:
+            return unique_statuses.pop()
+
+        raise ValueError(f"Illegal combination of PublicationStatus: {unique_statuses}")
+
+    @staticmethod
     def from_model(event: Event, tz: str = "UTC"):
-        # await Event.filter(id=event.id).values("id", "name", tournament="tournament__name")
+        publication_status = MobilizonEvent.compute_status(list(event.publications))
         return MobilizonEvent(
             name=event.name,
             description=event.description,
@@ -81,7 +84,14 @@ class MobilizonEvent:
             mobilizon_id=event.mobilizon_id,
             thumbnail_link=event.thumbnail_link,
             location=event.location,
-            # TODO: Discuss publications
-            # publication_time=tortoise.timezone.localtime(value=event.publications, timezone=tz),
-            # publication_status=PublicationStatus.WAITING
+            # TODO: Discuss publications (both time and status)
+            publication_time={
+                pub.publisher.name: arrow.get(
+                    tortoise.timezone.localtime(value=pub.timestamp, timezone=tz)
+                )
+                for pub in event.publications
+            }
+            if publication_status != PublicationStatus.WAITING
+            else None,
+            publication_status=publication_status,
         )

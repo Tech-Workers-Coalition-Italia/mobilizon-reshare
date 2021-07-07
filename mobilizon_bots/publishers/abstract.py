@@ -2,71 +2,59 @@ import inspect
 import logging
 
 from abc import ABC, abstractmethod
+from dynaconf.utils.boxing import DynaBox
+from jinja2 import Environment, FileSystemLoader, Template
+
+from mobilizon_bots.config.config import settings
+from mobilizon_bots.event.event import MobilizonEvent
+from .exceptions import PublisherError, InvalidAttribute
+
+JINJA_ENV = Environment(loader=FileSystemLoader("/"))
 
 logger = logging.getLogger(__name__)
 
 
-class AbstractPublisher(ABC):
+class AbstractNotifier(ABC):
     """
-    Generic publisher class.
-
+    Generic notifier class.
     Shall be inherited from specific subclasses that will manage validation
-    process for events and credentials, text formatting, posting, etc.
+    process for messages and credentials, text formatting, posting, etc.
 
-    Class attributes:
-        - ``credentials``: a ``dict`` containing every useful info that the
-            current publisher will need to correctly login to its platform
-        - ``event``: a ``dict`` containing every useful info from the event
+    Attributes:
+        - ``message``: a formatted ``str``
     """
 
-    # TODO: will the actual event be managed by its own class?
-    def __init__(self, credentials: dict, event: dict):
-        self.credentials = credentials
-        self.event = event
+    # Non-abstract subclasses should define ``_conf`` as a 2-tuple, where the
+    # first element is the type of class (either 'notifier' or 'publisher') and
+    # the second the name of its service (ie: 'facebook', 'telegram')
+    _conf = tuple()
+
+    def __init__(self, message: str):
+        self.message = message
 
     def __repr__(self):
         return type(self).__name__
 
     __str__ = __repr__
 
-    @abstractmethod
-    def post(self) -> dict:
+    @property
+    def conf(self) -> DynaBox:
         """
-        Publishes the actual post on social media using ``data`` info.
-        :return: True or False according to whether publisher was able to
-            complete its task
+        Retrieves class's settings.
         """
-        raise NotImplementedError
-
-    @abstractmethod
-    def validate_credentials(self) -> dict:
-        """
-        Validates credentials.
-        :return: True or False according to whether credentials are valid.
-        """
-        raise NotImplementedError
-
-    def are_credentials_valid(self) -> bool:
+        cls = type(self)
+        if cls in (AbstractPublisher, AbstractNotifier):
+            raise InvalidAttribute(
+                "Abstract classes cannot access notifiers/publishers' settings"
+            )
         try:
-            self.validate_credentials()
-        except Exception:
-            return False
-        return True
-
-    def is_event_valid(self) -> bool:
-        try:
-            self.validate_event()
-        except Exception:
-            return False
-        return True
-
-    @abstractmethod
-    def validate_event(self) -> dict:
-        """
-        Validates publisher's event.
-        :return: True or False according to whether event is valid.
-        """
-        raise NotImplementedError
+            t, n = cls._conf or tuple()  # Avoid unpacking ``None``
+            return settings[t][n]
+        except (KeyError, ValueError):
+            raise InvalidAttribute(
+                f"Class {cls.__name__} has invalid ``_conf`` attribute"
+                f" (should be 2-tuple)"
+            )
 
     def _log_debug(self, msg, *args, **kwargs):
         self.__log(logging.DEBUG, msg, *args, **kwargs)
@@ -83,10 +71,96 @@ class AbstractPublisher(ABC):
     def _log_critical(self, msg, *args, **kwargs):
         self.__log(logging.CRITICAL, msg, *args, **kwargs)
 
-    def __log(self, level, msg, *args, **kwargs):
+    def __log(self, level, msg, raise_error: PublisherError = None, *args, **kwargs):
         method = inspect.currentframe().f_back.f_back.f_code.co_name
         logger.log(level, f"{self}.{method}(): {msg}", *args, **kwargs)
+        if raise_error is not None:
+            raise raise_error(msg)
 
-    def _log_error_and_raise(self, message):
-        self._log_error(message)
-        raise ValueError(message)
+    def are_credentials_valid(self) -> bool:
+        try:
+            self.validate_credentials()
+        except PublisherError:
+            return False
+        return True
+
+    @abstractmethod
+    def validate_credentials(self) -> None:
+        """
+        Validates credentials.
+        Should raise ``PublisherError`` (or one of its subclasses) if
+        credentials are not valid.
+        """
+        raise NotImplementedError
+
+    @abstractmethod
+    def post(self) -> None:
+        """
+        Publishes the actual post on social media.
+        Should raise ``PublisherError`` (or one of its subclasses) if
+        anything goes wrong.
+        """
+        raise NotImplementedError
+
+    def is_message_valid(self) -> bool:
+        try:
+            self.validate_message()
+        except PublisherError:
+            return False
+        return True
+
+    @abstractmethod
+    def validate_message(self) -> None:
+        """
+        Validates notifier's message.
+        Should raise ``PublisherError`` (or one of its subclasses) if message
+        is not valid.
+        """
+        raise NotImplementedError
+
+
+class AbstractPublisher(AbstractNotifier):
+    """
+    Generic publisher class.
+    Shall be inherited from specific subclasses that will manage validation
+    process for events and credentials, text formatting, posting, etc.
+
+    Attributes:
+        - ``event``: a ``MobilizonEvent`` containing every useful info from
+            the event
+        - ``message``: a formatted ``str``
+    """
+
+    _conf = tuple()
+
+    def __init__(self, event: MobilizonEvent):
+        self.event = event
+        super().__init__(message=self.get_message_from_event())
+
+    def is_event_valid(self) -> bool:
+        try:
+            self.validate_event()
+        except PublisherError:
+            return False
+        return True
+
+    @abstractmethod
+    def validate_event(self) -> None:
+        """
+        Validates publisher's event.
+        Should raise ``PublisherError`` (or one of its subclasses) if event
+        is not valid.
+        """
+        raise NotImplementedError
+
+    def get_message_from_event(self) -> str:
+        """
+        Retrieves a message from the event itself.
+        """
+        return self.event.format(self.get_message_template())
+
+    def get_message_template(self) -> Template:
+        """
+        Retrieves publisher's message template.
+        """
+        return JINJA_ENV.get_template(self.conf.msg_template_path)

@@ -1,14 +1,23 @@
+from enum import IntEnum
+
 from tortoise import fields
 from tortoise.models import Model
 
-from mobilizon_bots.event.event import PublicationStatus
+
+class PublicationStatus(IntEnum):
+    WAITING = 1
+    FAILED = 2
+    PARTIAL = 3
+    COMPLETED = 4
 
 
 class Publication(Model):
     id = fields.UUIDField(pk=True)
     status = fields.IntEnumField(PublicationStatus)
 
-    timestamp = fields.DatetimeField()
+    # When a Publication's status is WAITING
+    # we don't need a timestamp
+    timestamp = fields.DatetimeField(null=True)
 
     event = fields.ForeignKeyField("models.Event", related_name="publications")
     publisher = fields.ForeignKeyField("models.Publisher", related_name="publications")

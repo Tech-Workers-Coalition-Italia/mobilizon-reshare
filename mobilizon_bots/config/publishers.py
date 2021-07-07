@@ -1,6 +1,11 @@
 from dynaconf import Validator
 
-telegram_validators = [Validator("publisher.telegram.chat_id", must_exist=True)]
+telegram_validators = [
+    Validator("publisher.telegram.chat_id", must_exist=True),
+    Validator("publisher.telegram.msg_template_path", must_exist=True,),
+    Validator("publisher.telegram.token", must_exist=True),
+    Validator("publisher.telegram.username", must_exist=True),
+]
 zulip_validators = []
 mastodon_validators = []
 twitter_validators = []

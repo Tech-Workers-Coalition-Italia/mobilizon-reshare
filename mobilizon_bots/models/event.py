@@ -16,6 +16,8 @@ class Event(Model):
     begin_datetime = fields.DatetimeField()
     end_datetime = fields.DatetimeField()
 
+    publications: fields.ReverseRelation["Publication"]
+
     def __str__(self):
         return self.name
 

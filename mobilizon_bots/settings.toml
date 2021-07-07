@@ -1,8 +1,8 @@
 [default]
 debug = true
 default = true
-local_state_dir = "/var/mobots"
-log_dir = "/var/log/mobots"
+local_state_dir = "/var/mobilizon_bots"
+log_dir = "/var/log/mobilizon_bots"
 db_name = "events.db"
 db_path = "@format {this.local_state_dir}/{this.db_name}"
 
@@ -13,12 +13,20 @@ group="my_group"
 [default.selection]
 strategy = "next_event"
 
+
+[default.publishing.window]
+begin=12
+end=18
+
 [default.selection.strategy_options]
-break_between_events_in_minutes =5
+break_between_events_in_minutes =60
 
 [default.publisher.telegram]
 active=true
 chat_id="xxx"
+msg_template_path="xxx"
+token="xxx"
+username="xxx"
 [default.publisher.facebook]
 active=false
 [default.publisher.zulip]
@@ -31,6 +39,8 @@ active=false
 [default.notifier.telegram]
 active=true
 chat_id="xxx"
+token="xxx"
+username="xxx"
 [default.notifier.zulip]
 active=false
 [default.notifier.twitter]
@@ -52,7 +62,7 @@ class = "logging.StreamHandler"
 formatter = "standard"
 stream = "ext://sys.stderr"
 
-[default.logging.handlers.logfile]
+[default.logging.handlers.file]
 level = "DEBUG"
 class = "logging.handlers.RotatingFileHandler"
 formatter = "standard"
@@ -63,10 +73,4 @@ encoding = "utf8"
 
 [default.logging.root]
 level = "DEBUG"
-handlers = ['console', 'logfile']
-
-[testing]
-DEBUG = true
-LOCAL_STATE_DIR = "/tmp/mobots"
-LOG_DIR = "/tmp/mobots"
-DB_PATH = ":memory:"
+handlers = ['console', 'file']
