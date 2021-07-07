@@ -2,8 +2,28 @@ import arrow
 import pytest
 from unittest.mock import patch
 
+
 from mobilizon_bots.config.config import settings
-from mobilizon_bots.event.event_selection_strategies import SelectNextEventStrategy
+from mobilizon_bots.event.event_selection_strategies import (
+    SelectNextEventStrategy,
+    select_event_to_publish,
+)
+
+
+@pytest.fixture
+def set_break_window_config(desired_break_window_days):
+    settings.update(
+        {
+            "selection.strategy_options.break_between_events_in_minutes": desired_break_window_days
+            * 24
+            * 60
+        }
+    )
+
+
+@pytest.fixture
+def set_strategy(strategy_name):
+    settings.update({"selection.strategy": strategy_name})
 
 
 @pytest.fixture
@@ -16,10 +36,11 @@ def mock_publication_window(publication_window):
 @pytest.mark.parametrize(
     "desired_break_window_days,days_passed_from_publication", [[2, 1], [3, 2]]
 )
-def test_break_window_simple_no_event(
+def test_window_simple_no_event(
     event_generator,
     desired_break_window_days,
     days_passed_from_publication,
+    set_break_window_config,
     mock_arrow_now,
 ):
     "Testing that the break between events is respected"
@@ -38,9 +59,9 @@ def test_break_window_simple_no_event(
         )
     ]
 
-    selected_event = SelectNextEventStrategy(
-        minimum_break_between_events_in_minutes=desired_break_window_days * 24 * 60
-    ).select(published_events, unpublished_events)
+    selected_event = SelectNextEventStrategy().select(
+        published_events, unpublished_events
+    )
     assert selected_event is None
 
 
@@ -48,10 +69,13 @@ def test_break_window_simple_no_event(
 @pytest.mark.parametrize(
     "desired_break_window_days,days_passed_from_publication", [[1, 2], [2, 10], [4, 4]]
 )
-def test_break_window_simple_event_found(
+@pytest.mark.parametrize("strategy_name", ["next_event"])
+def test_window_simple_event_found(
     event_generator,
     desired_break_window_days,
     days_passed_from_publication,
+    set_break_window_config,
+    set_strategy,
     mock_arrow_now,
 ):
     "Testing that the break between events is respected and an event is found"
@@ -70,10 +94,7 @@ def test_break_window_simple_event_found(
         )
     ]
 
-    selected_event = SelectNextEventStrategy(
-        minimum_break_between_events_in_minutes=desired_break_window_days * 24 * 60
-    ).select(published_events, unpublished_events)
-
+    selected_event = select_event_to_publish(published_events, unpublished_events)
     assert selected_event is unpublished_events[0]
 
 
@@ -81,10 +102,13 @@ def test_break_window_simple_event_found(
 @pytest.mark.parametrize(
     "desired_break_window_days,days_passed_from_publication", [[1, 2], [2, 10], [4, 4]]
 )
-def test_break_window_multi_event_found(
+@pytest.mark.parametrize("strategy_name", ["next_event"])
+def test_window_multi_event_found(
     event_generator,
     desired_break_window_days,
     days_passed_from_publication,
+    set_break_window_config,
+    set_strategy,
     mock_arrow_now,
 ):
     "Testing that the break between events is respected when there are multiple events"
@@ -123,9 +147,7 @@ def test_break_window_multi_event_found(
         ),
     ]
 
-    selected_event = SelectNextEventStrategy(
-        minimum_break_between_events_in_minutes=desired_break_window_days * 24 * 60
-    ).select(published_events, unpublished_events)
+    selected_event = select_event_to_publish(published_events, unpublished_events)
     assert selected_event is unpublished_events[0]
 
 
@@ -144,9 +166,7 @@ def test_publishing_inner_window_true(mock_arrow_now, mock_publication_window):
     """
     Testing that the window check correctly returns True when in an inner publishing window.
     """
-    assert SelectNextEventStrategy(
-        minimum_break_between_events_in_minutes=1
-    ).is_in_publishing_window()
+    assert SelectNextEventStrategy().is_in_publishing_window()
 
 
 @pytest.mark.parametrize("current_hour", [2, 10, 11, 19])
@@ -155,9 +175,7 @@ def test_publishing_inner_window_false(mock_arrow_now, mock_publication_window):
     """
     Testing that the window check correctly returns False when not in an inner publishing window.
     """
-    assert not SelectNextEventStrategy(
-        minimum_break_between_events_in_minutes=1
-    ).is_in_publishing_window()
+    assert not SelectNextEventStrategy().is_in_publishing_window()
 
 
 @pytest.mark.parametrize("current_hour", [2, 10, 11, 19])
@@ -166,9 +184,7 @@ def test_publishing_outer_window_true(mock_arrow_now, mock_publication_window):
     """
     Testing that the window check correctly returns True when in an outer publishing window.
     """
-    assert SelectNextEventStrategy(
-        minimum_break_between_events_in_minutes=1
-    ).is_in_publishing_window()
+    assert SelectNextEventStrategy().is_in_publishing_window()
 
 
 @pytest.mark.parametrize("current_hour", [14, 15, 16, 18])
@@ -177,6 +193,4 @@ def test_publishing_outer_window_false(mock_arrow_now, mock_publication_window):
     """
     Testing that the window check correctly returns False when not in an outer publishing window.
     """
-    assert not SelectNextEventStrategy(
-        minimum_break_between_events_in_minutes=1
-    ).is_in_publishing_window()
+    assert not SelectNextEventStrategy().is_in_publishing_window()
