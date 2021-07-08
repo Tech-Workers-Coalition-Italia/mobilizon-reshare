@@ -43,9 +43,17 @@ class SelectNextEventStrategy(EventSelectionStrategy):
         unpublished_events: List[MobilizonEvent],
         publisher_name: str = "telegram",
     ) -> Optional[MobilizonEvent]:
+        # if there are no unpublished events, there's nothing I can do
+        if not unpublished_events:
+            return None
+
+        first_unpublished_event = unpublished_events[0]
+
+        # if there's no published event (first execution) I return the next in queue
+        if not published_events:
+            return first_unpublished_event
 
         last_published_event = published_events[-1]
-        first_unpublished_event = unpublished_events[0]
         now = arrow.now()
         assert last_published_event.publication_time[publisher_name] < now, (
             f"Last published event has been published in the future\n"

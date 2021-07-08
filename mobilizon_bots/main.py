@@ -45,6 +45,9 @@ async def main(settings_file):
     )
     strategy = SelectNextEventStrategy()
     event = event_selector.select_event_to_publish(strategy)
-
-    result = PublisherCoordinator(event).run() if event else exit(0)
+    if event:
+        result = PublisherCoordinator(event).run()
+    else:
+        logger.info("No event to publish. Closing.")
+        exit(0)
     exit(0 if result.successful else 1)

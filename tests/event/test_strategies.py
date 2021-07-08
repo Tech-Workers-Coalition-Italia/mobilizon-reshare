@@ -34,11 +34,16 @@ def mock_publication_window(publication_window):
     )
 
 
+def test_window_no_event():
+    selected_event = SelectNextEventStrategy().select([], [])
+    assert selected_event is None
+
+
 @pytest.mark.parametrize("current_hour", [10])
 @pytest.mark.parametrize(
     "desired_break_window_days,days_passed_from_publication", [[2, 1], [3, 2]]
 )
-def test_window_simple_no_event(
+def test_window_simple_no_event_in_window(
     event_generator,
     desired_break_window_days,
     days_passed_from_publication,
