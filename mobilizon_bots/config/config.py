@@ -94,6 +94,12 @@ def build_and_validate_settings(settings_files: List[str] = None):
     return settings
 
 
+# this singleton and functions are necessary to put together
+# the necessities of the testing suite, the CLI and still having a single entrypoint to the config.
+# The CLI needs to provide the settings file at run time so we cannot work at import time.
+# The normal Dynaconf options to specify the settings files are also not a valid option because of the two steps
+# validation that prevents us to employ their mechanism to specify settings files. This could probably be reworked
+# better in the future.
 class CustomConfig:
     _instance = None
 

@@ -36,7 +36,7 @@ async def main(settings_file):
 
     # Pull unpublished events from Mobilizon
     unpublished_events = get_unpublished_events(published_events)
-    # Store in the DB only the ones we din't know about
+    # Store in the DB only the ones we didn't know about
     await create_unpublished_events(unpublished_events, active_publishers)
     unpublished_events = list(await get_db_unpublished_events())
 
