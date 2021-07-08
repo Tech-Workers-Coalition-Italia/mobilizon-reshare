@@ -31,7 +31,7 @@ async def get_unpublished_events() -> Iterable[MobilizonEvent]:
     return await events_with_status([PublicationStatus.WAITING])
 
 
-@atomic("models")
+@atomic("mobilizon_bots.models")
 async def save_events(unpublished_events, active_publishers):
 
     for event in unpublished_events:
