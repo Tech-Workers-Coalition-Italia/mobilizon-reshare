@@ -1,7 +1,7 @@
-import pytest
 import arrow
+import pytest
 
-from mobilizon_bots.event.event import PublicationStatus, MobilizonEvent
+from mobilizon_bots.event.event import MobilizonEvent
 from mobilizon_bots.mobilizon.events import (
     get_mobilizon_future_events,
     MobilizonRequestFailed,
@@ -87,7 +87,30 @@ def test_event_response(mock_mobilizon_success_answer, expected_result):
     assert get_mobilizon_future_events() == expected_result
 
 
-def test_failure(mock_mobilizon_failure_answer):
+def test_failure_404(mock_mobilizon_failure_answer):
+    with pytest.raises(MobilizonRequestFailed):
+        get_mobilizon_future_events()
+
+
+@pytest.mark.parametrize(
+    "mobilizon_answer",
+    [
+        {
+            "data": {"group": None},
+            "errors": [
+                {
+                    "code": "group_not_found",
+                    "field": None,
+                    "locations": [{"column": 13, "line": 2}],
+                    "message": "Group not found",
+                    "path": ["group"],
+                    "status_code": 404,
+                }
+            ],
+        },
+    ],
+)
+def test_failure_wrong_group(mock_mobilizon_success_answer):
     with pytest.raises(MobilizonRequestFailed):
         get_mobilizon_future_events()
 

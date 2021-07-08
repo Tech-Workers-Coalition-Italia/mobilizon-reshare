@@ -1,3 +1,5 @@
+import json
+import logging
 from http import HTTPStatus
 from typing import List, Optional
 
@@ -6,6 +8,8 @@ import requests
 
 from mobilizon_bots.config.config import get_settings
 from mobilizon_bots.event.event import MobilizonEvent, PublicationStatus
+
+logger = logging.getLogger(__name__)
 
 
 class MobilizonRequestFailed(Exception):
@@ -98,6 +102,13 @@ def get_mobilizon_future_events(
             f"Request for events failed with code:{r.status_code}"
         )
 
+    response_json = r.json()
+    logger.debug(f"Response:\n{json.dumps(response_json, indent=4)}")
+    if "errors" in response_json:
+        raise MobilizonRequestFailed(
+            f"Request for events failed because of the following errors: "
+            f"{json.dumps(response_json['errors'],indent=4)}"
+        )
     return list(
-        map(parse_event, r.json()["data"]["group"]["organizedEvents"]["elements"])
+        map(parse_event, response_json["data"]["group"]["organizedEvents"]["elements"])
     )
