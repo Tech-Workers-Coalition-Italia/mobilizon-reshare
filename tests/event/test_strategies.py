@@ -3,7 +3,7 @@ import pytest
 from unittest.mock import patch
 
 
-from mobilizon_bots.config.config import settings
+from mobilizon_bots.config.config import get_settings
 from mobilizon_bots.event.event_selection_strategies import (
     SelectNextEventStrategy,
     select_event_to_publish,
@@ -12,7 +12,7 @@ from mobilizon_bots.event.event_selection_strategies import (
 
 @pytest.fixture
 def set_break_window_config(desired_break_window_days):
-    settings.update(
+    get_settings().update(
         {
             "selection.strategy_options.break_between_events_in_minutes": desired_break_window_days
             * 24
@@ -23,13 +23,15 @@ def set_break_window_config(desired_break_window_days):
 
 @pytest.fixture
 def set_strategy(strategy_name):
-    settings.update({"selection.strategy": strategy_name})
+    get_settings().update({"selection.strategy": strategy_name})
 
 
 @pytest.fixture
 def mock_publication_window(publication_window):
     begin, end = publication_window
-    settings.update({"publishing.window.begin": begin, "publishing.window.end": end})
+    get_settings().update(
+        {"publishing.window.begin": begin, "publishing.window.end": end}
+    )
 
 
 @pytest.mark.parametrize("current_hour", [10])

@@ -1,6 +1,6 @@
 from dataclasses import dataclass, field
 
-from mobilizon_bots.config.config import settings
+from mobilizon_bots.config.config import get_settings
 from mobilizon_bots.config.publishers import get_active_publishers
 from mobilizon_bots.event.event import MobilizonEvent, PublicationStatus
 from .exceptions import PublisherError
@@ -30,7 +30,7 @@ class PublisherCoordinatorReport:
 class PublisherCoordinator:
     def __init__(self, event: MobilizonEvent):
         self.publishers = tuple(
-            KEY2CLS[pn](event) for pn in get_active_publishers(settings)
+            KEY2CLS[pn](event) for pn in get_active_publishers(get_settings())
         )
 
     def run(self) -> PublisherCoordinatorReport:

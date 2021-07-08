@@ -4,7 +4,7 @@ from typing import List, Optional
 import arrow
 import requests
 
-from mobilizon_bots.config.config import settings
+from mobilizon_bots.config.config import get_settings
 from mobilizon_bots.event.event import MobilizonEvent, PublicationStatus
 
 
@@ -86,9 +86,9 @@ def get_mobilizon_future_events(
     page: int = 1, from_date: Optional[arrow.Arrow] = None
 ) -> List[MobilizonEvent]:
 
-    url = settings["source"]["mobilizon"]["url"]
+    url = get_settings()["source"]["mobilizon"]["url"]
     query = query_future_events.format(
-        group=settings["source"]["mobilizon"]["group"],
+        group=get_settings()["source"]["mobilizon"]["group"],
         page=page,
         afterDatetime=from_date or arrow.now().isoformat(),
     )

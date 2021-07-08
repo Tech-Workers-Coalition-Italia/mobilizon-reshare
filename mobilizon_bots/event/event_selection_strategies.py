@@ -2,7 +2,7 @@ from abc import ABC, abstractmethod
 from typing import List, Optional
 import arrow
 
-from mobilizon_bots.config.config import settings
+from mobilizon_bots.config.config import get_settings
 from mobilizon_bots.event.event import MobilizonEvent
 
 
@@ -18,6 +18,7 @@ class EventSelectionStrategy(ABC):
         return self._select(published_events, unpublished_events)
 
     def is_in_publishing_window(self) -> bool:
+        settings = get_settings()
         window_beginning = settings["publishing"]["window"]["begin"]
         window_end = settings["publishing"]["window"]["end"]
         now_hour = arrow.now().datetime.hour
@@ -53,7 +54,7 @@ class SelectNextEventStrategy(EventSelectionStrategy):
         )
         if (
             last_published_event.publication_time[publisher_name].shift(
-                minutes=settings[
+                minutes=get_settings()[
                     "selection.strategy_options.break_between_events_in_minutes"
                 ]
             )
@@ -88,5 +89,7 @@ def select_event_to_publish(
     published_events: List[MobilizonEvent], unpublished_events: List[MobilizonEvent],
 ):
 
-    strategy = STRATEGY_NAME_TO_STRATEGY_CLASS[settings["selection"]["strategy"]]()
+    strategy = STRATEGY_NAME_TO_STRATEGY_CLASS[
+        get_settings()["selection"]["strategy"]
+    ]()
     return strategy.select(published_events, unpublished_events)
