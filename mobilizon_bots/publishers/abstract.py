@@ -163,4 +163,9 @@ class AbstractPublisher(AbstractNotifier):
         """
         Retrieves publisher's message template.
         """
-        return JINJA_ENV.get_template(self.conf.msg_template_path)
+        template_path = (
+            self.conf.msg_template_path
+            if hasattr(self.conf, "msg_template_path")
+            else self.default_template_path
+        )
+        return JINJA_ENV.get_template(template_path)
