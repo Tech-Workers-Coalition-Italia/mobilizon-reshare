@@ -16,7 +16,6 @@ class PublisherReport:
     status: PublicationStatus
     reason: str
     publisher: AbstractPublisher
-    event: MobilizonEvent
 
 
 @dataclass
@@ -47,12 +46,7 @@ class PublisherCoordinator:
 
     def _make_successful_report(self):
         return [
-            PublisherReport(
-                status=PublicationStatus.COMPLETED,
-                reason="",
-                publisher=p,
-                event=p.event,
-            )
+            PublisherReport(status=PublicationStatus.COMPLETED, reason="", publisher=p,)
             for p in self.publishers
         ]
 
@@ -64,10 +58,7 @@ class PublisherCoordinator:
             except PublisherError as e:
                 failed_publishers_reports.append(
                     PublisherReport(
-                        status=PublicationStatus.FAILED,
-                        reason=repr(e),
-                        publisher=p,
-                        event=p.event,
+                        status=PublicationStatus.FAILED, reason=repr(e), publisher=p,
                     )
                 )
         reports = failed_publishers_reports or self._make_successful_report()
@@ -82,7 +73,6 @@ class PublisherCoordinator:
                         status=PublicationStatus.FAILED,
                         reason="Invalid credentials",
                         publisher=p,
-                        event=p.event,
                     )
                 )
             if not p.is_event_valid():
@@ -91,7 +81,6 @@ class PublisherCoordinator:
                         status=PublicationStatus.FAILED,
                         reason="Invalid event",
                         publisher=p,
-                        event=p.event,
                     )
                 )
             if not p.is_message_valid():
@@ -100,7 +89,6 @@ class PublisherCoordinator:
                         status=PublicationStatus.FAILED,
                         reason="Invalid message",
                         publisher=p,
-                        event=p.event,
                     )
                 )
         return invalid_credentials, invalid_event, invalid_msg
