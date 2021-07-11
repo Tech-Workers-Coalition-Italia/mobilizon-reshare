@@ -1,7 +1,7 @@
 import inspect
 import logging
-
 from abc import ABC, abstractmethod
+
 from dynaconf.utils.boxing import DynaBox
 from jinja2 import Environment, FileSystemLoader, Template
 

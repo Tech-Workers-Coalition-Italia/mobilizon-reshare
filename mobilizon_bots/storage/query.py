@@ -6,6 +6,7 @@ from mobilizon_bots.event.event import MobilizonEvent
 from mobilizon_bots.models.event import Event
 from mobilizon_bots.models.publication import Publication, PublicationStatus
 from mobilizon_bots.models.publisher import Publisher
+from mobilizon_bots.publishers.coordinator import PublisherCoordinatorReport
 
 
 async def events_with_status(
@@ -31,20 +32,20 @@ async def get_unpublished_events() -> Iterable[MobilizonEvent]:
     return await events_with_status([PublicationStatus.WAITING])
 
 
-@atomic("default")
-async def save_events(unpublished_events, active_publishers):
+@atomic("models")
+async def save_event(event):
 
-    for event in unpublished_events:
-        event_model = event.to_model()
-        await event_model.save()
+    event_model = event.to_model()
+    await event_model.save()
+    return event_model
 
-        for publisher_name in active_publishers:
-            publisher = await Publisher.filter(name=publisher_name).first()
-            await Publication.create(
-                status=PublicationStatus.WAITING,
-                event_id=event_model.id,
-                publisher_id=publisher.id,
-            )
+
+async def save_publication(publisher_name, event_model, status: PublicationStatus):
+
+    publisher = await Publisher.filter(name=publisher_name).first()
+    await Publication.create(
+        status=status, event_id=event_model.id, publisher_id=publisher.id,
+    )
 
 
 async def create_unpublished_events(
@@ -62,9 +63,18 @@ async def create_unpublished_events(
         )
     )
 
-    if unpublished_events:
-        await save_events(unpublished_events, active_publishers)
+    for event in unpublished_events:
+        event_model = await save_event(event)
+        for publisher in active_publishers:
+            await save_publication(
+                publisher, event_model, status=PublicationStatus.WAITING
+            )
 
 
 async def create_publisher(name: str, account_ref: Optional[str] = None) -> None:
     await Publisher.create(name=name, account_ref=account_ref)
+
+
+async def save_publication_report(publication_report: PublisherCoordinatorReport):
+    for publisher_report in publication_report:
+        pass

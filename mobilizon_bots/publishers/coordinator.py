@@ -1,10 +1,11 @@
 from dataclasses import dataclass, field
+from typing import List
 
 from mobilizon_bots.config.config import get_settings
 from mobilizon_bots.config.publishers import get_active_publishers
 from mobilizon_bots.event.event import MobilizonEvent, PublicationStatus
-from .exceptions import PublisherError
 from .abstract import AbstractPublisher
+from .exceptions import PublisherError
 from .telegram import TelegramPublisher
 
 KEY2CLS = {"telegram": TelegramPublisher}
@@ -20,11 +21,14 @@ class PublisherReport:
 
 @dataclass
 class PublisherCoordinatorReport:
-    reports: list = field(default_factory=[])
+    reports: List[PublisherReport] = field(default_factory=[])
 
     @property
     def successful(self):
         return all(r.status == PublicationStatus.COMPLETED for r in self.reports)
+
+    def __iter__(self):
+        return self.reports.__iter__()
 
 
 class PublisherCoordinator:
@@ -35,34 +39,30 @@ class PublisherCoordinator:
 
     def run(self) -> PublisherCoordinatorReport:
         invalid_credentials, invalid_event, invalid_msg = self._validate()
-        if invalid_credentials or invalid_event or invalid_msg:
-            return PublisherCoordinatorReport(
-                reports=invalid_credentials + invalid_event + invalid_msg
+        errors = invalid_credentials + invalid_event + invalid_msg
+        if errors:
+            return PublisherCoordinatorReport(reports=errors)
+
+        return self._post()
+
+    def _make_successful_report(self):
+        return [
+            PublisherReport(
+                status=PublicationStatus.COMPLETED,
+                reason="",
+                publisher=p,
+                event=p.event,
             )
-
-        failed_publishers = self._post()
-        if failed_publishers:
-            return PublisherCoordinatorReport(reports=failed_publishers)
-
-        return PublisherCoordinatorReport(
-            reports=[
-                PublisherReport(
-                    status=PublicationStatus.COMPLETED,
-                    reason="",
-                    publisher=p,
-                    event=p.event,
-                )
-                for p in self.publishers
-            ],
-        )
+            for p in self.publishers
+        ]
 
     def _post(self):
-        failed_publishers = []
+        failed_publishers_reports = []
         for p in self.publishers:
             try:
                 p.post()
             except PublisherError as e:
-                failed_publishers.append(
+                failed_publishers_reports.append(
                     PublisherReport(
                         status=PublicationStatus.FAILED,
                         reason=repr(e),
@@ -70,7 +70,8 @@ class PublisherCoordinator:
                         event=p.event,
                     )
                 )
-        return failed_publishers
+        reports = failed_publishers_reports or self._make_successful_report()
+        return PublisherCoordinatorReport(reports)
 
     def _validate(self):
         invalid_credentials, invalid_event, invalid_msg = [], [], []

@@ -36,6 +36,7 @@ async def main(settings_file):
     if event:
         logger.debug(f"Event to publish found: {event.name}")
         result = PublisherCoordinator(event).run()
+
         logger.debug("Closing")
         exit(0 if result.successful else 1)
     else:
