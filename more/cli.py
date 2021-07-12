@@ -2,15 +2,15 @@ import asyncio
 
 import click
 
-from mobilizon_bots.main import main
+from more.main import main
 
 
 @click.group()
-def mobilizon_bots():
+def more():
     pass
 
 
-@mobilizon_bots.command()
+@more.command()
 @click.option("--settings-file", type=click.Path(exists=True))
 def start(settings_file):
 
@@ -18,4 +18,4 @@ def start(settings_file):
 
 
 if __name__ == "__main__":
-    mobilizon_bots()
+    more()

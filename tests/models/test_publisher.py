@@ -1,6 +1,6 @@
 import pytest
 
-from mobilizon_bots.models.publisher import Publisher
+from more.models.publisher import Publisher
 
 
 @pytest.mark.asyncio

@@ -3,9 +3,9 @@ from typing import List
 
 from dynaconf import Dynaconf, Validator
 
-from mobilizon_bots.config import strategies, publishers, notifiers
-from mobilizon_bots.config.notifiers import notifier_names
-from mobilizon_bots.config.publishers import publisher_names
+from more.config import strategies, publishers, notifiers
+from more.config.notifiers import notifier_names
+from more.config.publishers import publisher_names
 
 
 def build_settings(
@@ -14,15 +14,15 @@ def build_settings(
 
     SETTINGS_FILE = (
         settings_files
-        or os.environ.get("MOBILIZON_BOTS_SETTINGS_FILE")
+        or os.environ.get("MORE_SETTINGS_FILE")
         or [
-            "mobilizon_bots/settings.toml",
-            "mobilizon_bots/.secrets.toml",
-            "/etc/mobilizon_bots.toml",
-            "/etc/mobilizon_bots_secrets.toml",
+            "more/settings.toml",
+            "more/.secrets.toml",
+            "/etc/more.toml",
+            "/etc/more_secrets.toml",
         ]
     )
-    ENVVAR_PREFIX = "MOBILIZON_BOTS"
+    ENVVAR_PREFIX = "MORE"
 
     return Dynaconf(
         environments=True,

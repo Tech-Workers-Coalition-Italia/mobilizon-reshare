@@ -2,11 +2,11 @@ from typing import Iterable, Optional
 
 from tortoise.transactions import atomic
 
-from mobilizon_bots.event.event import MobilizonEvent
-from mobilizon_bots.models.event import Event
-from mobilizon_bots.models.publication import Publication, PublicationStatus
-from mobilizon_bots.models.publisher import Publisher
-from mobilizon_bots.publishers.coordinator import PublisherCoordinatorReport
+from more.event.event import MobilizonEvent
+from more.models.event import Event
+from more.models.publication import Publication, PublicationStatus
+from more.models.publisher import Publisher
+from more.publishers.coordinator import PublisherCoordinatorReport
 
 
 async def events_with_status(

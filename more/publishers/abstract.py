@@ -5,8 +5,8 @@ from abc import ABC, abstractmethod
 from dynaconf.utils.boxing import DynaBox
 from jinja2 import Environment, FileSystemLoader, Template
 
-from mobilizon_bots.config.config import get_settings
-from mobilizon_bots.event.event import MobilizonEvent
+from more.config.config import get_settings
+from more.event.event import MobilizonEvent
 from .exceptions import PublisherError, InvalidAttribute
 
 JINJA_ENV = Environment(loader=FileSystemLoader("/"))

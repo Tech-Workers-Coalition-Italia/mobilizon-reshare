@@ -1,4 +1,4 @@
-The goal of mobilizon_bots is to provide a suite to reshare Mobilizon events on a broad selection of platforms. This
+The goal of Mobilizon Reshare (MoRe) is to provide a suite to reshare Mobilizon events on a broad selection of platforms. This
 tool enables an organization to automate their social media strategy in regards
 to events and their promotion. 
 

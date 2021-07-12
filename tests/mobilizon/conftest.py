@@ -1,7 +1,7 @@
 import pytest
 import responses
 
-from mobilizon_bots.config.config import get_settings
+from more.config.config import get_settings
 
 
 @pytest.fixture

@@ -5,11 +5,11 @@ import arrow
 import pytest
 from tortoise.contrib.test import finalizer, initializer
 
-from mobilizon_bots.event.event import MobilizonEvent
-from mobilizon_bots.models.event import Event
-from mobilizon_bots.models.notification import Notification, NotificationStatus
-from mobilizon_bots.models.publication import Publication, PublicationStatus
-from mobilizon_bots.models.publisher import Publisher
+from more.event.event import MobilizonEvent
+from more.models.event import Event
+from more.models.notification import Notification, NotificationStatus
+from more.models.publication import Publication, PublicationStatus
+from more.models.publisher import Publisher
 
 
 def generate_publication_status(published):
@@ -75,10 +75,10 @@ def initialize_db_tests(request) -> None:
     db_url = os.environ.get("TORTOISE_TEST_DB", "sqlite://:memory:")
     initializer(
         [
-            "mobilizon_bots.models.event",
-            "mobilizon_bots.models.notification",
-            "mobilizon_bots.models.publication",
-            "mobilizon_bots.models.publisher",
+            "more.models.event",
+            "more.models.notification",
+            "more.models.publication",
+            "more.models.publisher",
         ],
         db_url=db_url,
         app_label="models",

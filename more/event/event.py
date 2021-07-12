@@ -5,8 +5,8 @@ import arrow
 import tortoise.timezone
 from jinja2 import Template
 
-from mobilizon_bots.models.event import Event
-from mobilizon_bots.models.publication import PublicationStatus, Publication
+from more.models.event import Event
+from more.models.publication import PublicationStatus, Publication
 
 
 @dataclass

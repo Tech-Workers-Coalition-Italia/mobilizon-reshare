@@ -3,10 +3,10 @@ from datetime import datetime, timedelta, timezone
 import arrow
 import pytest
 
-from mobilizon_bots.event.event import MobilizonEvent
-from mobilizon_bots.models.publication import PublicationStatus
+from more.event.event import MobilizonEvent
+from more.models.publication import PublicationStatus
 
-from mobilizon_bots.storage.query import (
+from more.storage.query import (
     get_published_events,
     get_unpublished_events,
     create_unpublished_events,

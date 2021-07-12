@@ -2,9 +2,9 @@ import pytest
 
 from datetime import datetime, timedelta
 
-from mobilizon_bots.event.event import MobilizonEvent
-from mobilizon_bots.publishers.abstract import AbstractPublisher
-from mobilizon_bots.publishers.exceptions import PublisherError
+from more.event.event import MobilizonEvent
+from more.publishers.abstract import AbstractPublisher
+from more.publishers.exceptions import PublisherError
 
 
 @pytest.fixture

@@ -6,8 +6,8 @@ from typing import List, Optional
 import arrow
 import requests
 
-from mobilizon_bots.config.config import get_settings
-from mobilizon_bots.event.event import MobilizonEvent, PublicationStatus
+from more.config.config import get_settings
+from more.event.event import MobilizonEvent, PublicationStatus
 
 logger = logging.getLogger(__name__)
 

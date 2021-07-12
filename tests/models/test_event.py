@@ -4,9 +4,9 @@ import arrow
 import pytest
 import tortoise.timezone
 
-from mobilizon_bots.event.event import MobilizonEvent
-from mobilizon_bots.models.event import Event
-from mobilizon_bots.models.publication import PublicationStatus
+from more.event.event import MobilizonEvent
+from more.models.event import Event
+from more.models.publication import PublicationStatus
 
 
 @pytest.mark.asyncio

@@ -5,13 +5,13 @@ from pathlib import Path
 
 from tortoise import Tortoise
 
-from mobilizon_bots.config.publishers import publisher_names
-from mobilizon_bots.storage.query import create_publisher
+from more.config.publishers import publisher_names
+from more.storage.query import create_publisher
 
 logger = logging.getLogger(__name__)
 
 
-class MobilizonBotsDB:
+class MoreDB:
     def __init__(self, path: Path):
         self.path = path
         # TODO: Check if DB is openable/"queriable"
@@ -24,10 +24,10 @@ class MobilizonBotsDB:
             db_url=f"sqlite:///{self.path}",
             modules={
                 "models": [
-                    "mobilizon_bots.models.event",
-                    "mobilizon_bots.models.notification",
-                    "mobilizon_bots.models.publication",
-                    "mobilizon_bots.models.publisher",
+                    "more.models.event",
+                    "more.models.notification",
+                    "more.models.publication",
+                    "more.models.publisher",
                 ]
             },
             # always store UTC time in database

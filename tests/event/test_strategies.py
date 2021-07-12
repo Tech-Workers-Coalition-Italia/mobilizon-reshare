@@ -3,8 +3,8 @@ import pytest
 from unittest.mock import patch
 
 
-from mobilizon_bots.config.config import get_settings
-from mobilizon_bots.event.event_selection_strategies import (
+from more.config.config import get_settings
+from more.event.event_selection_strategies import (
     SelectNextEventStrategy,
     select_event_to_publish,
 )

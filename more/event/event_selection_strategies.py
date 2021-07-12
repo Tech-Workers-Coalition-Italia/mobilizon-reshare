@@ -4,8 +4,8 @@ from typing import List, Optional
 
 import arrow
 
-from mobilizon_bots.config.config import get_settings
-from mobilizon_bots.event.event import MobilizonEvent
+from more.config.config import get_settings
+from more.event.event import MobilizonEvent
 
 logger = logging.getLogger(__name__)
 

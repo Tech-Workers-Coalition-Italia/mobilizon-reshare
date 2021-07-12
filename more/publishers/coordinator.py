@@ -1,9 +1,9 @@
 from dataclasses import dataclass, field
 from typing import List
 
-from mobilizon_bots.config.config import get_settings
-from mobilizon_bots.config.publishers import get_active_publishers
-from mobilizon_bots.event.event import MobilizonEvent, PublicationStatus
+from more.config.config import get_settings
+from more.config.publishers import get_active_publishers
+from more.event.event import MobilizonEvent, PublicationStatus
 from .abstract import AbstractPublisher
 from .exceptions import PublisherError
 from .telegram import TelegramPublisher
