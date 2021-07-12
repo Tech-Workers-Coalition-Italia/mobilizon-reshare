@@ -1,4 +1,4 @@
-import os
+import sys
 
 from typing import Iterable, Optional
 
@@ -13,7 +13,8 @@ from mobilizon_bots.publishers.coordinator import PublisherCoordinatorReport
 # This is due to Tortoise community fixtures to
 # set up and tear down a DB instance for Pytest.
 # See: https://github.com/tortoise/tortoise-orm/issues/419#issuecomment-696991745
-CONNECTION_NAME = "models" if "PYTEST_RUN_CONFIG" in os.environ.keys() else None
+# and: https://docs.pytest.org/en/stable/example/simple.html
+CONNECTION_NAME = "models" if "pytest" in sys.modules else None
 
 
 async def events_with_status(
