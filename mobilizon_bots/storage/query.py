@@ -2,6 +2,7 @@ import sys
 
 from typing import Iterable, Optional
 
+from tortoise.queryset import QuerySet
 from tortoise.transactions import atomic
 
 from mobilizon_bots.event.event import MobilizonEvent
@@ -17,40 +18,31 @@ from mobilizon_bots.publishers.coordinator import PublisherCoordinatorReport
 CONNECTION_NAME = "models" if "pytest" in sys.modules else None
 
 
+async def load_events(queryset: QuerySet[Event]) -> list[Event]:
+    return (
+        await queryset.prefetch_related("publications")
+        .prefetch_related("publications__publisher")
+        .order_by("begin_datetime")
+        .distinct()
+    )
+
+
 async def events_with_status(
     statuses: list[PublicationStatus],
 ) -> Iterable[MobilizonEvent]:
     return map(
         MobilizonEvent.from_model,
-        await Event.filter(publications__status__in=statuses)
-        .prefetch_related("publications")
-        .prefetch_related("publications__publisher")
-        .order_by("begin_datetime")
-        .distinct(),
-    )
-
-
-async def published_events(
-    statuses: list[PublicationStatus],
-) -> Iterable[MobilizonEvent]:
-    return map(
-        MobilizonEvent.from_model,
-        await Event.filter(publications__status__in=statuses)
-        .prefetch_related("publications")
-        .prefetch_related("publications__publisher")
-        .order_by("begin_datetime")
-        .distinct(),
+        await load_events(Event.filter(publications__status__in=statuses)),
     )
 
 
 async def get_published_events() -> Iterable[MobilizonEvent]:
-    publications = (
-        await Publication.filter(status=PublicationStatus.COMPLETED)
-        .prefetch_related("event")
-        .prefetch_related("event__publications")
-        .prefetch_related("event__publications__publisher")
+    return map(
+        MobilizonEvent.from_model,
+        await load_events(
+            Event.filter(publications__status=PublicationStatus.COMPLETED)
+        ),
     )
-    return map(MobilizonEvent.from_model, {p.event for p in publications})
 
 
 async def get_unpublished_events() -> Iterable[MobilizonEvent]:
