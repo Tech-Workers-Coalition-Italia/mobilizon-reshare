@@ -5,7 +5,7 @@ import arrow
 import pytest
 from tortoise.contrib.test import finalizer, initializer
 
-from mobilizon_bots.event.event import MobilizonEvent
+from mobilizon_bots.event.event import MobilizonEvent, EventPublicationStatus
 from mobilizon_bots.models.event import Event
 from mobilizon_bots.models.notification import Notification, NotificationStatus
 from mobilizon_bots.models.publication import Publication, PublicationStatus
@@ -14,6 +14,14 @@ from mobilizon_bots.models.publisher import Publisher
 
 def generate_publication_status(published):
     return PublicationStatus.COMPLETED if published else PublicationStatus.WAITING
+
+
+def generate_event_status(published):
+    return (
+        EventPublicationStatus.COMPLETED
+        if published
+        else EventPublicationStatus.WAITING
+    )
 
 
 def generate_notification_status(published):
@@ -38,7 +46,7 @@ def event_generator():
             mobilizon_id=mobilizon_id,
             thumbnail_link="http://some_link.com/123.jpg",
             location="location",
-            publication_status=generate_publication_status(published),
+            status=generate_event_status(published),
             publication_time=publication_time
             or (begin_date.shift(days=-1) if published else None),
         )
@@ -115,7 +123,9 @@ def event_model_generator():
 
 @pytest.fixture()
 def publisher_model_generator():
-    def _publisher_model_generator(idx=1,):
+    def _publisher_model_generator(
+        idx=1,
+    ):
         return Publisher(name=f"publisher_{idx}", account_ref=f"account_ref_{idx}")
 
     return _publisher_model_generator

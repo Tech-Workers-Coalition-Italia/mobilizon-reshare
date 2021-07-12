@@ -7,6 +7,7 @@ import tortoise.timezone
 from mobilizon_bots.event.event import MobilizonEvent
 from mobilizon_bots.models.event import Event
 from mobilizon_bots.models.publication import PublicationStatus
+from mobilizon_bots.event.event import EventPublicationStatus
 
 
 @pytest.mark.asyncio
@@ -148,7 +149,7 @@ async def test_mobilizon_event_from_model(
     assert event.thumbnail_link == "thumblink_1"
     assert event.location == "loc_1"
     assert event.publication_time[publisher_model.name] == publication.timestamp
-    assert event.publication_status == PublicationStatus.PARTIAL
+    assert event.status == EventPublicationStatus.PARTIAL
 
 
 @pytest.mark.asyncio
@@ -209,7 +210,7 @@ async def test_mobilizon_event_compute_status_partial(
 
     assert (
         MobilizonEvent.compute_status([publication, publication_2])
-        == PublicationStatus.PARTIAL
+        == EventPublicationStatus.PARTIAL
     )
 
 
@@ -240,5 +241,5 @@ async def test_mobilizon_event_compute_status_waiting(
 
     assert (
         MobilizonEvent.compute_status([publication, publication_2])
-        == PublicationStatus.WAITING
+        == EventPublicationStatus.WAITING
     )

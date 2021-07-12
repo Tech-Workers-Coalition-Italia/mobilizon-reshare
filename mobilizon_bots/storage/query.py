@@ -30,10 +30,27 @@ async def events_with_status(
     )
 
 
-async def get_published_events() -> Iterable[MobilizonEvent]:
-    return await events_with_status(
-        [PublicationStatus.COMPLETED, PublicationStatus.PARTIAL]
+async def published_events(
+    statuses: list[PublicationStatus],
+) -> Iterable[MobilizonEvent]:
+    return map(
+        MobilizonEvent.from_model,
+        await Event.filter(publications__status__in=statuses)
+        .prefetch_related("publications")
+        .prefetch_related("publications__publisher")
+        .order_by("begin_datetime")
+        .distinct(),
     )
+
+
+async def get_published_events() -> Iterable[MobilizonEvent]:
+    publications = (
+        await Publication.filter(status=PublicationStatus.COMPLETED)
+        .prefetch_related("event")
+        .prefetch_related("event__publications")
+        .prefetch_related("event__publications__publisher")
+    )
+    return map(MobilizonEvent.from_model, {p.event for p in publications})
 
 
 async def get_unpublished_events() -> Iterable[MobilizonEvent]:
