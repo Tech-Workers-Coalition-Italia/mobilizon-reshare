@@ -1,3 +1,5 @@
+import os
+
 from typing import Iterable, Optional
 
 from tortoise.transactions import atomic
@@ -7,6 +9,11 @@ from mobilizon_bots.models.event import Event
 from mobilizon_bots.models.publication import Publication, PublicationStatus
 from mobilizon_bots.models.publisher import Publisher
 from mobilizon_bots.publishers.coordinator import PublisherCoordinatorReport
+
+# This is due to Tortoise community fixtures to
+# set up and tear down a DB instance for Pytest.
+# See: https://github.com/tortoise/tortoise-orm/issues/419#issuecomment-696991745
+CONNECTION_NAME = "models" if "PYTEST_RUN_CONFIG" in os.environ.keys() else None
 
 
 async def events_with_status(
@@ -32,7 +39,6 @@ async def get_unpublished_events() -> Iterable[MobilizonEvent]:
     return await events_with_status([PublicationStatus.WAITING])
 
 
-@atomic("models")
 async def save_event(event):
 
     event_model = event.to_model()
@@ -44,10 +50,13 @@ async def save_publication(publisher_name, event_model, status: PublicationStatu
 
     publisher = await Publisher.filter(name=publisher_name).first()
     await Publication.create(
-        status=status, event_id=event_model.id, publisher_id=publisher.id,
+        status=status,
+        event_id=event_model.id,
+        publisher_id=publisher.id,
     )
 
 
+@atomic(CONNECTION_NAME)
 async def create_unpublished_events(
     unpublished_mobilizon_events: Iterable[MobilizonEvent],
     active_publishers: Iterable[str],
