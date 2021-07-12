@@ -1,12 +1,11 @@
 from dataclasses import dataclass, field
 from typing import List
 
-from mobilizon_bots.config.config import get_settings
-from mobilizon_bots.config.publishers import get_active_publishers
 from mobilizon_bots.event.event import MobilizonEvent, PublicationStatus
-from .abstract import AbstractPublisher
-from .exceptions import PublisherError
-from .telegram import TelegramPublisher
+from mobilizon_bots.publishers import get_active_publishers
+from mobilizon_bots.publishers.abstract import AbstractPublisher
+from mobilizon_bots.publishers.exceptions import PublisherError
+from mobilizon_bots.publishers.telegram import TelegramPublisher
 
 KEY2CLS = {"telegram": TelegramPublisher}
 
@@ -32,9 +31,7 @@ class PublisherCoordinatorReport:
 
 class PublisherCoordinator:
     def __init__(self, event: MobilizonEvent):
-        self.publishers = tuple(
-            KEY2CLS[pn](event) for pn in get_active_publishers(get_settings())
-        )
+        self.publishers = tuple(KEY2CLS[pn](event) for pn in get_active_publishers())
 
     def run(self) -> PublisherCoordinatorReport:
         invalid_credentials, invalid_event, invalid_msg = self._validate()

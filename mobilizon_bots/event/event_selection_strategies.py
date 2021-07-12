@@ -117,7 +117,4 @@ def select_event_to_publish(
         get_settings()["selection"]["strategy"]
     ]()
 
-    logger.debug(published_events)
-    logger.debug(unpublished_events)
-    logger.debug(strategy)
     return strategy.select(published_events, unpublished_events)

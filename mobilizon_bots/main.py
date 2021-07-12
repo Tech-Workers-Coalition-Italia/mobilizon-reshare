@@ -2,9 +2,10 @@ import logging.config
 from pathlib import Path
 
 from mobilizon_bots.config.config import update_settings_files
-from mobilizon_bots.config.publishers import get_active_publishers
+
 from mobilizon_bots.event.event_selection_strategies import select_event_to_publish
 from mobilizon_bots.mobilizon.events import get_unpublished_events
+from mobilizon_bots.publishers import get_active_publishers
 from mobilizon_bots.publishers.coordinator import PublisherCoordinator
 from mobilizon_bots.storage.db import MobilizonBotsDB
 from mobilizon_bots.storage.query import get_published_events, create_unpublished_events
@@ -20,7 +21,7 @@ async def main(settings_file):
     settings = update_settings_files(settings_file)
 
     logging.config.dictConfig(settings["logging"])
-    active_publishers = get_active_publishers(settings)
+    active_publishers = get_active_publishers()
 
     db = MobilizonBotsDB(Path(settings.db_path))
     await db.setup()

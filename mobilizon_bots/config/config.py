@@ -114,8 +114,8 @@ class CustomConfig:
         self.settings = build_settings(settings_files)
 
 
-def get_settings(settings_files: List[str] = None):
-    config = CustomConfig(settings_files)
+def get_settings():
+    config = CustomConfig()
     return config.settings
 
 
