@@ -1,11 +1,11 @@
 import inspect
 import logging
-
 from abc import ABC, abstractmethod
+
 from dynaconf.utils.boxing import DynaBox
 from jinja2 import Environment, FileSystemLoader, Template
 
-from mobilizon_bots.config.config import settings
+from mobilizon_bots.config.config import get_settings
 from mobilizon_bots.event.event import MobilizonEvent
 from .exceptions import PublisherError, InvalidAttribute
 
@@ -49,7 +49,7 @@ class AbstractNotifier(ABC):
             )
         try:
             t, n = cls._conf or tuple()  # Avoid unpacking ``None``
-            return settings[t][n]
+            return get_settings()[t][n]
         except (KeyError, ValueError):
             raise InvalidAttribute(
                 f"Class {cls.__name__} has invalid ``_conf`` attribute"
@@ -163,4 +163,9 @@ class AbstractPublisher(AbstractNotifier):
         """
         Retrieves publisher's message template.
         """
-        return JINJA_ENV.get_template(self.conf.msg_template_path)
+        template_path = (
+            self.conf.msg_template_path
+            if hasattr(self.conf, "msg_template_path")
+            else self.default_template_path
+        )
+        return JINJA_ENV.get_template(template_path)

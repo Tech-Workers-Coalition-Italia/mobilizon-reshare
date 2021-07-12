@@ -1,7 +1,6 @@
 import asyncio
 import atexit
 import logging
-
 from pathlib import Path
 
 from tortoise import Tortoise

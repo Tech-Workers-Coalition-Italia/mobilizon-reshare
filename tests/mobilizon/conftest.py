@@ -1,12 +1,12 @@
 import pytest
 import responses
 
-from mobilizon_bots.config.config import settings
+from mobilizon_bots.config.config import get_settings
 
 
 @pytest.fixture
 def mobilizon_url():
-    return settings["source"]["mobilizon"]["url"]
+    return get_settings()["source"]["mobilizon"]["url"]
 
 
 @responses.activate

@@ -1,3 +1,4 @@
+import os
 from typing import List
 
 from dynaconf import Dynaconf, Validator
@@ -11,12 +12,16 @@ def build_settings(
     settings_files: List[str] = None, validators: List[Validator] = None
 ):
 
-    SETTINGS_FILE = settings_files or [
-        "mobilizon_bots/settings.toml",
-        "mobilizon_bots/.secrets.toml",
-        "/etc/mobilizon_bots.toml",
-        "/etc/mobilizon_bots_secrets.toml",
-    ]
+    SETTINGS_FILE = (
+        settings_files
+        or os.environ.get("MOBILIZON_BOTS_SETTINGS_FILE")
+        or [
+            "mobilizon_bots/settings.toml",
+            "mobilizon_bots/.secrets.toml",
+            "/etc/mobilizon_bots.toml",
+            "/etc/mobilizon_bots_secrets.toml",
+        ]
+    )
     ENVVAR_PREFIX = "MOBILIZON_BOTS"
 
     return Dynaconf(
@@ -89,4 +94,31 @@ def build_and_validate_settings(settings_files: List[str] = None):
     return settings
 
 
-settings = build_and_validate_settings()
+# this singleton and functions are necessary to put together
+# the necessities of the testing suite, the CLI and still having a single entrypoint to the config.
+# The CLI needs to provide the settings file at run time so we cannot work at import time.
+# The normal Dynaconf options to specify the settings files are also not a valid option because of the two steps
+# validation that prevents us to employ their mechanism to specify settings files. This could probably be reworked
+# better in the future.
+class CustomConfig:
+    _instance = None
+
+    def __new__(cls, settings_files: List[str] = None):
+        if cls._instance is None:
+            print("Creating the object")
+            cls._instance = super(CustomConfig, cls).__new__(cls)
+            cls.settings = build_settings(settings_files)
+        return cls._instance
+
+    def update(self, settings_files: List[str] = None):
+        self.settings = build_settings(settings_files)
+
+
+def get_settings():
+    config = CustomConfig()
+    return config.settings
+
+
+def update_settings_files(settings_files: List[str] = None):
+    CustomConfig().update(settings_files)
+    return CustomConfig().settings
