@@ -9,6 +9,13 @@ def get_bottom_paragraphs(soup: BeautifulSoup) -> List[Tag]:
 
 
 def html_to_plaintext(content):
+    """
+    Transform a HTML in a plaintext sting that can be more easily processed by the publishers.
+
+    :param content:
+    :return:
+    """
+    # TODO: support links and quotes
     soup = BeautifulSoup(content)
     return "\n".join(
         " ".join(tag.stripped_strings) for tag in get_bottom_paragraphs(soup)
