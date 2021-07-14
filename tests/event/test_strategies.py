@@ -34,7 +34,8 @@ def mock_publication_window(publication_window):
     )
 
 
-def test_window_no_event():
+@pytest.mark.parametrize("current_hour", [15])
+def test_window_no_event(mock_arrow_now):
     selected_event = SelectNextEventStrategy().select([], [])
     assert selected_event is None
 
