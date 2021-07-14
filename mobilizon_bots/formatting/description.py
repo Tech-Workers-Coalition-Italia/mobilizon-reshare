@@ -25,4 +25,4 @@ def html_to_plaintext(content):
 def html_to_markdown(content):
     markdown = markdownify.markdownify(content)
     escaped_markdown = markdown.replace(">", "\\>")
-    return escaped_markdown
+    return escaped_markdown.strip()
