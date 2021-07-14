@@ -18,10 +18,9 @@ from mobilizon_bots.publishers.coordinator import PublisherCoordinatorReport
 CONNECTION_NAME = "models" if "pytest" in sys.modules else None
 
 
-async def load_events(queryset: QuerySet[Event]) -> list[Event]:
+async def prefetch_event_relations(queryset: QuerySet[Event]) -> list[Event]:
     return (
-        await queryset.prefetch_related("publications")
-        .prefetch_related("publications__publisher")
+        await queryset.prefetch_related("publications__publisher")
         .order_by("begin_datetime")
         .distinct()
     )
@@ -32,14 +31,14 @@ async def events_with_status(
 ) -> Iterable[MobilizonEvent]:
     return map(
         MobilizonEvent.from_model,
-        await load_events(Event.filter(publications__status__in=statuses)),
+        await prefetch_event_relations(Event.filter(publications__status__in=statuses)),
     )
 
 
 async def get_published_events() -> Iterable[MobilizonEvent]:
     return map(
         MobilizonEvent.from_model,
-        await load_events(
+        await prefetch_event_relations(
             Event.filter(publications__status=PublicationStatus.COMPLETED)
         ),
     )
