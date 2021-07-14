@@ -89,23 +89,6 @@ class SelectNextEventStrategy(EventSelectionStrategy):
         return first_unpublished_event
 
 
-class EventSelector:
-    def __init__(
-        self,
-        published_events: List[MobilizonEvent],
-        unpublished_events: List[MobilizonEvent],
-    ):
-        self.published_events = published_events.sort(key=lambda x: x.begin_datetime)
-        self.unpublished_events = unpublished_events.sort(
-            key=lambda x: x.begin_datetime
-        )
-
-    def select_event_to_publish(
-        self, strategy: EventSelectionStrategy
-    ) -> Optional[MobilizonEvent]:
-        return strategy._select(self.published_events, self.unpublished_events)
-
-
 STRATEGY_NAME_TO_STRATEGY_CLASS = {"next_event": SelectNextEventStrategy}
 
 
