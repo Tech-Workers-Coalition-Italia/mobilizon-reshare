@@ -1,5 +1,6 @@
 from dataclasses import dataclass, asdict
-from typing import Optional
+from enum import IntEnum
+from typing import Optional, Set
 
 import arrow
 import tortoise.timezone
@@ -7,6 +8,13 @@ from jinja2 import Template
 
 from mobilizon_bots.models.event import Event
 from mobilizon_bots.models.publication import PublicationStatus, Publication
+
+
+class EventPublicationStatus(IntEnum):
+    WAITING = 1
+    FAILED = 2
+    COMPLETED = 3
+    PARTIAL = 4
 
 
 @dataclass
@@ -22,15 +30,15 @@ class MobilizonEvent:
     thumbnail_link: Optional[str] = None
     location: Optional[str] = None
     publication_time: Optional[dict[str, arrow.Arrow]] = None
-    publication_status: PublicationStatus = PublicationStatus.WAITING
+    status: EventPublicationStatus = EventPublicationStatus.WAITING
 
     def __post_init__(self):
         assert self.begin_datetime.tzinfo == self.end_datetime.tzinfo
         assert self.begin_datetime < self.end_datetime
         if self.publication_time:
-            assert self.publication_status in [
-                PublicationStatus.COMPLETED,
-                PublicationStatus.PARTIAL,
+            assert self.status in [
+                EventPublicationStatus.COMPLETED,
+                EventPublicationStatus.PARTIAL,
             ]
 
     def _fill_template(self, pattern: Template) -> str:
@@ -52,19 +60,20 @@ class MobilizonEvent:
         )
 
     @staticmethod
-    def compute_status(publications: list[Publication]):
-        unique_statuses = set(pub.status for pub in publications)
-        assert PublicationStatus.PARTIAL not in unique_statuses
+    def compute_status(publications: list[Publication]) -> EventPublicationStatus:
+        unique_statuses: Set[PublicationStatus] = set(
+            pub.status for pub in publications
+        )
 
         if PublicationStatus.FAILED in unique_statuses:
-            return PublicationStatus.FAILED
+            return EventPublicationStatus.FAILED
         elif unique_statuses == {
             PublicationStatus.COMPLETED,
             PublicationStatus.WAITING,
         }:
-            return PublicationStatus.PARTIAL
+            return EventPublicationStatus.PARTIAL
         elif len(unique_statuses) == 1:
-            return unique_statuses.pop()
+            return EventPublicationStatus[unique_statuses.pop().name]
 
         raise ValueError(f"Illegal combination of PublicationStatus: {unique_statuses}")
 
@@ -84,7 +93,6 @@ class MobilizonEvent:
             mobilizon_id=event.mobilizon_id,
             thumbnail_link=event.thumbnail_link,
             location=event.location,
-            # TODO: Discuss publications (both time and status)
             publication_time={
                 pub.publisher.name: arrow.get(
                     tortoise.timezone.localtime(value=pub.timestamp, timezone=tz)
@@ -93,5 +101,5 @@ class MobilizonEvent:
             }
             if publication_status != PublicationStatus.WAITING
             else None,
-            publication_status=publication_status,
+            status=publication_status,
         )
