@@ -81,7 +81,7 @@ async def test_get_published_events(
     published_events = list(await get_published_events())
     assert len(published_events) == 1
 
-    assert published_events[0].name == events[0].name
+    assert published_events[0].mobilizon_id == events[0].mobilizon_id
 
     assert published_events[0].begin_datetime == arrow.get(today)
 
@@ -94,13 +94,13 @@ async def test_get_unpublished_events(
         publisher_model_generator, publication_model_generator, event_model_generator
     )
 
-    published_events = list(await get_unpublished_events())
-    assert len(published_events) == 2
+    unpublished_events = list(await get_unpublished_events())
+    assert len(unpublished_events) == 2
 
-    assert published_events[0].name == events[2].name
-    assert published_events[1].name == events[0].name
-    assert published_events[0].begin_datetime == events[2].begin_datetime
-    assert published_events[1].begin_datetime == events[0].begin_datetime
+    assert unpublished_events[0].mobilizon_id == events[2].mobilizon_id
+    assert unpublished_events[1].mobilizon_id == events[0].mobilizon_id
+    assert unpublished_events[0].begin_datetime == events[2].begin_datetime
+    assert unpublished_events[1].begin_datetime == events[0].begin_datetime
 
 
 @pytest.mark.asyncio

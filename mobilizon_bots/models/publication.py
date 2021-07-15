@@ -7,8 +7,7 @@ from tortoise.models import Model
 class PublicationStatus(IntEnum):
     WAITING = 1
     FAILED = 2
-    PARTIAL = 3
-    COMPLETED = 4
+    COMPLETED = 3
 
 
 class Publication(Model):

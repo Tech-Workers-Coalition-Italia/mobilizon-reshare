@@ -39,7 +39,7 @@ def parse_event(data):
         thumbnail_link=parse_picture(data),
         location=parse_location(data),
         publication_time=None,
-        publication_status=PublicationStatus.WAITING,
+        status=PublicationStatus.WAITING,
     )
 
 

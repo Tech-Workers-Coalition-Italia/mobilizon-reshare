@@ -1,7 +1,8 @@
 from dataclasses import dataclass, field
+from enum import IntEnum
 from typing import List
 
-from mobilizon_bots.event.event import MobilizonEvent, PublicationStatus
+from mobilizon_bots.event.event import MobilizonEvent
 from mobilizon_bots.publishers import get_active_publishers
 from mobilizon_bots.publishers.abstract import AbstractPublisher
 from mobilizon_bots.publishers.exceptions import PublisherError
@@ -10,9 +11,15 @@ from mobilizon_bots.publishers.telegram import TelegramPublisher
 KEY2CLS = {"telegram": TelegramPublisher}
 
 
+class PublisherStatus(IntEnum):
+    WAITING = 1
+    FAILED = 2
+    COMPLETED = 3
+
+
 @dataclass
 class PublisherReport:
-    status: PublicationStatus
+    status: PublisherStatus
     reason: str
     publisher: AbstractPublisher
 
@@ -23,7 +30,7 @@ class PublisherCoordinatorReport:
 
     @property
     def successful(self):
-        return all(r.status == PublicationStatus.COMPLETED for r in self.reports)
+        return all(r.status == PublisherStatus.COMPLETED for r in self.reports)
 
     def __iter__(self):
         return self.reports.__iter__()
@@ -43,7 +50,11 @@ class PublisherCoordinator:
 
     def _make_successful_report(self):
         return [
-            PublisherReport(status=PublicationStatus.COMPLETED, reason="", publisher=p,)
+            PublisherReport(
+                status=PublisherStatus.COMPLETED,
+                reason="",
+                publisher=p,
+            )
             for p in self.publishers
         ]
 
@@ -55,7 +66,9 @@ class PublisherCoordinator:
             except PublisherError as e:
                 failed_publishers_reports.append(
                     PublisherReport(
-                        status=PublicationStatus.FAILED, reason=repr(e), publisher=p,
+                        status=PublisherStatus.FAILED,
+                        reason=repr(e),
+                        publisher=p,
                     )
                 )
         reports = failed_publishers_reports or self._make_successful_report()
@@ -67,7 +80,7 @@ class PublisherCoordinator:
             if not p.are_credentials_valid():
                 invalid_credentials.append(
                     PublisherReport(
-                        status=PublicationStatus.FAILED,
+                        status=PublisherStatus.FAILED,
                         reason="Invalid credentials",
                         publisher=p,
                     )
@@ -75,7 +88,7 @@ class PublisherCoordinator:
             if not p.is_event_valid():
                 invalid_event.append(
                     PublisherReport(
-                        status=PublicationStatus.FAILED,
+                        status=PublisherStatus.FAILED,
                         reason="Invalid event",
                         publisher=p,
                     )
@@ -83,7 +96,7 @@ class PublisherCoordinator:
             if not p.is_message_valid():
                 invalid_msg.append(
                     PublisherReport(
-                        status=PublicationStatus.FAILED,
+                        status=PublisherStatus.FAILED,
                         reason="Invalid message",
                         publisher=p,
                     )
