@@ -77,6 +77,9 @@ class AbstractNotifier(ABC):
         if raise_error is not None:
             raise raise_error(msg)
 
+    def get_name(self) -> str:
+        return self._conf[1]
+
     def are_credentials_valid(self) -> bool:
         try:
             self.validate_credentials()
