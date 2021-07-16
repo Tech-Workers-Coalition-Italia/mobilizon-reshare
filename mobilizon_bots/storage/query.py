@@ -1,6 +1,6 @@
-from typing import Iterable, Optional, List
-
 import sys
+from typing import Iterable, Optional
+
 from arrow import Arrow
 from tortoise.queryset import QuerySet
 from tortoise.transactions import atomic
@@ -18,7 +18,7 @@ from mobilizon_bots.publishers.coordinator import PublisherCoordinatorReport
 CONNECTION_NAME = "models" if "pytest" in sys.modules else None
 
 
-async def prefetch_event_relations(queryset: QuerySet[Event]) -> List[Event]:
+async def prefetch_event_relations(queryset: QuerySet[Event]) -> list[Event]:
     return (
         await queryset.prefetch_related("publications__publisher")
         .order_by("begin_datetime")
@@ -38,7 +38,7 @@ def _add_date_window(
 
 
 async def events_with_status(
-    status: List[EventPublicationStatus],
+    status: list[EventPublicationStatus],
     from_date: Optional[Arrow] = None,
     to_date: Optional[Arrow] = None,
 ) -> Iterable[MobilizonEvent]:
@@ -76,6 +76,15 @@ async def get_unpublished_events() -> Iterable[MobilizonEvent]:
     return await events_with_status([EventPublicationStatus.WAITING])
 
 
+async def get_mobilizon_event_publications(
+    event: MobilizonEvent,
+) -> Iterable[Publication]:
+    models = await prefetch_event_relations(
+        Event.filter(mobilizon_id=event.mobilizon_id)
+    )
+    return models[0].publications
+
+
 async def save_event(event):
 
     event_model = event.to_model()
@@ -87,7 +96,9 @@ async def save_publication(publisher_name, event_model, status: PublicationStatu
 
     publisher = await Publisher.filter(name=publisher_name).first()
     await Publication.create(
-        status=status, event_id=event_model.id, publisher_id=publisher.id,
+        status=status,
+        event_id=event_model.id,
+        publisher_id=publisher.id,
     )
 
 
@@ -117,8 +128,3 @@ async def create_unpublished_events(
 
 async def create_publisher(name: str, account_ref: Optional[str] = None) -> None:
     await Publisher.create(name=name, account_ref=account_ref)
-
-
-async def save_publication_report(publication_report: PublisherCoordinatorReport):
-    for publisher_report in publication_report:
-        pass

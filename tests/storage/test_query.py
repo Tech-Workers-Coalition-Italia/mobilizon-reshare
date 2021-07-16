@@ -10,6 +10,7 @@ from mobilizon_bots.storage.query import (
     get_published_events,
     get_unpublished_events,
     create_unpublished_events,
+    get_mobilizon_event_publications,
 )
 
 
@@ -141,3 +142,33 @@ async def test_create_unpublished_events(
     assert unpublished_events[1].mobilizon_id == "mobid_1"
     assert unpublished_events[2].mobilizon_id == "12345"
     assert unpublished_events[3].mobilizon_id == "67890"
+
+
+@pytest.mark.asyncio
+async def test_get_mobilizon_event_publications(
+    publisher_model_generator,
+    publication_model_generator,
+    event_model_generator,
+    setup,
+):
+    events, publications, publishers, today = await setup(
+        publisher_model_generator, publication_model_generator, event_model_generator
+    )
+
+    await events[0].fetch_related("publications__publisher")
+    mobilizon_event = MobilizonEvent.from_model(events[0])
+
+    publications = list(await get_mobilizon_event_publications(mobilizon_event))
+    for pub in publications:
+        await pub.fetch_related("event")
+        await pub.fetch_related("publisher")
+
+    assert len(publications) == 2
+
+    assert publications[0].event.name == "event_1"
+    assert publications[0].publisher.name == "publisher_1"
+    assert publications[0].status == PublicationStatus.WAITING
+
+    assert publications[1].event.name == "event_1"
+    assert publications[1].publisher.name == "publisher_2"
+    assert publications[1].status == PublicationStatus.COMPLETED
