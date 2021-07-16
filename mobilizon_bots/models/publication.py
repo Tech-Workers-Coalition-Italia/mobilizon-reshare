@@ -15,8 +15,9 @@ class Publication(Model):
     status = fields.IntEnumField(PublicationStatus)
 
     # When a Publication's status is WAITING
-    # we don't need a timestamp
+    # we don't need a timestamp nor a reason
     timestamp = fields.DatetimeField(null=True)
+    reason = fields.TextField(null=True)
 
     event = fields.ForeignKeyField("models.Event", related_name="publications")
     publisher = fields.ForeignKeyField("models.Publisher", related_name="publications")
