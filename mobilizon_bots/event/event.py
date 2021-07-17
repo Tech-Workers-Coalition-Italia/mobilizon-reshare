@@ -103,3 +103,6 @@ class MobilizonEvent:
             else None,
             status=publication_status,
         )
+
+    def pretty(self):
+        return f"{self.name}|{self.status.name}|{self.mobilizon_id}"

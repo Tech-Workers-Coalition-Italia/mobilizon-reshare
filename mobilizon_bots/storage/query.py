@@ -1,7 +1,6 @@
+from typing import Iterable, Optional, List
+
 import sys
-
-from typing import Iterable, Optional
-
 from tortoise.queryset import QuerySet
 from tortoise.transactions import atomic
 
@@ -18,12 +17,16 @@ from mobilizon_bots.publishers.coordinator import PublisherCoordinatorReport
 CONNECTION_NAME = "models" if "pytest" in sys.modules else None
 
 
-async def prefetch_event_relations(queryset: QuerySet[Event]) -> list[Event]:
+async def prefetch_event_relations(queryset: QuerySet[Event]) -> List[Event]:
     return (
         await queryset.prefetch_related("publications__publisher")
         .order_by("begin_datetime")
         .distinct()
     )
+
+
+async def get_all_events() -> Iterable[MobilizonEvent]:
+    return map(MobilizonEvent.from_model, await prefetch_event_relations(Event.all()),)
 
 
 async def events_with_status(
@@ -59,9 +62,7 @@ async def save_publication(publisher_name, event_model, status: PublicationStatu
 
     publisher = await Publisher.filter(name=publisher_name).first()
     await Publication.create(
-        status=status,
-        event_id=event_model.id,
-        publisher_id=publisher.id,
+        status=status, event_id=event_model.id, publisher_id=publisher.id,
     )
 
 
