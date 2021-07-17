@@ -11,7 +11,6 @@ from mobilizon_bots.config.publishers import publisher_names
 def build_settings(
     settings_files: List[str] = None, validators: List[Validator] = None
 ):
-
     SETTINGS_FILE = (
         settings_files
         or os.environ.get("MOBILIZON_BOTS_SETTINGS_FILE")
@@ -38,29 +37,8 @@ def build_and_validate_settings(settings_files: List[str] = None):
     specific for each publisher, notifier and publication strategy.
     """
 
-    # we first do a preliminary load of the settings without validation. We will later use them to determine which
-    # publishers, notifiers and strategy have been selected
-    raw_settings = build_settings(settings_files=settings_files)
-
-    # These validators are always applied
-    base_validators = (
-        [
-            # strategy to decide events to publish
-            Validator("selection.strategy", must_exist=True, is_type_of=str),
-            Validator(
-                "publishing.window.begin",
-                must_exist=True,
-                is_type_of=int,
-                gte=0,
-                lte=24,
-            ),
-            Validator(
-                "publishing.window.end", must_exist=True, is_type_of=int, gte=0, lte=24
-            ),
-            # url of the main Mobilizon instance to download events from
-            Validator("source.mobilizon.url", must_exist=True, is_type_of=str),
-            Validator("source.mobilizon.group", must_exist=True, is_type_of=str),
-        ]
+    preliminary_validators = (
+        [Validator("selection.strategy", must_exist=True, is_type_of=str)]
         + [
             Validator(
                 f"publisher.{publisher_name}.active", must_exist=True, is_type_of=bool
@@ -74,6 +52,26 @@ def build_and_validate_settings(settings_files: List[str] = None):
             for notifier_name in notifier_names
         ]
     )
+
+    # we first do a preliminary load of the settings without validation. We will later use them to determine which
+    # publishers, notifiers and strategy have been selected
+    raw_settings = build_settings(
+        settings_files=settings_files, validators=preliminary_validators
+    )
+
+    # These validators are always applied
+    base_validators = [
+        # strategy to decide events to publish
+        Validator(
+            "publishing.window.begin", must_exist=True, is_type_of=int, gte=0, lte=24,
+        ),
+        Validator(
+            "publishing.window.end", must_exist=True, is_type_of=int, gte=0, lte=24
+        ),
+        # url of the main Mobilizon instance to download events from
+        Validator("source.mobilizon.url", must_exist=True, is_type_of=str),
+        Validator("source.mobilizon.group", must_exist=True, is_type_of=str),
+    ] + preliminary_validators
 
     # we retrieve validators that are conditional. Each module will analyze the settings and decide which validators
     # need to be applied.
@@ -107,11 +105,11 @@ class CustomConfig:
         if cls._instance is None:
             print("Creating the object")
             cls._instance = super(CustomConfig, cls).__new__(cls)
-            cls.settings = build_settings(settings_files)
+            cls.settings = build_and_validate_settings(settings_files)
         return cls._instance
 
     def update(self, settings_files: List[str] = None):
-        self.settings = build_settings(settings_files)
+        self.settings = build_and_validate_settings(settings_files)
 
 
 def get_settings():
