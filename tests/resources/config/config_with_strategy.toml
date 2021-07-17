@@ -1,0 +1,3 @@
+
+[default.selection]
+strategy = "next_event"
