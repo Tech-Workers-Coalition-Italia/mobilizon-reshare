@@ -25,40 +25,16 @@ def test_update_failure_invalid_preliminary_config(invalid_settings_file):
 
 
 @pytest.mark.parametrize(
-    "invalid_toml",
-    [pkg_resources.resource_filename("resources.config", "config_with_strategy.toml")],
-)
-def test_update_failure_config_without_publishers(invalid_toml):
-    with pytest.raises(dynaconf.validator.ValidationError) as e:
-        update_settings_files([invalid_toml])
-    assert e.match("publisher.*.active")
-
-
-@pytest.mark.parametrize(
-    "invalid_toml",
+    "invalid_toml,pattern_in_exception",
     [
-        pkg_resources.resource_filename(
-            "resources.config", "config_with_preliminary.toml"
-        )
+        ["config_with_strategy.toml", "publisher.*.active"],
+        ["config_with_preliminary.toml", "publishing.window.begin"],
+        ["config_with_invalid_telegram.toml", "token"],
     ],
 )
-def test_update_failure_config_with_only_preliminary(invalid_toml):
+def test_update_failure_config_without_publishers(invalid_toml, pattern_in_exception):
     with pytest.raises(dynaconf.validator.ValidationError) as e:
-        update_settings_files([invalid_toml])
-
-    assert e.match("publishing.window.begin")
-
-
-@pytest.mark.parametrize(
-    "invalid_toml",
-    [
-        pkg_resources.resource_filename(
-            "resources.config", "config_with_invalid_telegram.toml"
+        update_settings_files(
+            [pkg_resources.resource_filename("tests.resources.config", invalid_toml)]
         )
-    ],
-)
-def test_update_failure_config_with_invalid_telegram(invalid_toml):
-    with pytest.raises(dynaconf.validator.ValidationError) as e:
-        update_settings_files([invalid_toml])
-
-    assert e.match("token")
+    assert e.match(pattern_in_exception)
