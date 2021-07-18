@@ -9,7 +9,6 @@ from mobilizon_bots.event.event import MobilizonEvent, EventPublicationStatus
 from mobilizon_bots.models.event import Event
 from mobilizon_bots.models.publication import Publication, PublicationStatus
 from mobilizon_bots.models.publisher import Publisher
-from mobilizon_bots.publishers.coordinator import PublisherCoordinatorReport
 
 # This is due to Tortoise community fixtures to
 # set up and tear down a DB instance for Pytest.
@@ -27,13 +26,15 @@ async def prefetch_event_relations(queryset: QuerySet[Event]) -> list[Event]:
 
 
 def _add_date_window(
-    query, from_date: Optional[Arrow] = None, to_date: Optional[Arrow] = None,
+    query,
+    from_date: Optional[Arrow] = None,
+    to_date: Optional[Arrow] = None,
 ):
 
     if from_date:
-        query = query.filter(end_datetime__gt=from_date.datetime)
+        query = query.filter(end_datetime__gt=from_date.to("utc").datetime)
     if to_date:
-        query = query.filter(end_datetime__lt=to_date.datetime)
+        query = query.filter(end_datetime__lt=to_date.to("utc").datetime)
     return query
 
 
@@ -49,15 +50,19 @@ async def events_with_status(
         return event_status in status
 
     query = Event.all()
-    _add_date_window(query, from_date, to_date)
+
     return map(
         MobilizonEvent.from_model,
-        filter(_filter_event_with_status, await prefetch_event_relations(query),),
+        filter(
+            _filter_event_with_status,
+            await prefetch_event_relations(_add_date_window(query, from_date, to_date)),
+        ),
     )
 
 
 async def get_all_events(
-    from_date: Optional[Arrow] = None, to_date: Optional[Arrow] = None,
+    from_date: Optional[Arrow] = None,
+    to_date: Optional[Arrow] = None,
 ) -> Iterable[MobilizonEvent]:
 
     return map(
