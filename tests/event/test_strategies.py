@@ -34,7 +34,8 @@ def mock_publication_window(publication_window):
     )
 
 
-def test_window_no_event():
+@pytest.mark.parametrize("current_hour", [15])
+def test_window_no_event(mock_arrow_now):
     selected_event = SelectNextEventStrategy().select([], [])
     assert selected_event is None
 
@@ -103,6 +104,55 @@ def test_window_simple_event_found(
 
     selected_event = select_event_to_publish(published_events, unpublished_events)
     assert selected_event is unpublished_events[0]
+
+
+@pytest.mark.parametrize("current_hour", [15])
+@pytest.mark.parametrize("strategy_name", ["next_event"])
+def test_window_simple_no_published_events(
+    event_generator, set_strategy, mock_arrow_now,
+):
+    "Testing that if no event is published, the function takes the first available unpublished event"
+    unpublished_events = [
+        event_generator(
+            published=False,
+            begin_date=arrow.Arrow(year=2021, month=1, day=5, hour=11, minute=30),
+        ),
+        event_generator(
+            published=False,
+            begin_date=arrow.Arrow(year=2021, month=1, day=5, hour=11, minute=50),
+        ),
+    ]
+
+    selected_event = select_event_to_publish([], unpublished_events)
+    assert selected_event is unpublished_events[0]
+
+
+@pytest.mark.parametrize("current_hour", [15])
+@pytest.mark.parametrize("strategy_name", ["next_event"])
+def test_window_simple_event_too_recent(
+    event_generator, set_strategy, mock_arrow_now,
+):
+    "Testing that if an event has been published too recently, no event is selected for publication"
+    unpublished_events = [
+        event_generator(
+            published=False,
+            begin_date=arrow.Arrow(year=2021, month=1, day=5, hour=11, minute=30),
+        ),
+        event_generator(
+            published=False,
+            begin_date=arrow.Arrow(year=2021, month=1, day=5, hour=11, minute=50),
+        ),
+    ]
+
+    published_events = [
+        event_generator(
+            published=True,
+            publication_time={"telegram": arrow.now().shift(minutes=-5)},
+        )
+    ]
+
+    selected_event = select_event_to_publish(published_events, unpublished_events)
+    assert selected_event is None
 
 
 @pytest.mark.parametrize("current_hour", [15])
