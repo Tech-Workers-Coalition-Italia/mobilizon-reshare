@@ -1,6 +1,7 @@
 import sys
 from typing import Iterable, Optional
 
+import arrow
 from arrow import Arrow
 from tortoise.queryset import QuerySet
 from tortoise.transactions import atomic
@@ -14,6 +15,8 @@ from mobilizon_bots.models.publisher import Publisher
 # set up and tear down a DB instance for Pytest.
 # See: https://github.com/tortoise/tortoise-orm/issues/419#issuecomment-696991745
 # and: https://docs.pytest.org/en/stable/example/simple.html
+from mobilizon_bots.publishers.coordinator import PublisherCoordinatorReport
+
 CONNECTION_NAME = "models" if "pytest" in sys.modules else None
 
 
@@ -133,3 +136,23 @@ async def create_unpublished_events(
 
 async def create_publisher(name: str, account_ref: Optional[str] = None) -> None:
     await Publisher.create(name=name, account_ref=account_ref)
+
+
+@atomic(CONNECTION_NAME)
+async def save_publication_report(
+    publication_report: PublisherCoordinatorReport, event: MobilizonEvent
+):
+    publications: dict[str, Publication] = {
+        p.publisher.name: p for p in await get_mobilizon_event_publications(event)
+    }
+
+    for publisher_report in publication_report:
+        publisher_name = publisher_report.publisher.get_name()
+
+        assert publisher_name in publications.keys()
+
+        publications[publisher_name].status = publisher_report.status
+        publications[publisher_name].reason = publisher_report.reason
+        publications[publisher_name].timestamp = arrow.now().datetime
+
+        await publications[publisher_name].save()
