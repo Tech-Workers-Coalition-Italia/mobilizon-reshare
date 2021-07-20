@@ -1,7 +1,7 @@
 import asyncio
 import logging
+import traceback
 from logging.config import dictConfig
-
 from pathlib import Path
 
 from mobilizon_bots.config.config import update_settings_files
@@ -28,6 +28,8 @@ async def _safe_execution(f, settings_file):
     return_code = 1
     try:
         return_code = await f()
+    except Exception:
+        traceback.print_exc()
     finally:
         logger.debug("Closing")
         await graceful_exit(return_code)

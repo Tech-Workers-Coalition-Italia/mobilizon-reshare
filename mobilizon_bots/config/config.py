@@ -103,7 +103,6 @@ class CustomConfig:
 
     def __new__(cls, settings_files: List[str] = None):
         if cls._instance is None:
-            print("Creating the object")
             cls._instance = super(CustomConfig, cls).__new__(cls)
             cls.settings = build_and_validate_settings(settings_files)
         return cls._instance
