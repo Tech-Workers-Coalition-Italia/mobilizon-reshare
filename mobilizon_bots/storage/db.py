@@ -48,4 +48,8 @@ def gracefully_tear_down():
     logger.info("Shutting down DB")
     loop = asyncio.new_event_loop()
     asyncio.set_event_loop(loop)
-    asyncio.run(Tortoise.close_connections())
+    asyncio.run(tear_down())
+
+
+async def tear_down():
+    return await Tortoise.close_connections()
