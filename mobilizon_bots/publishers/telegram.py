@@ -8,6 +8,7 @@ from .exceptions import (
     InvalidEvent,
     InvalidResponse,
 )
+from ..formatting.description import html_to_markdown
 
 
 class TelegramPublisher(AbstractPublisher):
@@ -24,8 +25,13 @@ class TelegramPublisher(AbstractPublisher):
         conf = self.conf
         res = requests.post(
             url=f"https://api.telegram.org/bot{conf.token}/sendMessage",
-            params={"chat_id": conf.chat_id, "text": self.message},
+            json={
+                "chat_id": conf.chat_id,
+                "text": self.message,
+                "parse_mode": "markdownv2",
+            },
         )
+        print(res.json())
         self._validate_response(res)
 
     def validate_credentials(self):
@@ -42,8 +48,7 @@ class TelegramPublisher(AbstractPublisher):
             err.append("username")
         if err:
             self._log_error(
-                ", ".join(err) + " is/are missing",
-                raise_error=InvalidCredentials,
+                ", ".join(err) + " is/are missing", raise_error=InvalidCredentials,
             )
 
         res = requests.get(f"https://api.telegram.org/bot{token}/getMe")
@@ -51,8 +56,7 @@ class TelegramPublisher(AbstractPublisher):
 
         if not username == data.get("result", {}).get("username"):
             self._log_error(
-                "Found a different bot than the expected one",
-                raise_error=InvalidBot,
+                "Found a different bot than the expected one", raise_error=InvalidBot,
             )
 
     def validate_event(self) -> None:
@@ -65,8 +69,7 @@ class TelegramPublisher(AbstractPublisher):
             res.raise_for_status()
         except requests.exceptions.HTTPError as e:
             self._log_error(
-                f"Server returned invalid data: {str(e)}",
-                raise_error=InvalidResponse,
+                f"Server returned invalid data: {str(e)}", raise_error=InvalidResponse,
             )
 
         try:
@@ -79,8 +82,7 @@ class TelegramPublisher(AbstractPublisher):
 
         if not data.get("ok"):
             self._log_error(
-                f"Invalid request (response: {data})",
-                raise_error=InvalidResponse,
+                f"Invalid request (response: {data})", raise_error=InvalidResponse,
             )
 
         return data
@@ -88,3 +90,7 @@ class TelegramPublisher(AbstractPublisher):
     def validate_message(self) -> None:
         # TODO implement
         pass
+
+    def _preprocess_event(self):
+        self.event.description = html_to_markdown(self.event.description)
+        self.event.name = html_to_markdown(self.event.name)

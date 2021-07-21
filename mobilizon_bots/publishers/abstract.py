@@ -153,10 +153,17 @@ class AbstractPublisher(AbstractNotifier):
         """
         raise NotImplementedError
 
+    def _preprocess_event(self):
+        """
+        Allows publishers to preprocess events before feeding them to the template
+        """
+        pass
+
     def get_message_from_event(self) -> str:
         """
         Retrieves a message from the event itself.
         """
+        self._preprocess_event()
         return self.event.format(self.get_message_template())
 
     def get_message_template(self) -> Template:
