@@ -4,9 +4,15 @@ from mobilizon_bots.event.event_selection_strategies import select_event_to_publ
 from mobilizon_bots.mobilizon.events import get_unpublished_events
 from mobilizon_bots.publishers import get_active_publishers
 from mobilizon_bots.publishers.coordinator import PublisherCoordinator
+from mobilizon_bots.storage.db import tear_down
 from mobilizon_bots.storage.query import get_published_events, create_unpublished_events
 
 logger = logging.getLogger(__name__)
+
+
+async def graceful_exit(code):
+    await tear_down()
+    exit(code)
 
 
 async def main():
@@ -28,6 +34,10 @@ async def main():
     if event:
         logger.debug(f"Event to publish found: {event.name}")
         result = PublisherCoordinator(event).run()
-        return 0 if result.successful else 1
+
+        logger.debug("Closing")
+
+        await graceful_exit(0 if result.successful else 1)
     else:
-        return 0
+        logger.debug("Closing")
+        await graceful_exit(0)

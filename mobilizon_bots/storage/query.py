@@ -1,4 +1,5 @@
-from typing import Iterable, Optional, List
+from typing import Iterable, Optional
+from typing import List
 
 import sys
 from tortoise.queryset import QuerySet
