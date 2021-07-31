@@ -38,12 +38,12 @@ async def events_with_status(
         else:
             return event_status == status
 
-    if from_date is None and to_date is None:
-        query = Event.all()
+    query = Event.all()
+
     if from_date:
-        query = Event.filter(end_datetime__gt=from_date.datetime)
+        query = query.filter(end_datetime__gt=from_date.datetime)
     if to_date:
-        query = Event.filter(end_datetime__lt=to_date.datetime)
+        query = query.filter(end_datetime__lt=to_date.datetime)
 
     return map(
         MobilizonEvent.from_model,
