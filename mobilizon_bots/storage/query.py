@@ -1,5 +1,7 @@
+import logging
 import sys
-from typing import Iterable, Optional
+from typing import Iterable, Optional, Union
+from uuid import UUID
 
 import arrow
 from arrow import Arrow
@@ -10,6 +12,9 @@ from mobilizon_bots.event.event import MobilizonEvent, EventPublicationStatus
 from mobilizon_bots.models.event import Event
 from mobilizon_bots.models.publication import Publication, PublicationStatus
 from mobilizon_bots.models.publisher import Publisher
+from mobilizon_bots.publishers.coordinator import PublisherCoordinatorReport
+
+logger = logging.getLogger(__name__)
 
 # This is due to Tortoise community fixtures to
 # set up and tear down a DB instance for Pytest.
@@ -39,6 +44,25 @@ def _add_date_window(
     if to_date:
         query = query.filter(end_datetime__lt=to_date.to("utc").datetime)
     return query
+
+
+async def publications_with_status(
+    status: PublicationStatus,
+    event_mobilizon_id: Optional[UUID] = None,
+    from_date: Optional[Arrow] = None,
+    to_date: Optional[Arrow] = None,
+) -> Iterable[Publication]:
+    query = Publication.filter(status=status)
+
+    if event_mobilizon_id:
+        query = query.prefetch_related("event")
+        query = query.filter(event__mobilizon_id=event_mobilizon_id)
+
+    query = _add_date_window(query, from_date, to_date)
+
+    query = query.prefetch_related("publisher")
+
+    return await query.distinct()
 
 
 async def events_with_status(
@@ -93,16 +117,43 @@ async def get_mobilizon_event_publications(
     return models[0].publications
 
 
-async def save_event(event):
+async def get_publishers(
+    name: Optional[str] = None,
+) -> Union[Publisher, Iterable[Publisher]]:
+    if name:
+        return await Publisher.filter(name=name).first()
+    else:
+        return await Publisher.all()
+
+
+async def save_event(event: MobilizonEvent) -> Event:
 
     event_model = event.to_model()
     await event_model.save()
     return event_model
 
 
-async def save_publication(publisher_name, event_model, status: PublicationStatus):
+async def create_publisher(name: str, account_ref: Optional[str] = None) -> None:
+    await Publisher.create(name=name, account_ref=account_ref)
 
-    publisher = await Publisher.filter(name=publisher_name).first()
+
+@atomic(CONNECTION_NAME)
+async def update_publishers(
+    names: Iterable[str],
+) -> None:
+    names = set(names)
+    known_publisher_names = set(await get_publishers())
+    for name in names.difference(known_publisher_names):
+        logging.info(f"Creating {name} publisher")
+        await create_publisher(name)
+
+
+@atomic(CONNECTION_NAME)
+async def save_publication(
+    publisher_name: str, event_model: Event, status: PublicationStatus
+) -> None:
+
+    publisher = await get_publishers(publisher_name)
     await Publication.create(
         status=status,
         event_id=event_model.id,
@@ -134,25 +185,18 @@ async def create_unpublished_events(
             )
 
 
-async def create_publisher(name: str, account_ref: Optional[str] = None) -> None:
-    await Publisher.create(name=name, account_ref=account_ref)
-
-
 @atomic(CONNECTION_NAME)
 async def save_publication_report(
-    publication_report: PublisherCoordinatorReport, event: MobilizonEvent
-):
-    publications: dict[str, Publication] = {
-        p.publisher.name: p for p in await get_mobilizon_event_publications(event)
+    coordinator_report: PublisherCoordinatorReport, event: MobilizonEvent
+) -> None:
+    publications: dict[UUID, Publication] = {
+        p.id: p for p in await get_mobilizon_event_publications(event)
     }
 
-    for publisher_report in publication_report:
-        publisher_name = publisher_report.publisher.get_name()
+    for publication_id, publication_report in coordinator_report:
 
-        assert publisher_name in publications.keys()
+        publications[publication_id].status = publication_report.status
+        publications[publication_id].reason = publication_report.reason
+        publications[publication_id].timestamp = arrow.now().datetime
 
-        publications[publisher_name].status = publisher_report.status
-        publications[publisher_name].reason = publisher_report.reason
-        publications[publisher_name].timestamp = arrow.now().datetime
-
-        await publications[publisher_name].save()
+        await publications[publication_id].save()

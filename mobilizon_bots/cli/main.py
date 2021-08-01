@@ -1,8 +1,9 @@
 import logging.config
 
-from mobilizon_bots.cli import graceful_exit
+
 from mobilizon_bots.event.event_selection_strategies import select_event_to_publish
 from mobilizon_bots.mobilizon.events import get_unpublished_events
+from mobilizon_bots.models.publication import PublicationStatus
 from mobilizon_bots.publishers import get_active_publishers
 from mobilizon_bots.publishers.coordinator import PublisherCoordinator
 from mobilizon_bots.storage.query import (
@@ -10,8 +11,8 @@ from mobilizon_bots.storage.query import (
     get_unpublished_events as get_db_unpublished_events,
     create_unpublished_events,
     save_publication_report,
+    publications_with_status,
 )
-
 
 logger = logging.getLogger(__name__)
 
@@ -39,7 +40,16 @@ async def main():
     )
     if event:
         logger.debug(f"Event to publish found: {event.name}")
-        result = PublisherCoordinator(event).run()
+        result = PublisherCoordinator(
+            event,
+            [
+                (pub.id, pub.publisher.name)
+                for pub in await publications_with_status(
+                    status=PublicationStatus.WAITING,
+                    event_mobilizon_id=event.mobilizon_id,
+                )
+            ],
+        ).run()
         await save_publication_report(result, event)
 
         return 0 if result.successful else 1

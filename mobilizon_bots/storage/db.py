@@ -6,7 +6,7 @@ from pathlib import Path
 from tortoise import Tortoise
 
 from mobilizon_bots.config.publishers import publisher_names
-from mobilizon_bots.storage.query import create_publisher
+from mobilizon_bots.storage.query import update_publishers
 
 logger = logging.getLogger(__name__)
 
@@ -35,12 +35,10 @@ class MobilizonBotsDB:
         )
         if not self.is_init:
             await Tortoise.generate_schemas()
-            for name in publisher_names:
-                logging.info(f"Creating {name} publisher")
-                # TODO: Deal with account_ref
-                await create_publisher(name)
             self.is_init = True
             logger.info(f"Succesfully initialized database at {self.path}")
+
+        await update_publishers(publisher_names)
 
 
 @atexit.register
