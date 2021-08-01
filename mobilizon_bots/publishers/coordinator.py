@@ -32,7 +32,7 @@ class PublisherCoordinatorReport:
 class PublisherCoordinator:
     def __init__(self, event: MobilizonEvent, publications: list[tuple[UUID, str]]):
         self.publications = tuple(
-            (uuid, KEY2CLS[pn](event)) for uuid, pn in publications
+            (publication_id, KEY2CLS[publisher_name](event)) for publication_id, publisher_name in publications
         )
 
     def run(self) -> PublisherCoordinatorReport:
@@ -44,20 +44,20 @@ class PublisherCoordinator:
 
     def _make_successful_report(self):
         return {
-            uuid: PublicationReport(
+            publication_id: PublicationReport(
                 status=PublicationStatus.COMPLETED,
                 reason="",
             )
-            for uuid, _ in self.publications
+            for publication_id, _ in self.publications
         }
 
     def _post(self):
         failed_publishers_reports = {}
-        for uuid, p in self.publications:
+        for publication_id, p in self.publications:
             try:
                 p.post()
             except PublisherError as e:
-                failed_publishers_reports[uuid] = PublicationReport(
+                failed_publishers_reports[publication_id] = PublicationReport(
                     status=PublicationStatus.FAILED,
                     reason=repr(e),
                 )
@@ -66,7 +66,7 @@ class PublisherCoordinator:
 
     def _validate(self):
         errors: dict[UUID, PublicationReport] = {}
-        for uuid, p in self.publications:
+        for publication_id, p in self.publications:
             reason = []
             if not p.are_credentials_valid():
                 reason.append("Invalid credentials")
@@ -76,7 +76,7 @@ class PublisherCoordinator:
                 reason.append("Invalid message")
 
             if len(reason) > 0:
-                errors[uuid] = PublicationReport(
+                errors[publication_id] = PublicationReport(
                     status=PublicationStatus.FAILED, reason=", ".join(reason)
                 )
 

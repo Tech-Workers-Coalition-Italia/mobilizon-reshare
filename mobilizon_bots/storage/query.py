@@ -20,7 +20,6 @@ logger = logging.getLogger(__name__)
 # set up and tear down a DB instance for Pytest.
 # See: https://github.com/tortoise/tortoise-orm/issues/419#issuecomment-696991745
 # and: https://docs.pytest.org/en/stable/example/simple.html
-from mobilizon_bots.publishers.coordinator import PublisherCoordinatorReport
 
 CONNECTION_NAME = "models" if "pytest" in sys.modules else None
 
@@ -35,17 +34,19 @@ async def prefetch_event_relations(queryset: QuerySet[Event]) -> list[Event]:
 
 def _add_date_window(
     query,
+    field_name: str,
     from_date: Optional[Arrow] = None,
     to_date: Optional[Arrow] = None,
 ):
 
     if from_date:
-        query = query.filter(end_datetime__gt=from_date.to("utc").datetime)
+        query = query.filter(**{f"{field_name}__gt": from_date.to("utc").datetime})
     if to_date:
-        query = query.filter(end_datetime__lt=to_date.to("utc").datetime)
+        query = query.filter(**{f"{field_name}__lt": to_date.to("utc").datetime})
     return query
 
 
+@atomic(CONNECTION_NAME)
 async def publications_with_status(
     status: PublicationStatus,
     event_mobilizon_id: Optional[UUID] = None,
@@ -55,14 +56,13 @@ async def publications_with_status(
     query = Publication.filter(status=status)
 
     if event_mobilizon_id:
-        query = query.prefetch_related("event")
-        query = query.filter(event__mobilizon_id=event_mobilizon_id)
+        query = query.prefetch_related("event").filter(
+            event__mobilizon_id=event_mobilizon_id
+        )
 
-    query = _add_date_window(query, from_date, to_date)
+    query = _add_date_window(query, "timestamp", from_date, to_date)
 
-    query = query.prefetch_related("publisher")
-
-    return await query.distinct()
+    return await query.prefetch_related("publisher").order_by("timestamp").distinct()
 
 
 async def events_with_status(
@@ -82,7 +82,9 @@ async def events_with_status(
         MobilizonEvent.from_model,
         filter(
             _filter_event_with_status,
-            await prefetch_event_relations(_add_date_window(query, from_date, to_date)),
+            await prefetch_event_relations(
+                _add_date_window(query, "begin_datetime", from_date, to_date)
+            ),
         ),
     )
 
@@ -95,7 +97,7 @@ async def get_all_events(
     return map(
         MobilizonEvent.from_model,
         await prefetch_event_relations(
-            _add_date_window(Event.all(), from_date, to_date)
+            _add_date_window(Event.all(), "begin_datetime", from_date, to_date)
         ),
     )
 
@@ -142,7 +144,7 @@ async def update_publishers(
     names: Iterable[str],
 ) -> None:
     names = set(names)
-    known_publisher_names = set(await get_publishers())
+    known_publisher_names = set(p.name for p in await get_publishers())
     for name in names.difference(known_publisher_names):
         logging.info(f"Creating {name} publisher")
         await create_publisher(name)
