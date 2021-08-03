@@ -1,6 +1,7 @@
 from typing import Iterable
 
 import click
+from arrow import Arrow
 
 from mobilizon_bots.event.event import EventPublicationStatus
 from mobilizon_bots.event.event import MobilizonEvent
@@ -20,19 +21,21 @@ def show_events(events: Iterable[MobilizonEvent]):
     click.echo_via_pager("\n".join(map(pretty, events)))
 
 
-def pretty(event):
-
+def pretty(event: MobilizonEvent):
     return (
         f"{event.name}|{click.style(event.status.name, fg=status_to_color[event.status])}"
-        f"|{event.mobilizon_id}"
+        f"|{event.mobilizon_id}|{event.publication_time['telegram'].isoformat()}"
     )
 
 
-async def inspect_events(status: EventPublicationStatus = None):
+async def inspect_events(
+    status: EventPublicationStatus = None, frm: Arrow = None, to: Arrow = None
+):
 
-    # TODO: broken, don't merge. events_with_status expects a publication status and it doesn't work as intended here
     events = (
-        await get_all_events() if status is None else await events_with_status([status])
+        await events_with_status([status], from_date=frm, to_date=to)
+        if status
+        else await get_all_events(from_date=frm, to_date=to)
     )
 
     if events:

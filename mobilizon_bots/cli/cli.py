@@ -1,11 +1,17 @@
 import functools
+
 import click
-from mobilizon_bots.event.event import EventPublicationStatus
-from mobilizon_bots.cli.inspect import inspect_events
+from arrow import Arrow
+from click import pass_context, pass_obj
+
 from mobilizon_bots.cli import safe_execution
+from mobilizon_bots.cli.inspect import inspect_events
 from mobilizon_bots.cli.main import main
+from mobilizon_bots.event.event import EventPublicationStatus
 
 settings_file_option = click.option("--settings-file", type=click.Path(exists=True))
+from_date_option = click.option("--begin", type=click.DateTime(), expose_value=True)
+to_date_option = click.option("--end", type=click.DateTime(), expose_value=True)
 
 
 @click.group()
@@ -20,7 +26,13 @@ def start(settings_file):
 
 
 @mobilizon_bots.group()
-def inspect():
+@from_date_option
+@to_date_option
+@pass_context
+def inspect(ctx, begin, end):
+    ctx.ensure_object(dict)
+    ctx.obj["begin"] = Arrow.fromdatetime(begin) if begin else None
+    ctx.obj["end"] = Arrow.fromdatetime(end) if end else None
     pass
 
 
@@ -32,33 +44,60 @@ def all(settings_file):
 
 @inspect.command()
 @settings_file_option
-def waiting(settings_file):
+@pass_obj
+def waiting(obj, settings_file):
     safe_execution(
-        functools.partial(inspect_events, EventPublicationStatus.WAITING), settings_file
+        functools.partial(
+            inspect_events,
+            EventPublicationStatus.WAITING,
+            frm=obj["begin"],
+            to=obj["end"],
+        ),
+        settings_file,
     )
 
 
 @inspect.command()
 @settings_file_option
-def failed(settings_file):
+@pass_obj
+def failed(obj, settings_file):
     safe_execution(
-        functools.partial(inspect_events, EventPublicationStatus.FAILED), settings_file
+        functools.partial(
+            inspect_events,
+            EventPublicationStatus.FAILED,
+            frm=obj["begin"],
+            to=obj["end"],
+        ),
+        settings_file,
     )
 
 
 @inspect.command()
 @settings_file_option
-def partial(settings_file):
+@pass_obj
+def partial(obj, settings_file):
     safe_execution(
-        functools.partial(inspect_events, EventPublicationStatus.PARTIAL), settings_file
+        functools.partial(
+            inspect_events,
+            EventPublicationStatus.PARTIAL,
+            frm=obj["begin"],
+            to=obj["end"],
+        ),
+        settings_file,
     )
 
 
 @inspect.command()
 @settings_file_option
-def completed(settings_file):
+@pass_obj
+def completed(obj, settings_file):
     safe_execution(
-        functools.partial(inspect_events, EventPublicationStatus.COMPLETED),
+        functools.partial(
+            inspect_events,
+            EventPublicationStatus.COMPLETED,
+            frm=obj["begin"],
+            to=obj["end"],
+        ),
         settings_file,
     )
 
