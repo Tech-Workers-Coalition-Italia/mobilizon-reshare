@@ -1,11 +1,11 @@
+from typing import Iterable, Optional, List
+
 import sys
-
-from typing import Iterable, Optional
-
+from arrow import Arrow
 from tortoise.queryset import QuerySet
 from tortoise.transactions import atomic
 
-from mobilizon_bots.event.event import MobilizonEvent
+from mobilizon_bots.event.event import MobilizonEvent, EventPublicationStatus
 from mobilizon_bots.models.event import Event
 from mobilizon_bots.models.publication import Publication, PublicationStatus
 from mobilizon_bots.models.publisher import Publisher
@@ -18,7 +18,7 @@ from mobilizon_bots.publishers.coordinator import PublisherCoordinatorReport
 CONNECTION_NAME = "models" if "pytest" in sys.modules else None
 
 
-async def prefetch_event_relations(queryset: QuerySet[Event]) -> list[Event]:
+async def prefetch_event_relations(queryset: QuerySet[Event]) -> List[Event]:
     return (
         await queryset.prefetch_related("publications__publisher")
         .order_by("begin_datetime")
@@ -26,26 +26,54 @@ async def prefetch_event_relations(queryset: QuerySet[Event]) -> list[Event]:
     )
 
 
+def _add_date_window(
+    query, from_date: Optional[Arrow] = None, to_date: Optional[Arrow] = None,
+):
+
+    if from_date:
+        query = query.filter(end_datetime__gt=from_date.datetime)
+    if to_date:
+        query = query.filter(end_datetime__lt=to_date.datetime)
+    return query
+
+
 async def events_with_status(
-    statuses: list[PublicationStatus],
+    status: List[EventPublicationStatus],
+    from_date: Optional[Arrow] = None,
+    to_date: Optional[Arrow] = None,
 ) -> Iterable[MobilizonEvent]:
+    def _filter_event_with_status(event: Event) -> bool:
+        # This computes the status client-side instead of running in the DB. It shouldn't pose a performance problem
+        # in the short term, but should be moved to the query if possible.
+        event_status = MobilizonEvent.compute_status(list(event.publications))
+        return event_status in status
+
+    query = Event.all()
+    _add_date_window(query, from_date, to_date)
     return map(
         MobilizonEvent.from_model,
-        await prefetch_event_relations(Event.filter(publications__status__in=statuses)),
+        filter(_filter_event_with_status, await prefetch_event_relations(query),),
     )
 
 
-async def get_published_events() -> Iterable[MobilizonEvent]:
+async def get_all_events(
+    from_date: Optional[Arrow] = None, to_date: Optional[Arrow] = None,
+) -> Iterable[MobilizonEvent]:
+
     return map(
         MobilizonEvent.from_model,
         await prefetch_event_relations(
-            Event.filter(publications__status=PublicationStatus.COMPLETED)
+            _add_date_window(Event.all(), from_date, to_date)
         ),
     )
 
 
+async def get_published_events() -> Iterable[MobilizonEvent]:
+    return await events_with_status([EventPublicationStatus.COMPLETED])
+
+
 async def get_unpublished_events() -> Iterable[MobilizonEvent]:
-    return await events_with_status([PublicationStatus.WAITING])
+    return await events_with_status([EventPublicationStatus.WAITING])
 
 
 async def save_event(event):
@@ -59,9 +87,7 @@ async def save_publication(publisher_name, event_model, status: PublicationStatu
 
     publisher = await Publisher.filter(name=publisher_name).first()
     await Publication.create(
-        status=status,
-        event_id=event_model.id,
-        publisher_id=publisher.id,
+        status=status, event_id=event_model.id, publisher_id=publisher.id,
     )
 
 

@@ -34,9 +34,11 @@ def setup():
         event_1 = event_model_generator(begin_date=today)
         event_2 = event_model_generator(idx=2, begin_date=today + timedelta(days=2))
         event_3 = event_model_generator(idx=3, begin_date=today + timedelta(days=-2))
+        event_4 = event_model_generator(idx=4, begin_date=today + timedelta(days=-4))
         await event_1.save()
         await event_2.save()
         await event_3.save()
+        await event_4.save()
 
         publication_1 = publication_model_generator(
             event_id=event_1.id, publisher_id=publisher_1.id
@@ -56,13 +58,19 @@ def setup():
             publisher_id=publisher_2.id,
             status=PublicationStatus.WAITING,
         )
+        publication_5 = publication_model_generator(
+            event_id=event_4.id,
+            publisher_id=publisher_2.id,
+            status=PublicationStatus.COMPLETED,
+        )
         await publication_1.save()
         await publication_2.save()
         await publication_3.save()
         await publication_4.save()
+        await publication_5.save()
         return (
-            [event_1, event_2, event_3],
-            [publication_1, publication_2, publication_3, publication_4],
+            [event_1, event_2, event_3, event_4],
+            [publication_1, publication_2, publication_3, publication_4, publication_5],
             [publisher_1, publisher_2],
             today,
         )
@@ -81,9 +89,9 @@ async def test_get_published_events(
     published_events = list(await get_published_events())
     assert len(published_events) == 1
 
-    assert published_events[0].mobilizon_id == events[0].mobilizon_id
+    assert published_events[0].mobilizon_id == events[3].mobilizon_id
 
-    assert published_events[0].begin_datetime == arrow.get(today)
+    assert published_events[0].begin_datetime == arrow.get(today + timedelta(days=-4))
 
 
 @pytest.mark.asyncio
@@ -95,12 +103,10 @@ async def test_get_unpublished_events(
     )
 
     unpublished_events = list(await get_unpublished_events())
-    assert len(unpublished_events) == 2
+    assert len(unpublished_events) == 1
 
     assert unpublished_events[0].mobilizon_id == events[2].mobilizon_id
-    assert unpublished_events[1].mobilizon_id == events[0].mobilizon_id
     assert unpublished_events[0].begin_datetime == events[2].begin_datetime
-    assert unpublished_events[1].begin_datetime == events[0].begin_datetime
 
 
 @pytest.mark.asyncio
