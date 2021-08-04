@@ -85,10 +85,10 @@ class MobilizonEvent:
             description=event.description,
             begin_datetime=arrow.get(
                 tortoise.timezone.localtime(value=event.begin_datetime, timezone=tz)
-            ),
+            ).to('local'),
             end_datetime=arrow.get(
                 tortoise.timezone.localtime(value=event.end_datetime, timezone=tz)
-            ),
+            ).to('local'),
             mobilizon_link=event.mobilizon_link,
             mobilizon_id=event.mobilizon_id,
             thumbnail_link=event.thumbnail_link,
@@ -96,7 +96,7 @@ class MobilizonEvent:
             publication_time={
                 pub.publisher.name: arrow.get(
                     tortoise.timezone.localtime(value=pub.timestamp, timezone=tz)
-                )
+                ).to('local')
                 for pub in event.publications
             }
             if publication_status != PublicationStatus.WAITING

@@ -7,7 +7,7 @@ import arrow
 import requests
 
 from mobilizon_bots.config.config import get_settings
-from mobilizon_bots.event.event import MobilizonEvent, PublicationStatus
+from mobilizon_bots.event.event import MobilizonEvent, EventPublicationStatus
 
 logger = logging.getLogger(__name__)
 
@@ -39,7 +39,7 @@ def parse_event(data):
         thumbnail_link=parse_picture(data),
         location=parse_location(data),
         publication_time=None,
-        status=PublicationStatus.WAITING,
+        status=EventPublicationStatus.WAITING,
     )
 
 

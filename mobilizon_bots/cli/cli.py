@@ -5,7 +5,7 @@ from arrow import Arrow
 from click import pass_context, pass_obj
 
 from mobilizon_bots.cli import safe_execution
-from mobilizon_bots.cli.inspect import inspect_events
+from mobilizon_bots.cli.inspect_event import inspect_events
 from mobilizon_bots.cli.main import main
 from mobilizon_bots.event.event import EventPublicationStatus
 
