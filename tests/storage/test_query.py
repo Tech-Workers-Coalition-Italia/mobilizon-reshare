@@ -26,14 +26,8 @@ from mobilizon_bots.storage.query import (
     save_publication_report,
 )
 
-
 today = datetime(
-    year=2021,
-    month=6,
-    day=6,
-    hour=5,
-    minute=0,
-    tzinfo=timezone(timedelta(hours=2)),
+    year=2021, month=6, day=6, hour=5, minute=0, tzinfo=timezone(timedelta(hours=2)),
 )
 
 two_publishers_specification = {"publisher": 2}
@@ -42,35 +36,12 @@ complete_specification = {
     "event": 4,
     "publications": [
         {"event_idx": 0, "publisher_idx": 0},
-        {
-            "event_idx": 0,
-            "publisher_idx": 1,
-            "status": PublicationStatus.COMPLETED,
-        },
-        {
-            "event_idx": 1,
-            "publisher_idx": 0,
-            "status": PublicationStatus.WAITING,
-        },
-        {
-            "event_idx": 1,
-            "publisher_idx": 1,
-        },
-        {
-            "event_idx": 2,
-            "publisher_idx": 2,
-            "status": PublicationStatus.FAILED,
-        },
-        {
-            "event_idx": 2,
-            "publisher_idx": 1,
-            "status": PublicationStatus.COMPLETED,
-        },
-        {
-            "event_idx": 3,
-            "publisher_idx": 2,
-            "status": PublicationStatus.COMPLETED,
-        },
+        {"event_idx": 0, "publisher_idx": 1, "status": PublicationStatus.COMPLETED},
+        {"event_idx": 1, "publisher_idx": 0, "status": PublicationStatus.WAITING},
+        {"event_idx": 1, "publisher_idx": 1},
+        {"event_idx": 2, "publisher_idx": 2, "status": PublicationStatus.FAILED},
+        {"event_idx": 2, "publisher_idx": 1, "status": PublicationStatus.COMPLETED},
+        {"event_idx": 3, "publisher_idx": 2, "status": PublicationStatus.COMPLETED},
     ],
 }
 
@@ -234,10 +205,7 @@ async def test_get_unpublished_events(specification, expected_result, generate_m
     ],
 )
 async def test_create_unpublished_events(
-    specification,
-    expected_result,
-    generate_models,
-    event_generator,
+    specification, expected_result, generate_models, event_generator,
 ):
     await generate_models(specification)
 
@@ -263,10 +231,7 @@ async def test_create_unpublished_events(
 
 @pytest.mark.asyncio
 @pytest.mark.parametrize(
-    "specification",
-    [
-        complete_specification,
-    ],
+    "specification", [complete_specification],
 )
 async def test_get_mobilizon_event_publications(specification, generate_models):
     await generate_models(specification)
@@ -292,31 +257,16 @@ async def test_get_mobilizon_event_publications(specification, generate_models):
 
 @pytest.mark.asyncio
 @pytest.mark.parametrize(
-    "specification,name,expected_result",
+    "name,expected_result",
     [
-        [
-            complete_specification,
-            None,
-            {
-                "publisher_0",
-                "publisher_1",
-                "publisher_2",
-            },
-        ],
-        [
-            complete_specification,
-            "publisher_0",
-            {"publisher_0"},
-        ],
+        [None, {"publisher_0", "publisher_1", "publisher_2"}],
+        ["publisher_0", {"publisher_0"}],
     ],
 )
 async def test_get_publishers(
-    specification,
-    name,
-    expected_result,
-    generate_models,
+    name, expected_result, generate_models,
 ):
-    await generate_models(specification)
+    await generate_models(complete_specification)
     result = await get_publishers(name)
 
     if type(result) == list:
@@ -330,10 +280,9 @@ async def test_get_publishers(
 
 @pytest.mark.asyncio
 @pytest.mark.parametrize(
-    "specification,status,mobilizon_id,from_date,to_date,expected_result",
+    "status,mobilizon_id,from_date,to_date,expected_result",
     [
         [
-            complete_specification,
             PublicationStatus.WAITING,
             None,
             None,
@@ -363,7 +312,6 @@ async def test_get_publishers(
             ],
         ],
         [
-            complete_specification,
             PublicationStatus.WAITING,
             "mobid_1",
             None,
@@ -386,7 +334,6 @@ async def test_get_publishers(
             ],
         ],
         [
-            complete_specification,
             PublicationStatus.WAITING,
             None,
             arrow.get(today + timedelta(hours=-1)),
@@ -402,7 +349,6 @@ async def test_get_publishers(
             ],
         ],
         [
-            complete_specification,
             PublicationStatus.WAITING,
             None,
             arrow.get(today + timedelta(hours=1)),
@@ -425,7 +371,6 @@ async def test_get_publishers(
             ],
         ],
         [
-            complete_specification,
             PublicationStatus.WAITING,
             None,
             None,
@@ -443,15 +388,9 @@ async def test_get_publishers(
     ],
 )
 async def test_publications_with_status(
-    specification,
-    status,
-    mobilizon_id,
-    from_date,
-    to_date,
-    expected_result,
-    generate_models,
+    status, mobilizon_id, from_date, to_date, expected_result, generate_models,
 ):
-    await generate_models(specification)
+    await generate_models(complete_specification)
     publications = await publications_with_status(
         status=status,
         event_mobilizon_id=mobilizon_id,
@@ -488,10 +427,7 @@ async def test_publications_with_status(
     ],
 )
 async def test_update_publishers(
-    specification,
-    names,
-    expected_result,
-    generate_models,
+    specification, names, expected_result, generate_models,
 ):
     await generate_models(specification)
     await update_publishers(names)
@@ -545,11 +481,7 @@ async def test_update_publishers(
     ],
 )
 async def test_save_publication_report(
-    specification,
-    report,
-    event,
-    expected_result,
-    generate_models,
+    specification, report, event, expected_result, generate_models,
 ):
     await generate_models(specification)
     await save_publication_report(report, event)
