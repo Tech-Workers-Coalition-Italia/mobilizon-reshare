@@ -1,5 +1,4 @@
-from datetime import datetime, timedelta, timezone
-from typing import Union
+from datetime import timedelta
 from uuid import UUID
 
 import arrow
@@ -13,7 +12,6 @@ from mobilizon_bots.publishers.coordinator import (
     PublisherCoordinatorReport,
     PublicationReport,
 )
-
 from mobilizon_bots.storage.query import (
     get_published_events,
     get_unpublished_events,
@@ -25,10 +23,7 @@ from mobilizon_bots.storage.query import (
     update_publishers,
     save_publication_report,
 )
-
-today = datetime(
-    year=2021, month=6, day=6, hour=5, minute=0, tzinfo=timezone(timedelta(hours=2)),
-)
+from tests.storage import today
 
 two_publishers_specification = {"publisher": 2}
 
@@ -44,56 +39,6 @@ complete_specification = {
         {"event_idx": 3, "publisher_idx": 2, "status": PublicationStatus.COMPLETED},
     ],
 }
-
-
-@pytest.fixture(scope="module")
-def generate_models():
-    async def _generate_models(specification: dict[str, Union[int, list]]):
-        publishers = []
-        for i in range(
-            specification["publisher"] if "publisher" in specification.keys() else 3
-        ):
-            publisher = Publisher(
-                id=UUID(int=i), name=f"publisher_{i}", account_ref=f"account_ref_{i}"
-            )
-            publishers.append(publisher)
-            await publisher.save()
-
-        events = []
-        if "event" in specification.keys():
-            for i in range(specification["event"]):
-                begin_date = today + timedelta(days=i)
-                event = Event(
-                    id=UUID(int=i),
-                    name=f"event_{i}",
-                    description=f"desc_{i}",
-                    mobilizon_id=f"mobid_{i}",
-                    mobilizon_link=f"moblink_{i}",
-                    thumbnail_link=f"thumblink_{i}",
-                    location=f"loc_{i}",
-                    begin_datetime=begin_date,
-                    end_datetime=begin_date + timedelta(hours=2),
-                )
-                events.append(event)
-                await event.save()
-
-        if "publications" in specification.keys():
-            for i in range(len(specification["publications"])):
-                await Publication.create(
-                    id=UUID(int=i),
-                    status=specification["publications"][i].get(
-                        "status", PublicationStatus.WAITING
-                    ),
-                    timestamp=specification["publications"][i].get(
-                        "timestamp", today + timedelta(hours=i)
-                    ),
-                    event_id=events[specification["publications"][i]["event_idx"]].id,
-                    publisher_id=publishers[
-                        specification["publications"][i]["publisher_idx"]
-                    ].id,
-                )
-
-    return _generate_models
 
 
 @pytest.mark.asyncio
