@@ -10,8 +10,18 @@ from mobilizon_bots.cli.main import main
 from mobilizon_bots.event.event import EventPublicationStatus
 
 settings_file_option = click.option("--settings-file", type=click.Path(exists=True))
-from_date_option = click.option("--begin", type=click.DateTime(), expose_value=True)
-to_date_option = click.option("--end", type=click.DateTime(), expose_value=True)
+from_date_option = click.option(
+    "--begin",
+    type=click.DateTime(),
+    expose_value=True,
+    help="Include only events that begin after this datetime",
+)
+to_date_option = click.option(
+    "--end",
+    type=click.DateTime(),
+    expose_value=True,
+    help="Include only events that begin before this datetime",
+)
 
 
 @click.group()
