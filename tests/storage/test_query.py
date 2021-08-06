@@ -223,6 +223,29 @@ async def test_get_publishers(
     assert publishers == expected_result
 
 
+publication_0 = Publication(
+    id=UUID(int=0),
+    status=PublicationStatus.WAITING,
+    timestamp=today + timedelta(hours=0),
+    event_id=UUID(int=0),
+    publisher_id=UUID(int=0),
+)
+publication_2 = Publication(
+    id=UUID(int=2),
+    status=PublicationStatus.WAITING,
+    timestamp=today + timedelta(hours=2),
+    event_id=UUID(int=0),
+    publisher_id=UUID(int=1),
+)
+publication_3 = Publication(
+    id=UUID(int=3),
+    status=PublicationStatus.WAITING,
+    timestamp=today + timedelta(hours=3),
+    event_id=UUID(int=1),
+    publisher_id=UUID(int=1),
+)
+
+
 @pytest.mark.asyncio
 @pytest.mark.parametrize(
     "status,mobilizon_id,from_date,to_date,expected_result",
@@ -232,103 +255,35 @@ async def test_get_publishers(
             None,
             None,
             None,
-            [
-                Publication(
-                    id=UUID(int=0),
-                    status=PublicationStatus.WAITING,
-                    timestamp=today + timedelta(hours=0),
-                    event_id=UUID(int=0),
-                    publisher_id=UUID(int=0),
-                ),
-                Publication(
-                    id=UUID(int=2),
-                    status=PublicationStatus.WAITING,
-                    timestamp=today + timedelta(hours=2),
-                    event_id=UUID(int=0),
-                    publisher_id=UUID(int=1),
-                ),
-                Publication(
-                    id=UUID(int=3),
-                    status=PublicationStatus.WAITING,
-                    timestamp=today + timedelta(hours=3),
-                    event_id=UUID(int=1),
-                    publisher_id=UUID(int=1),
-                ),
-            ],
+            [publication_0, publication_2, publication_3],
         ],
         [
             PublicationStatus.WAITING,
             "mobid_1",
             None,
             None,
-            [
-                Publication(
-                    id=UUID(int=2),
-                    status=PublicationStatus.COMPLETED,
-                    timestamp=today + timedelta(hours=2),
-                    event_id=UUID(int=1),
-                    publisher_id=UUID(int=1),
-                ),
-                Publication(
-                    id=UUID(int=3),
-                    status=PublicationStatus.WAITING,
-                    timestamp=today + timedelta(hours=5),
-                    event_id=UUID(int=1),
-                    publisher_id=UUID(int=1),
-                ),
-            ],
+            [publication_2, publication_3],
         ],
         [
             PublicationStatus.WAITING,
             None,
             arrow.get(today + timedelta(hours=-1)),
             arrow.get(today + timedelta(hours=1)),
-            [
-                Publication(
-                    id=UUID(int=0),
-                    status=PublicationStatus.WAITING,
-                    timestamp=today + timedelta(hours=0),
-                    event_id=UUID(int=0),
-                    publisher_id=UUID(int=0),
-                ),
-            ],
+            [publication_0],
         ],
         [
             PublicationStatus.WAITING,
             None,
             arrow.get(today + timedelta(hours=1)),
             None,
-            [
-                Publication(
-                    id=UUID(int=2),
-                    status=PublicationStatus.WAITING,
-                    timestamp=today + timedelta(hours=2),
-                    event_id=UUID(int=0),
-                    publisher_id=UUID(int=1),
-                ),
-                Publication(
-                    id=UUID(int=3),
-                    status=PublicationStatus.WAITING,
-                    timestamp=today + timedelta(hours=5),
-                    event_id=UUID(int=1),
-                    publisher_id=UUID(int=1),
-                ),
-            ],
+            [publication_2, publication_3],
         ],
         [
             PublicationStatus.WAITING,
             None,
             None,
             arrow.get(today + timedelta(hours=1)),
-            [
-                Publication(
-                    id=UUID(int=0),
-                    status=PublicationStatus.WAITING,
-                    timestamp=today + timedelta(hours=0),
-                    event_id=UUID(int=0),
-                    publisher_id=UUID(int=0),
-                ),
-            ],
+            [publication_0],
         ],
     ],
 )
