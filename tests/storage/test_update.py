@@ -67,10 +67,10 @@ async def test_update_publishers(
             complete_specification,
             PublisherCoordinatorReport(
                 reports={
-                    UUID(int=2): PublicationReport(
+                    UUID(int=3): PublicationReport(
                         status=PublicationStatus.FAILED, reason="Invalid credentials"
                     ),
-                    UUID(int=3): PublicationReport(
+                    UUID(int=4): PublicationReport(
                         status=PublicationStatus.COMPLETED, reason=""
                     ),
                 }
@@ -87,13 +87,13 @@ async def test_update_publishers(
                 end_datetime=arrow.get(today + timedelta(days=1) + timedelta(hours=2)),
             ),
             {
-                UUID(int=2): Publication(
-                    id=UUID(int=2),
+                UUID(int=3): Publication(
+                    id=UUID(int=3),
                     status=PublicationStatus.FAILED,
                     reason="Invalid credentials",
                 ),
-                UUID(int=3): Publication(
-                    id=UUID(int=0), status=PublicationStatus.COMPLETED, reason=""
+                UUID(int=4): Publication(
+                    id=UUID(int=4), status=PublicationStatus.COMPLETED, reason=""
                 ),
             },
         ],

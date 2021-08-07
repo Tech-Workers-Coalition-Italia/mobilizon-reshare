@@ -47,13 +47,11 @@ def inspect(ctx, begin, end):
 
 
 @inspect.command()
-@settings_file_option
 def all(settings_file):
     safe_execution(inspect_events, settings_file)
 
 
 @inspect.command()
-@settings_file_option
 @pass_obj
 def waiting(obj, settings_file):
     safe_execution(
@@ -68,7 +66,6 @@ def waiting(obj, settings_file):
 
 
 @inspect.command()
-@settings_file_option
 @pass_obj
 def failed(obj, settings_file):
     safe_execution(
@@ -83,7 +80,6 @@ def failed(obj, settings_file):
 
 
 @inspect.command()
-@settings_file_option
 @pass_obj
 def partial(obj, settings_file):
     safe_execution(

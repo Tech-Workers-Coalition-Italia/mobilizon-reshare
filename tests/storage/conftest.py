@@ -48,18 +48,15 @@ async def _generate_events(specification):
 async def _generate_publications(events, publishers, specification):
     if "publications" in specification.keys():
         for i in range(len(specification["publications"])):
+            publication = specification["publications"][i]
+            status = publication.get("status", PublicationStatus.WAITING)
+            timestamp = publication.get("timestamp", today + timedelta(hours=i))
             await Publication.create(
                 id=UUID(int=i),
-                status=specification["publications"][i].get(
-                    "status", PublicationStatus.WAITING
-                ),
-                timestamp=specification["publications"][i].get(
-                    "timestamp", today + timedelta(hours=i)
-                ),
-                event_id=events[specification["publications"][i]["event_idx"]].id,
-                publisher_id=publishers[
-                    specification["publications"][i]["publisher_idx"]
-                ].id,
+                status=status,
+                timestamp=timestamp,
+                event_id=events[publication["event_idx"]].id,
+                publisher_id=publishers[publication["publisher_idx"]].id,
             )
 
 
