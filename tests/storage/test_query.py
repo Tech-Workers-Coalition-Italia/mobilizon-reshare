@@ -268,3 +268,44 @@ async def test_event_with_status(generate_models, status, expected_events_count)
     result = list(await events_with_status([status]))
 
     assert len(result) == expected_events_count
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize(
+    "status, expected_events_count, begin_window, end_window",
+    [
+        (
+            EventPublicationStatus.COMPLETED,
+            1,
+            arrow.get(today + timedelta(hours=-1)),
+            None,
+        ),
+        (
+            EventPublicationStatus.COMPLETED,
+            0,
+            arrow.get(today + timedelta(hours=1)),
+            None,
+        ),
+        (
+            EventPublicationStatus.COMPLETED,
+            1,
+            arrow.get(today + timedelta(hours=-2)),
+            arrow.get(today + timedelta(hours=1)),
+        ),
+        (
+            EventPublicationStatus.COMPLETED,
+            0,
+            arrow.get(today + timedelta(hours=-2)),
+            arrow.get(today + timedelta(hours=0)),
+        ),
+    ],
+)
+async def test_event_with_status_window(
+    generate_models, status, expected_events_count, begin_window, end_window
+):
+    await generate_models(complete_specification)
+    result = list(
+        await events_with_status([status], from_date=begin_window, to_date=end_window)
+    )
+
+    assert len(result) == expected_events_count
