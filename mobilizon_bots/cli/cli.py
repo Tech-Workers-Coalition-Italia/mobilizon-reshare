@@ -47,12 +47,18 @@ def inspect(ctx, begin, end):
 
 
 @inspect.command()
-def all(settings_file):
-    safe_execution(inspect_events, settings_file)
+@settings_file_option
+@pass_obj
+def all(obj, settings_file):
+    safe_execution(
+        functools.partial(inspect_events, frm=obj["begin"], to=obj["end"],),
+        settings_file,
+    )
 
 
 @inspect.command()
 @pass_obj
+@settings_file_option
 def waiting(obj, settings_file):
     safe_execution(
         functools.partial(
@@ -67,6 +73,7 @@ def waiting(obj, settings_file):
 
 @inspect.command()
 @pass_obj
+@settings_file_option
 def failed(obj, settings_file):
     safe_execution(
         functools.partial(
@@ -81,6 +88,7 @@ def failed(obj, settings_file):
 
 @inspect.command()
 @pass_obj
+@settings_file_option
 def partial(obj, settings_file):
     safe_execution(
         functools.partial(
