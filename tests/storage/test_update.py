@@ -4,14 +4,14 @@ from tests.storage import complete_specification
 import arrow
 import pytest
 
-from mobilizon_bots.event.event import MobilizonEvent, EventPublicationStatus
-from mobilizon_bots.models.publication import PublicationStatus, Publication
-from mobilizon_bots.models.publisher import Publisher
-from mobilizon_bots.publishers.coordinator import (
+from mobilizon_reshare.event.event import MobilizonEvent, EventPublicationStatus
+from mobilizon_reshare.models.publication import PublicationStatus, Publication
+from mobilizon_reshare.models.publisher import Publisher
+from mobilizon_reshare.publishers.coordinator import (
     PublisherCoordinatorReport,
     PublicationReport,
 )
-from mobilizon_bots.storage.query import (
+from mobilizon_reshare.storage.query import (
     get_publishers,
     update_publishers,
     save_publication_report,

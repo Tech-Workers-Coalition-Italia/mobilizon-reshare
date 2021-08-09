@@ -1,4 +1,4 @@
-The goal of mobilizon_bots is to provide a suite to reshare Mobilizon events on a broad selection of platforms. This
+The goal of mobilizon_reshare is to provide a suite to reshare Mobilizon events on a broad selection of platforms. This
 tool enables an organization to automate their social media strategy in regards
 to events and their promotion. 
 
@@ -9,7 +9,7 @@ to events and their promotion.
 ## Scheduling and temporal logic
 
 The tool is designed to work in combination with a scheduler that executes it at
-regular intervals. Mobilizon_bots allows fine-grained control over the logic to decide when
+regular intervals. mobilizon_reshare allows fine-grained control over the logic to decide when
 to publish an event, with the minimization of human effort as its first priority.
 
 ## Configuration
@@ -17,7 +17,7 @@ to publish an event, with the minimization of human effort as its first priority
 The configuration is implemented through Dynaconf. It allows a variety of ways to specify configuration keys. 
 Refer to their [documentation](https://www.dynaconf.com/) to discover how configuration files and environment variables can be specified. 
 
-We provide a sample configuration in the [settings.toml](https://github.com/Tech-Workers-Coalition-Italia/mobilizon-bots/blob/master/mobilizon_bots/settings.toml) file.  
+We provide a sample configuration in the [settings.toml](https://github.com/Tech-Workers-Coalition-Italia/mobilizon-reshare/blob/master/mobilizon_reshare/settings.toml) file.  
 
 ### Event selection
 

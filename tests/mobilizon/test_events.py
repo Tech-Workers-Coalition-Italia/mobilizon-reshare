@@ -1,8 +1,8 @@
 import arrow
 import pytest
 
-from mobilizon_bots.event.event import MobilizonEvent
-from mobilizon_bots.mobilizon.events import (
+from mobilizon_reshare.event.event import MobilizonEvent
+from mobilizon_reshare.mobilizon.events import (
     get_mobilizon_future_events,
     MobilizonRequestFailed,
     get_unpublished_events,

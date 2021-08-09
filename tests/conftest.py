@@ -5,11 +5,11 @@ import arrow
 import pytest
 from tortoise.contrib.test import finalizer, initializer
 
-from mobilizon_bots.event.event import MobilizonEvent, EventPublicationStatus
-from mobilizon_bots.models.event import Event
-from mobilizon_bots.models.notification import Notification, NotificationStatus
-from mobilizon_bots.models.publication import Publication, PublicationStatus
-from mobilizon_bots.models.publisher import Publisher
+from mobilizon_reshare.event.event import MobilizonEvent, EventPublicationStatus
+from mobilizon_reshare.models.event import Event
+from mobilizon_reshare.models.notification import Notification, NotificationStatus
+from mobilizon_reshare.models.publication import Publication, PublicationStatus
+from mobilizon_reshare.models.publisher import Publisher
 
 
 def generate_publication_status(published):
@@ -83,10 +83,10 @@ def initialize_db_tests(request) -> None:
     db_url = os.environ.get("TORTOISE_TEST_DB", "sqlite://:memory:")
     initializer(
         [
-            "mobilizon_bots.models.event",
-            "mobilizon_bots.models.notification",
-            "mobilizon_bots.models.publication",
-            "mobilizon_bots.models.publisher",
+            "mobilizon_reshare.models.event",
+            "mobilizon_reshare.models.notification",
+            "mobilizon_reshare.models.publication",
+            "mobilizon_reshare.models.publisher",
         ],
         db_url=db_url,
         app_label="models",
@@ -123,9 +123,7 @@ def event_model_generator():
 
 @pytest.fixture()
 def publisher_model_generator():
-    def _publisher_model_generator(
-        idx=1,
-    ):
+    def _publisher_model_generator(idx=1,):
         return Publisher(name=f"publisher_{idx}", account_ref=f"account_ref_{idx}")
 
     return _publisher_model_generator

@@ -1,12 +1,12 @@
 import logging.config
 
 
-from mobilizon_bots.event.event_selection_strategies import select_event_to_publish
-from mobilizon_bots.mobilizon.events import get_unpublished_events
-from mobilizon_bots.models.publication import PublicationStatus
-from mobilizon_bots.publishers import get_active_publishers
-from mobilizon_bots.publishers.coordinator import PublisherCoordinator
-from mobilizon_bots.storage.query import (
+from mobilizon_reshare.event.event_selection_strategies import select_event_to_publish
+from mobilizon_reshare.mobilizon.events import get_unpublished_events
+from mobilizon_reshare.models.publication import PublicationStatus
+from mobilizon_reshare.publishers import get_active_publishers
+from mobilizon_reshare.publishers.coordinator import PublisherCoordinator
+from mobilizon_reshare.storage.query import (
     get_published_events,
     get_unpublished_events as get_db_unpublished_events,
     create_unpublished_events,

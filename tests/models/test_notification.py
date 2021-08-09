@@ -1,6 +1,6 @@
 import pytest
 
-from mobilizon_bots.models.notification import Notification, NotificationStatus
+from mobilizon_reshare.models.notification import Notification, NotificationStatus
 
 
 @pytest.mark.asyncio

@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "mobilizon-bots"
+name = "mobilizon-reshare"
 version = "0.1.0"
 description = ""
 authors = ["Simone Robutti <simone.robutti@protonmail.com>"]
@@ -27,4 +27,4 @@ requires = ["poetry-core>=1.0.0"]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry.scripts]
-mobilizon-bots="mobilizon_bots.cli.cli:mobilizon_bots"
+mobilizon-reshare="mobilizon_reshare.cli.cli:mobilizon_reshare"

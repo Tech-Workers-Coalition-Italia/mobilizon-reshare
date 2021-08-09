@@ -4,8 +4,8 @@ import traceback
 from logging.config import dictConfig
 from pathlib import Path
 
-from mobilizon_bots.config.config import update_settings_files
-from mobilizon_bots.storage.db import tear_down, MobilizonBotsDB
+from mobilizon_reshare.config.config import update_settings_files
+from mobilizon_reshare.storage.db import tear_down, MoReDB
 
 logger = logging.getLogger(__name__)
 
@@ -19,7 +19,7 @@ async def init(settings_file):
     settings = update_settings_files(settings_file)
     dictConfig(settings["logging"])
     db_path = Path(settings.db_path)
-    db = MobilizonBotsDB(db_path)
+    db = MoReDB(db_path)
     await db.setup()
 
 

@@ -3,11 +3,11 @@ from datetime import timedelta
 import arrow
 import pytest
 
-from mobilizon_bots.event.event import MobilizonEvent, EventPublicationStatus
-from mobilizon_bots.models.event import Event
-from mobilizon_bots.models.publication import PublicationStatus
-from mobilizon_bots.storage.query import events_with_status
-from mobilizon_bots.storage.query import (
+from mobilizon_reshare.event.event import MobilizonEvent, EventPublicationStatus
+from mobilizon_reshare.models.event import Event
+from mobilizon_reshare.models.publication import PublicationStatus
+from mobilizon_reshare.storage.query import events_with_status
+from mobilizon_reshare.storage.query import (
     get_published_events,
     get_unpublished_events,
     create_unpublished_events,

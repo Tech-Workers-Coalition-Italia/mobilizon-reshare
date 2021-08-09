@@ -4,8 +4,8 @@ from typing import List, Optional
 
 import arrow
 
-from mobilizon_bots.config.config import get_settings
-from mobilizon_bots.event.event import MobilizonEvent
+from mobilizon_reshare.config.config import get_settings
+from mobilizon_reshare.event.event import MobilizonEvent
 
 logger = logging.getLogger(__name__)
 
@@ -93,8 +93,7 @@ STRATEGY_NAME_TO_STRATEGY_CLASS = {"next_event": SelectNextEventStrategy}
 
 
 def select_event_to_publish(
-    published_events: List[MobilizonEvent],
-    unpublished_events: List[MobilizonEvent],
+    published_events: List[MobilizonEvent], unpublished_events: List[MobilizonEvent],
 ):
 
     strategy = STRATEGY_NAME_TO_STRATEGY_CLASS[

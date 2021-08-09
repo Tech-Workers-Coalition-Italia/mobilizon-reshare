@@ -2,7 +2,7 @@ import dynaconf
 import pkg_resources
 import pytest
 
-from mobilizon_bots.config.config import update_settings_files
+from mobilizon_reshare.config.config import update_settings_files
 
 
 @pytest.fixture
