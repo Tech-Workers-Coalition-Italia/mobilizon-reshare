@@ -10,8 +10,18 @@ from mobilizon_bots.cli.main import main
 from mobilizon_bots.event.event import EventPublicationStatus
 
 settings_file_option = click.option("--settings-file", type=click.Path(exists=True))
-from_date_option = click.option("--begin", type=click.DateTime(), expose_value=True)
-to_date_option = click.option("--end", type=click.DateTime(), expose_value=True)
+from_date_option = click.option(
+    "--begin",
+    type=click.DateTime(),
+    expose_value=True,
+    help="Include only events that begin after this datetime",
+)
+to_date_option = click.option(
+    "--end",
+    type=click.DateTime(),
+    expose_value=True,
+    help="Include only events that begin before this datetime",
+)
 
 
 @click.group()
@@ -38,13 +48,17 @@ def inspect(ctx, begin, end):
 
 @inspect.command()
 @settings_file_option
-def all(settings_file):
-    safe_execution(inspect_events, settings_file)
+@pass_obj
+def all(obj, settings_file):
+    safe_execution(
+        functools.partial(inspect_events, frm=obj["begin"], to=obj["end"],),
+        settings_file,
+    )
 
 
 @inspect.command()
-@settings_file_option
 @pass_obj
+@settings_file_option
 def waiting(obj, settings_file):
     safe_execution(
         functools.partial(
@@ -58,8 +72,8 @@ def waiting(obj, settings_file):
 
 
 @inspect.command()
-@settings_file_option
 @pass_obj
+@settings_file_option
 def failed(obj, settings_file):
     safe_execution(
         functools.partial(
@@ -73,8 +87,8 @@ def failed(obj, settings_file):
 
 
 @inspect.command()
-@settings_file_option
 @pass_obj
+@settings_file_option
 def partial(obj, settings_file):
     safe_execution(
         functools.partial(
