@@ -4,9 +4,9 @@ from uuid import UUID
 
 import pytest
 
-from mobilizon_bots.models.event import Event
-from mobilizon_bots.models.publication import PublicationStatus, Publication
-from mobilizon_bots.models.publisher import Publisher
+from mobilizon_reshare.models.event import Event
+from mobilizon_reshare.models.publication import PublicationStatus, Publication
+from mobilizon_reshare.models.publisher import Publisher
 from tests.storage import today
 
 

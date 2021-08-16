@@ -1,6 +1,6 @@
 import pytest
 
-from mobilizon_bots.formatting.description import html_to_plaintext
+from mobilizon_reshare.formatting.description import html_to_plaintext
 
 
 @pytest.mark.parametrize(

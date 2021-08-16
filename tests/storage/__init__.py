@@ -2,8 +2,8 @@ from datetime import datetime, timezone, timedelta
 
 from uuid import UUID
 
-from mobilizon_bots.models.publication import PublicationStatus
-from mobilizon_bots.models.publication import Publication
+from mobilizon_reshare.models.publication import PublicationStatus
+from mobilizon_reshare.models.publication import Publication
 
 today = datetime(
     year=2021, month=6, day=6, hour=5, minute=0, tzinfo=timezone(timedelta(hours=2)),

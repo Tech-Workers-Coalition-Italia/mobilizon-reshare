@@ -18,7 +18,7 @@ class TelegramPublisher(AbstractPublisher):
 
     _conf = ("publisher", "telegram")
     default_template_path = pkg_resources.resource_filename(
-        "mobilizon_bots.publishers.templates", "telegram.tmpl.j2"
+        "mobilizon_reshare.publishers.templates", "telegram.tmpl.j2"
     )
 
     def post(self) -> None:

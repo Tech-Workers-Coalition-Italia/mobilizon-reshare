@@ -1,10 +1,10 @@
 from dataclasses import dataclass, field
 from uuid import UUID
 
-from mobilizon_bots.event.event import MobilizonEvent
-from mobilizon_bots.models.publication import PublicationStatus
-from mobilizon_bots.publishers.exceptions import PublisherError
-from mobilizon_bots.publishers.telegram import TelegramPublisher
+from mobilizon_reshare.event.event import MobilizonEvent
+from mobilizon_reshare.models.publication import PublicationStatus
+from mobilizon_reshare.publishers.exceptions import PublisherError
+from mobilizon_reshare.publishers.telegram import TelegramPublisher
 
 KEY2CLS = {"telegram": TelegramPublisher}
 
@@ -32,7 +32,8 @@ class PublisherCoordinatorReport:
 class PublisherCoordinator:
     def __init__(self, event: MobilizonEvent, publications: list[tuple[UUID, str]]):
         self.publications = tuple(
-            (publication_id, KEY2CLS[publisher_name](event)) for publication_id, publisher_name in publications
+            (publication_id, KEY2CLS[publisher_name](event))
+            for publication_id, publisher_name in publications
         )
 
     def run(self) -> PublisherCoordinatorReport:
@@ -45,8 +46,7 @@ class PublisherCoordinator:
     def _make_successful_report(self):
         return {
             publication_id: PublicationReport(
-                status=PublicationStatus.COMPLETED,
-                reason="",
+                status=PublicationStatus.COMPLETED, reason="",
             )
             for publication_id, _ in self.publications
         }
@@ -58,8 +58,7 @@ class PublisherCoordinator:
                 p.post()
             except PublisherError as e:
                 failed_publishers_reports[publication_id] = PublicationReport(
-                    status=PublicationStatus.FAILED,
-                    reason=repr(e),
+                    status=PublicationStatus.FAILED, reason=repr(e),
                 )
         reports = failed_publishers_reports or self._make_successful_report()
         return PublisherCoordinatorReport(reports)

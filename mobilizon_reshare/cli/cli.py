@@ -4,10 +4,10 @@ import click
 from arrow import Arrow
 from click import pass_context, pass_obj
 
-from mobilizon_bots.cli import safe_execution
-from mobilizon_bots.cli.inspect_event import inspect_events
-from mobilizon_bots.cli.main import main
-from mobilizon_bots.event.event import EventPublicationStatus
+from mobilizon_reshare.cli import safe_execution
+from mobilizon_reshare.cli.inspect_event import inspect_events
+from mobilizon_reshare.cli.main import main
+from mobilizon_reshare.event.event import EventPublicationStatus
 
 settings_file_option = click.option("--settings-file", type=click.Path(exists=True))
 from_date_option = click.option(
@@ -25,17 +25,17 @@ to_date_option = click.option(
 
 
 @click.group()
-def mobilizon_bots():
+def mobilizon_reshare():
     pass
 
 
-@mobilizon_bots.command()
+@mobilizon_reshare.command()
 @settings_file_option
 def start(settings_file):
     safe_execution(main, settings_file=settings_file)
 
 
-@mobilizon_bots.group()
+@mobilizon_reshare.group()
 @from_date_option
 @to_date_option
 @pass_context
@@ -117,4 +117,4 @@ def completed(obj, settings_file):
 
 
 if __name__ == "__main__":
-    mobilizon_bots()
+    mobilizon_reshare()

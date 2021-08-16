@@ -8,11 +8,11 @@ from arrow import Arrow
 from tortoise.queryset import QuerySet
 from tortoise.transactions import atomic
 
-from mobilizon_bots.event.event import MobilizonEvent, EventPublicationStatus
-from mobilizon_bots.models.event import Event
-from mobilizon_bots.models.publication import Publication, PublicationStatus
-from mobilizon_bots.models.publisher import Publisher
-from mobilizon_bots.publishers.coordinator import PublisherCoordinatorReport
+from mobilizon_reshare.event.event import MobilizonEvent, EventPublicationStatus
+from mobilizon_reshare.models.event import Event
+from mobilizon_reshare.models.publication import Publication, PublicationStatus
+from mobilizon_reshare.models.publisher import Publisher
+from mobilizon_reshare.publishers.coordinator import PublisherCoordinatorReport
 
 logger = logging.getLogger(__name__)
 
@@ -90,8 +90,7 @@ async def events_with_status(
 
 
 async def get_all_events(
-    from_date: Optional[Arrow] = None,
-    to_date: Optional[Arrow] = None,
+    from_date: Optional[Arrow] = None, to_date: Optional[Arrow] = None,
 ) -> Iterable[MobilizonEvent]:
 
     return map(
@@ -140,9 +139,7 @@ async def create_publisher(name: str, account_ref: Optional[str] = None) -> None
 
 
 @atomic(CONNECTION_NAME)
-async def update_publishers(
-    names: Iterable[str],
-) -> None:
+async def update_publishers(names: Iterable[str],) -> None:
     names = set(names)
     known_publisher_names = set(p.name for p in await get_publishers())
     for name in names.difference(known_publisher_names):
@@ -157,9 +154,7 @@ async def save_publication(
 
     publisher = await get_publishers(publisher_name)
     await Publication.create(
-        status=status,
-        event_id=event_model.id,
-        publisher_id=publisher.id,
+        status=status, event_id=event_model.id, publisher_id=publisher.id,
     )
 
 

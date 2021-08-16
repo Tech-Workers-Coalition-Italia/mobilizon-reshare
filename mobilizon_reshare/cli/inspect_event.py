@@ -3,10 +3,10 @@ from typing import Iterable
 import click
 from arrow import Arrow
 
-from mobilizon_bots.event.event import EventPublicationStatus
-from mobilizon_bots.event.event import MobilizonEvent
-from mobilizon_bots.storage.query import get_all_events
-from mobilizon_bots.storage.query import events_with_status
+from mobilizon_reshare.event.event import EventPublicationStatus
+from mobilizon_reshare.event.event import MobilizonEvent
+from mobilizon_reshare.storage.query import get_all_events
+from mobilizon_reshare.storage.query import events_with_status
 
 
 status_to_color = {

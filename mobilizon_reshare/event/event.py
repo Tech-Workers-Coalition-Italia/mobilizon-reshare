@@ -6,8 +6,8 @@ import arrow
 import tortoise.timezone
 from jinja2 import Template
 
-from mobilizon_bots.models.event import Event
-from mobilizon_bots.models.publication import PublicationStatus, Publication
+from mobilizon_reshare.models.event import Event
+from mobilizon_reshare.models.publication import PublicationStatus, Publication
 
 
 class EventPublicationStatus(IntEnum):

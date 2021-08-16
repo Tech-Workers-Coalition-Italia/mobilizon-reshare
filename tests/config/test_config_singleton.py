@@ -1,4 +1,4 @@
-from mobilizon_bots.config.config import get_settings, update_settings_files
+from mobilizon_reshare.config.config import get_settings, update_settings_files
 
 
 def test_singleton():
