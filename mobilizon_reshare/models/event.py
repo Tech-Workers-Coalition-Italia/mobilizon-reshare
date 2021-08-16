@@ -5,7 +5,7 @@ from tortoise.models import Model
 class Event(Model):
     id = fields.UUIDField(pk=True)
     name = fields.TextField()
-    description = fields.TextField()
+    description = fields.TextField(null=True)
 
     mobilizon_id = fields.TextField()
     mobilizon_link = fields.TextField()

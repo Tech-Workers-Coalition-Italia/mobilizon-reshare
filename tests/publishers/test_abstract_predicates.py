@@ -1,6 +1,6 @@
-import pytest
-
 from datetime import datetime, timedelta
+
+import pytest
 
 from mobilizon_reshare.event.event import MobilizonEvent
 from mobilizon_reshare.publishers.abstract import AbstractPublisher
@@ -36,10 +36,16 @@ def mock_publisher_valid(event):
         def validate_credentials(self) -> None:
             pass
 
-        def post(self) -> bool:
+        def publish(self) -> bool:
             return True
 
         def validate_message(self) -> None:
+            pass
+
+        def _send(self, message):
+            pass
+
+        def _validate_response(self, response) -> None:
             pass
 
     return MockPublisher(event)
@@ -56,11 +62,17 @@ def mock_publisher_invalid(event):
         def validate_credentials(self) -> None:
             raise PublisherError("Invalid credentials")
 
-        def post(self) -> bool:
+        def publish(self) -> bool:
             return False
 
         def validate_message(self) -> None:
             raise PublisherError("Invalid message")
+
+        def _send(self, message):
+            pass
+
+        def _validate_response(self, response) -> None:
+            pass
 
     return MockPublisher(event)
 

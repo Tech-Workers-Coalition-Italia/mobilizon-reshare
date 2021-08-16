@@ -13,14 +13,13 @@ from tests.storage import today
 async def _generate_publishers(specification):
 
     publishers = []
-    for i in range(
-        specification["publisher"] if "publisher" in specification.keys() else 3
-    ):
+    for i, publisher_name in enumerate(specification["publisher"]):
         publisher = Publisher(
-            id=UUID(int=i), name=f"publisher_{i}", account_ref=f"account_ref_{i}"
+            id=UUID(int=i), name=publisher_name, account_ref=f"account_ref_{i}"
         )
         publishers.append(publisher)
         await publisher.save()
+
     return publishers
 
 

@@ -4,6 +4,7 @@ from abc import ABC, abstractmethod
 
 from dynaconf.utils.boxing import DynaBox
 from jinja2 import Environment, FileSystemLoader, Template
+from requests import Response
 
 from mobilizon_reshare.config.config import get_settings
 from mobilizon_reshare.event.event import MobilizonEvent
@@ -29,9 +30,6 @@ class AbstractNotifier(ABC):
     # the second the name of its service (ie: 'facebook', 'telegram')
     _conf = tuple()
 
-    def __init__(self, message: str):
-        self.message = message
-
     def __repr__(self):
         return type(self).__name__
 
@@ -55,6 +53,13 @@ class AbstractNotifier(ABC):
                 f"Class {cls.__name__} has invalid ``_conf`` attribute"
                 f" (should be 2-tuple)"
             )
+
+    @abstractmethod
+    def send(self, message):
+        """
+        Sends a message to the target channel
+        """
+        raise NotImplementedError
 
     def _log_debug(self, msg, *args, **kwargs):
         self.__log(logging.DEBUG, msg, *args, **kwargs)
@@ -94,7 +99,7 @@ class AbstractNotifier(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    def post(self) -> None:
+    def publish(self) -> None:
         """
         Publishes the actual post on social media.
         Should raise ``PublisherError`` (or one of its subclasses) if
@@ -135,7 +140,7 @@ class AbstractPublisher(AbstractNotifier):
 
     def __init__(self, event: MobilizonEvent):
         self.event = event
-        super().__init__(message=self.get_message_from_event())
+        super().__init__()
 
     def is_event_valid(self) -> bool:
         try:
@@ -172,3 +177,18 @@ class AbstractPublisher(AbstractNotifier):
         """
         template_path = self.conf.msg_template_path or self.default_template_path
         return JINJA_ENV.get_template(template_path)
+
+    @abstractmethod
+    def _send(self, message) -> Response:
+        pass
+
+    @abstractmethod
+    def _validate_response(self, response: Response) -> None:
+        pass
+
+    def send(self, message):
+        res = self._send(message)
+        self._validate_response(res)
+
+    def publish(self) -> None:
+        self.send(message=self.get_message_from_event())
