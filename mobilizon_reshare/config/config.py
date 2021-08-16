@@ -14,7 +14,7 @@ def build_settings(
 ):
     SETTINGS_FILE = (
         settings_files
-        or os.environ.get("mobilizon_reshare_SETTINGS_FILE")
+        or os.environ.get("MOBILIZION_RESHARE_SETTINGS_FILE")
         or [
             "mobilizon_reshare/settings.toml",
             "mobilizon_reshare/.secrets.toml",
@@ -22,7 +22,7 @@ def build_settings(
             "/etc/mobilizon_reshare_secrets.toml",
         ]
     )
-    ENVVAR_PREFIX = "mobilizon_reshare"
+    ENVVAR_PREFIX = "MOBILIZON_RESHARE"
 
     return Dynaconf(
         environments=True,
