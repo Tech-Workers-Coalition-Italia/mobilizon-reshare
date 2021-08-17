@@ -4,7 +4,7 @@ import pytest
 
 from mobilizon_reshare.event.event import MobilizonEvent
 from mobilizon_reshare.publishers.abstract import AbstractPublisher
-from mobilizon_reshare.publishers.exceptions import PublisherError
+from mobilizon_reshare.publishers.exceptions import PublisherError, InvalidResponse
 
 
 @pytest.fixture
@@ -35,9 +35,6 @@ def mock_publisher_valid(event):
         def validate_credentials(self) -> None:
             pass
 
-        def publish(self) -> bool:
-            return True
-
         def validate_message(self) -> None:
             pass
 
@@ -62,9 +59,6 @@ def mock_publisher_invalid(event):
         def validate_credentials(self) -> None:
             raise PublisherError("Invalid credentials")
 
-        def publish(self) -> bool:
-            return False
-
         def validate_message(self) -> None:
             raise PublisherError("Invalid message")
 
@@ -73,5 +67,23 @@ def mock_publisher_invalid(event):
 
         def _validate_response(self, response) -> None:
             pass
+
+    return MockPublisher(event)
+
+
+@pytest.fixture
+def mock_publisher_invalid_response(mock_publisher_invalid, event):
+    class MockPublisher(type(mock_publisher_invalid)):
+        def validate_event(self) -> None:
+            pass
+
+        def validate_credentials(self) -> None:
+            pass
+
+        def validate_message(self) -> None:
+            pass
+
+        def _validate_response(self, response) -> None:
+            raise InvalidResponse("Invalid response")
 
     return MockPublisher(event)

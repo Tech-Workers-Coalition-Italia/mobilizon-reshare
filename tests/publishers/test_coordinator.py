@@ -85,3 +85,18 @@ async def test_coordinator_run_failure(
         list(report.reports.values())[0].reason
         == "Invalid credentials, Invalid event, Invalid message"
     )
+
+
+@pytest.mark.asyncio
+async def test_coordinator_run_failure_response(
+    test_event, mock_publication, mock_publisher_invalid_response
+):
+    coordinator = PublisherCoordinator(test_event, {UUID(int=1): mock_publication})
+    coordinator.publishers_by_publication_id = {
+        UUID(int=1): mock_publisher_invalid_response,
+    }
+
+    report = coordinator.run()
+    assert len(report.reports) == 1
+    assert not report.successful
+    assert list(report.reports.values())[0].reason == "Invalid response"

@@ -80,7 +80,7 @@ class PublisherCoordinator(BuildPublisherMixin):
             except PublisherError as e:
                 failed_publishers_reports[publication_id] = PublicationReport(
                     status=PublicationStatus.FAILED,
-                    reason=repr(e),
+                    reason=str(e),
                     publication_id=publication_id,
                 )
 
