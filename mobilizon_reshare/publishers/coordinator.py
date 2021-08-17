@@ -5,7 +5,7 @@ from uuid import UUID
 from mobilizon_reshare.event.event import MobilizonEvent
 from mobilizon_reshare.models.publication import Publication
 from mobilizon_reshare.models.publication import PublicationStatus
-from mobilizon_reshare.publishers import get_active_notifiers
+from mobilizon_reshare.publishers import get_active_notifiers, get_active_publishers
 from mobilizon_reshare.publishers.abstract import AbstractPublisher
 from mobilizon_reshare.publishers.exceptions import PublisherError
 from mobilizon_reshare.publishers.telegram import TelegramPublisher
@@ -13,17 +13,17 @@ from mobilizon_reshare.publishers.telegram import TelegramPublisher
 logger = logging.getLogger(__name__)
 
 
-# TODO: find a way to avoid using this map in order to simplify adding more publishers
-name_to_publisher_class = {"telegram": TelegramPublisher}
+class BuildPublisherMixin:
+    @staticmethod
+    def build_publishers(
+        event: MobilizonEvent, publisher_names
+    ) -> dict[str, AbstractPublisher]:
+        name_to_publisher_class = {"telegram": TelegramPublisher}
 
-
-def build_publishers(
-    event: MobilizonEvent, publications: dict[UUID, Publication]
-) -> dict[UUID, AbstractPublisher]:
-    return {
-        publication_id: name_to_publisher_class[publication.publisher.name](event)
-        for publication_id, publication in publications.items()
-    }
+        return {
+            publisher_name: name_to_publisher_class[publisher_name](event)
+            for publisher_name in publisher_names
+        }
 
 
 @dataclass
@@ -45,15 +45,19 @@ class PublisherCoordinatorReport:
         )
 
 
-class PublisherCoordinator:
+class PublisherCoordinator(BuildPublisherMixin):
     def __init__(self, event: MobilizonEvent, publications: dict[UUID, Publication]):
-        self.publishers = build_publishers(event, publications)
+        publishers = self.build_publishers(event, get_active_publishers())
+        self.publishers_by_publication_id = {
+            publication_id: publishers[publication.publisher.name]
+            for publication_id, publication in publications.items()
+        }
 
     def run(self) -> PublisherCoordinatorReport:
         errors = self._validate()
         if errors:
             return PublisherCoordinatorReport(
-                reports=errors, publishers=self.publishers
+                reports=errors, publishers=self.publishers_by_publication_id
             )
 
         return self._post()
@@ -65,12 +69,12 @@ class PublisherCoordinator:
                 reason="",
                 publication_id=publication_id,
             )
-            for publication_id in self.publishers
+            for publication_id in self.publishers_by_publication_id
         }
 
     def _post(self):
         failed_publishers_reports = {}
-        for publication_id, p in self.publishers.items():
+        for publication_id, p in self.publishers_by_publication_id.items():
             try:
                 p.publish()
             except PublisherError as e:
@@ -81,11 +85,13 @@ class PublisherCoordinator:
                 )
 
         reports = failed_publishers_reports or self._make_successful_report()
-        return PublisherCoordinatorReport(publishers=self.publishers, reports=reports)
+        return PublisherCoordinatorReport(
+            publishers=self.publishers_by_publication_id, reports=reports
+        )
 
     def _validate(self):
         errors: dict[UUID, PublicationReport] = {}
-        for publication_id, p in self.publishers.items():
+        for publication_id, p in self.publishers_by_publication_id.items():
             reason = []
             if not p.are_credentials_valid():
                 reason.append("Invalid credentials")
@@ -104,14 +110,14 @@ class PublisherCoordinator:
         return errors
 
 
-class AbstractNotifiersCoordinator:
+class AbstractNotifiersCoordinator(BuildPublisherMixin):
     def __init__(self, event: MobilizonEvent):
         self.event = event
+        self.notifiers = self.build_publishers(event, get_active_notifiers())
 
     def send_to_all(self, message):
         # TODO: failure to notify should fail safely and write to a dedicated log
-        for notifier_name in get_active_notifiers():
-            notifier = name_to_publisher_class[notifier_name](self.event)
+        for notifier in self.notifiers.values():
             notifier.send(message)
 
 
