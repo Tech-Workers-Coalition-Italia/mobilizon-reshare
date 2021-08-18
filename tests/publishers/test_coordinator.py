@@ -1,6 +1,7 @@
 from uuid import UUID
 
 import pytest
+from asynctest import MagicMock
 
 from mobilizon_reshare.event.event import MobilizonEvent
 from mobilizon_reshare.models.publication import PublicationStatus, Publication
@@ -9,6 +10,7 @@ from mobilizon_reshare.publishers.coordinator import (
     PublisherCoordinatorReport,
     PublicationReport,
     PublisherCoordinator,
+    PublicationFailureNotifiersCoordinator,
 )
 
 
@@ -100,3 +102,35 @@ async def test_coordinator_run_failure_response(
     assert len(report.reports) == 1
     assert not report.successful
     assert list(report.reports.values())[0].reason == "Invalid response"
+
+
+@pytest.mark.asyncio
+async def test_notifier_coordinator_publication_failed(
+    test_event, mock_publisher_valid
+):
+    mock_send = MagicMock()
+    mock_publisher_valid._send = mock_send
+    report = PublisherCoordinatorReport(
+        {UUID(int=1): mock_publisher_valid, UUID(int=2): mock_publisher_valid},
+        {
+            UUID(int=1): PublicationReport(
+                status=PublicationStatus.FAILED,
+                reason="some failure",
+                publication_id=UUID(int=1),
+            ),
+            UUID(int=2): PublicationReport(
+                status=PublicationStatus.FAILED,
+                reason="some failure",
+                publication_id=UUID(int=2),
+            ),
+        },
+    )
+    coordinator = PublicationFailureNotifiersCoordinator(test_event, report)
+    coordinator.notifiers = {
+        UUID(int=1): mock_publisher_valid,
+        UUID(int=2): mock_publisher_valid,
+    }
+    coordinator.notify_failures()
+
+    # 4 = 2 reports * 2 notifiers
+    assert mock_send.call_count == 4

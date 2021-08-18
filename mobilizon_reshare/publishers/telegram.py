@@ -22,15 +22,20 @@ class TelegramPublisher(AbstractPublisher):
         "mobilizon_reshare.publishers.templates", "telegram.tmpl.j2"
     )
 
+    def _escape_message(self, message: str) -> str:
+        return (
+            message.replace("-", "\\-")
+            .replace(".", "\\.")
+            .replace("(", "\\(")
+            .replace(")", "\\)")
+        )
+
     def _send(self, message: str) -> Response:
         return requests.post(
             url=f"https://api.telegram.org/bot{self.conf.token}/sendMessage",
             json={
                 "chat_id": self.conf.chat_id,
-                "text": message.replace("-", "\\-")
-                .replace(".", "\\.")
-                .replace("(", "\\(")
-                .replace(")", "\\)"),
+                "text": self._escape_message(message),
                 "parse_mode": "markdownv2",
             },
         )
