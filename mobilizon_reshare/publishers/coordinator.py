@@ -62,7 +62,7 @@ class PublisherCoordinator(BuildPublisherMixin):
 
         return self._post()
 
-    def _make_successful_report(self):
+    def _make_successful_report(self, failed_ids):
         return {
             publication_id: PublicationReport(
                 status=PublicationStatus.COMPLETED,
@@ -70,6 +70,7 @@ class PublisherCoordinator(BuildPublisherMixin):
                 publication_id=publication_id,
             )
             for publication_id in self.publishers_by_publication_id
+            if publication_id not in failed_ids
         }
 
     def _post(self):
@@ -84,7 +85,7 @@ class PublisherCoordinator(BuildPublisherMixin):
                     publication_id=publication_id,
                 )
 
-        reports = failed_publishers_reports or self._make_successful_report()
+        reports = failed_publishers_reports | self._make_successful_report(failed_publishers_reports.keys())
         return PublisherCoordinatorReport(
             publishers=self.publishers_by_publication_id, reports=reports
         )
