@@ -1,9 +1,8 @@
 from datetime import datetime, timezone, timedelta
-
 from uuid import UUID
 
-from mobilizon_reshare.models.publication import PublicationStatus
 from mobilizon_reshare.models.publication import Publication
+from mobilizon_reshare.models.publication import PublicationStatus
 
 today = datetime(
     year=2021, month=6, day=6, hour=5, minute=0, tzinfo=timezone(timedelta(hours=2)),
@@ -26,6 +25,7 @@ complete_specification = {
         {"event_idx": 3, "publisher_idx": 1, "status": PublicationStatus.WAITING},
         {"event_idx": 3, "publisher_idx": 2, "status": PublicationStatus.WAITING},
     ],
+    "publisher": ["telegram", "twitter", "mastodon"],
 }
 
 

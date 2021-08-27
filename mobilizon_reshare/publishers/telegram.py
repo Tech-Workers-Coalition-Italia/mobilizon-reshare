@@ -1,14 +1,15 @@
 import pkg_resources
 import requests
+from requests import Response
 
-from .abstract import AbstractPublisher
-from .exceptions import (
+from mobilizon_reshare.formatting.description import html_to_markdown
+from mobilizon_reshare.publishers.abstract import AbstractPublisher
+from mobilizon_reshare.publishers.exceptions import (
     InvalidBot,
     InvalidCredentials,
     InvalidEvent,
     InvalidResponse,
 )
-from ..formatting.description import html_to_markdown
 
 
 class TelegramPublisher(AbstractPublisher):
@@ -21,18 +22,23 @@ class TelegramPublisher(AbstractPublisher):
         "mobilizon_reshare.publishers.templates", "telegram.tmpl.j2"
     )
 
-    def post(self) -> None:
-        conf = self.conf
-        res = requests.post(
-            url=f"https://api.telegram.org/bot{conf.token}/sendMessage",
+    def _escape_message(self, message: str) -> str:
+        return (
+            message.replace("-", "\\-")
+            .replace(".", "\\.")
+            .replace("(", "\\(")
+            .replace(")", "\\)")
+        )
+
+    def _send(self, message: str) -> Response:
+        return requests.post(
+            url=f"https://api.telegram.org/bot{self.conf.token}/sendMessage",
             json={
-                "chat_id": conf.chat_id,
-                "text": self.message,
+                "chat_id": self.conf.chat_id,
+                "text": self._escape_message(message),
                 "parse_mode": "markdownv2",
             },
         )
-        print(res.json())
-        self._validate_response(res)
 
     def validate_credentials(self):
         conf = self.conf

@@ -1,9 +1,9 @@
 import logging
-import sys
-from typing import Iterable, Optional, Union
+from typing import Iterable, Optional, Union, Dict
 from uuid import UUID
 
 import arrow
+import sys
 from arrow import Arrow
 from tortoise.queryset import QuerySet
 from tortoise.transactions import atomic
@@ -12,6 +12,7 @@ from mobilizon_reshare.event.event import MobilizonEvent, EventPublicationStatus
 from mobilizon_reshare.models.event import Event
 from mobilizon_reshare.models.publication import Publication, PublicationStatus
 from mobilizon_reshare.models.publisher import Publisher
+from mobilizon_reshare.publishers import get_active_publishers
 from mobilizon_reshare.publishers.coordinator import PublisherCoordinatorReport
 
 logger = logging.getLogger(__name__)
@@ -52,7 +53,7 @@ async def publications_with_status(
     event_mobilizon_id: Optional[UUID] = None,
     from_date: Optional[Arrow] = None,
     to_date: Optional[Arrow] = None,
-) -> Iterable[Publication]:
+) -> Dict[UUID, Publication]:
     query = Publication.filter(status=status)
 
     if event_mobilizon_id:
@@ -62,7 +63,10 @@ async def publications_with_status(
 
     query = _add_date_window(query, "timestamp", from_date, to_date)
 
-    return await query.prefetch_related("publisher").order_by("timestamp").distinct()
+    publications_list = (
+        await query.prefetch_related("publisher").order_by("timestamp").distinct()
+    )
+    return {pub.id: pub for pub in publications_list}
 
 
 async def events_with_status(
@@ -102,7 +106,17 @@ async def get_all_events(
 
 
 async def get_published_events() -> Iterable[MobilizonEvent]:
-    return await events_with_status([EventPublicationStatus.COMPLETED])
+    """
+    Retrieves events that are not waiting. Function could be renamed to something more fitting
+    :return:
+    """
+    return await events_with_status(
+        [
+            EventPublicationStatus.COMPLETED,
+            EventPublicationStatus.PARTIAL,
+            EventPublicationStatus.FAILED,
+        ]
+    )
 
 
 async def get_unpublished_events() -> Iterable[MobilizonEvent]:
@@ -161,7 +175,6 @@ async def save_publication(
 @atomic(CONNECTION_NAME)
 async def create_unpublished_events(
     unpublished_mobilizon_events: Iterable[MobilizonEvent],
-    active_publishers: Iterable[str],
 ) -> None:
     # We store only new events, i.e. events whose mobilizon_id wasn't found in the DB.
     unpublished_event_models = set(
@@ -176,7 +189,7 @@ async def create_unpublished_events(
 
     for event in unpublished_events:
         event_model = await save_event(event)
-        for publisher in active_publishers:
+        for publisher in get_active_publishers():
             await save_publication(
                 publisher, event_model, status=PublicationStatus.WAITING
             )
@@ -184,13 +197,10 @@ async def create_unpublished_events(
 
 @atomic(CONNECTION_NAME)
 async def save_publication_report(
-    coordinator_report: PublisherCoordinatorReport, event: MobilizonEvent
+    coordinator_report: PublisherCoordinatorReport,
+    publications: Dict[UUID, Publication],
 ) -> None:
-    publications: dict[UUID, Publication] = {
-        p.id: p for p in await get_mobilizon_event_publications(event)
-    }
-
-    for publication_id, publication_report in coordinator_report:
+    for publication_id, publication_report in coordinator_report.reports.items():
 
         publications[publication_id].status = publication_report.status
         publications[publication_id].reason = publication_report.reason

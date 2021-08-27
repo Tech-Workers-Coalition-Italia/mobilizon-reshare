@@ -16,8 +16,8 @@ from mobilizon_reshare.storage.query import (
     get_publishers,
     publications_with_status,
 )
-from tests.storage import result_publication
 from tests.storage import complete_specification
+from tests.storage import result_publication
 from tests.storage import today
 
 event_0 = MobilizonEvent(
@@ -28,9 +28,9 @@ event_0 = MobilizonEvent(
     thumbnail_link="thumblink_0",
     location="loc_0",
     publication_time={
-        "publisher_0": arrow.get(today + timedelta(hours=0)),
-        "publisher_1": arrow.get(today + timedelta(hours=1)),
-        "publisher_2": arrow.get(today + timedelta(hours=2)),
+        "telegram": arrow.get(today + timedelta(hours=0)),
+        "twitter": arrow.get(today + timedelta(hours=1)),
+        "mastodon": arrow.get(today + timedelta(hours=2)),
     },
     status=EventPublicationStatus.COMPLETED,
     begin_datetime=arrow.get(today + timedelta(days=0)),
@@ -43,8 +43,7 @@ async def test_get_published_events(generate_models):
     await generate_models(complete_specification)
     published_events = list(await get_published_events())
 
-    assert len(published_events) == 1
-    assert published_events == [event_0]
+    assert len(published_events) == 3
 
 
 @pytest.mark.asyncio
@@ -123,7 +122,6 @@ async def test_create_unpublished_events(
     expected_result, generate_models, event_generator,
 ):
     await generate_models(complete_specification)
-
     event_3 = event_generator(begin_date=arrow.get(today + timedelta(days=6)))
     event_4 = event_generator(
         begin_date=arrow.get(today + timedelta(days=12)), mobilizon_id="67890"
@@ -132,10 +130,7 @@ async def test_create_unpublished_events(
 
     events_from_internet = [MobilizonEvent.from_model(models[0]), event_3, event_4]
 
-    await create_unpublished_events(
-        unpublished_mobilizon_events=events_from_internet,
-        active_publishers=["publisher_0", "publisher_1", "publisher_2"],
-    )
+    await create_unpublished_events(unpublished_mobilizon_events=events_from_internet,)
     unpublished_events = list(await get_unpublished_events())
 
     assert len(unpublished_events) == 4
@@ -156,25 +151,22 @@ async def test_get_mobilizon_event_publications(generate_models):
     assert len(publications) == 3
 
     assert publications[0].event.name == "event_0"
-    assert publications[0].publisher.name == "publisher_0"
+    assert publications[0].publisher.name == "telegram"
     assert publications[0].status == PublicationStatus.COMPLETED
 
     assert publications[1].event.name == "event_0"
-    assert publications[1].publisher.name == "publisher_1"
+    assert publications[1].publisher.name == "twitter"
     assert publications[1].status == PublicationStatus.COMPLETED
 
     assert publications[2].event.name == "event_0"
-    assert publications[2].publisher.name == "publisher_2"
+    assert publications[2].publisher.name == "mastodon"
     assert publications[2].status == PublicationStatus.COMPLETED
 
 
 @pytest.mark.asyncio
 @pytest.mark.parametrize(
     "name,expected_result",
-    [
-        [None, {"publisher_0", "publisher_1", "publisher_2"}],
-        ["publisher_0", {"publisher_0"}],
-    ],
+    [[None, {"telegram", "twitter", "mastodon"}], ["telegram", {"telegram"}]],
 )
 async def test_get_publishers(
     name, expected_result, generate_models,
@@ -250,7 +242,7 @@ async def test_publications_with_status(
         to_date=to_date,
     )
 
-    assert publications == expected_result
+    assert publications == {pub.id: pub for pub in expected_result}
 
 
 @pytest.mark.asyncio

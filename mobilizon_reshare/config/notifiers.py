@@ -1,3 +1,5 @@
+from typing import Iterator
+
 from dynaconf import Validator
 
 telegram_validators = [
@@ -18,7 +20,7 @@ notifier_name_to_validators = {
 notifier_names = notifier_name_to_validators.keys()
 
 
-def get_active_notifiers(settings):
+def get_active_notifiers(settings) -> Iterator[str]:
     return filter(
         lambda notifier_name: settings["notifier"][notifier_name]["active"],
         notifier_names,
