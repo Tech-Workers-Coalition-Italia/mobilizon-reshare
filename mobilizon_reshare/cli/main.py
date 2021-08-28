@@ -45,7 +45,8 @@ async def main():
     if event:
 
         waiting_publications = await publications_with_status(
-            status=PublicationStatus.WAITING, event_mobilizon_id=event.mobilizon_id,
+            status=PublicationStatus.WAITING,
+            event_mobilizon_id=event.mobilizon_id,
         )
         logger.debug(f"Event to publish found: {event.name}")
         report = PublisherCoordinator(event, waiting_publications).run()
