@@ -32,7 +32,7 @@ async def _generate_events(specification):
                 id=UUID(int=i),
                 name=f"event_{i}",
                 description=f"desc_{i}",
-                mobilizon_id=f"mobid_{i}",
+                mobilizon_id=UUID(int=i),
                 mobilizon_link=f"moblink_{i}",
                 thumbnail_link=f"thumblink_{i}",
                 location=f"loc_{i}",

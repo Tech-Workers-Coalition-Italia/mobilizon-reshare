@@ -88,7 +88,7 @@ async def test_update_publishers(
             MobilizonEvent(
                 name="event_1",
                 description="desc_1",
-                mobilizon_id="mobid_1",
+                mobilizon_id=UUID(int=1),
                 mobilizon_link="moblink_1",
                 thumbnail_link="thumblink_1",
                 location="loc_1",

@@ -1,6 +1,7 @@
 from dataclasses import dataclass, asdict
 from enum import IntEnum
 from typing import Optional, Set
+from uuid import UUID
 
 import arrow
 import tortoise.timezone
@@ -26,7 +27,7 @@ class MobilizonEvent:
     begin_datetime: arrow.Arrow
     end_datetime: arrow.Arrow
     mobilizon_link: str
-    mobilizon_id: str
+    mobilizon_id: UUID
     thumbnail_link: Optional[str] = None
     location: Optional[str] = None
     publication_time: Optional[dict[str, arrow.Arrow]] = None

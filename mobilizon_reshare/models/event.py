@@ -7,7 +7,7 @@ class Event(Model):
     name = fields.TextField()
     description = fields.TextField(null=True)
 
-    mobilizon_id = fields.TextField()
+    mobilizon_id = fields.UUIDField()
     mobilizon_link = fields.TextField()
     thumbnail_link = fields.TextField(null=True)
 

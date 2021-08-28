@@ -2,6 +2,7 @@ import json
 import logging
 from http import HTTPStatus
 from typing import List, Optional
+from uuid import UUID
 
 import arrow
 import requests
@@ -35,7 +36,7 @@ def parse_event(data):
         begin_datetime=arrow.get(data["beginsOn"]) if "beginsOn" in data else None,
         end_datetime=arrow.get(data["endsOn"]) if "endsOn" in data else None,
         mobilizon_link=data.get("url", None),
-        mobilizon_id=data["uuid"],
+        mobilizon_id=UUID(data["uuid"]),
         thumbnail_link=parse_picture(data),
         location=parse_location(data),
         publication_time=None,

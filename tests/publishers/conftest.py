@@ -1,4 +1,5 @@
 from datetime import datetime, timedelta
+from uuid import UUID
 
 import pytest
 
@@ -18,7 +19,7 @@ def test_event():
             "begin_datetime": now,
             "end_datetime": now + timedelta(hours=1),
             "mobilizon_link": "",
-            "mobilizon_id": "",
+            "mobilizon_id": UUID(int=0),
         }
     )
 
