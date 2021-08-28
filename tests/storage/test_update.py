@@ -75,15 +75,12 @@ async def test_update_publishers(
                     UUID(int=3): PublicationReport(
                         status=PublicationStatus.FAILED,
                         reason="Invalid credentials",
-                        publication_id=UUID(int=3),
                     ),
                     UUID(int=4): PublicationReport(
                         status=PublicationStatus.COMPLETED,
                         reason="",
-                        publication_id=UUID(int=4),
                     ),
                 },
-                publishers={},
             ),
             MobilizonEvent(
                 name="event_1",

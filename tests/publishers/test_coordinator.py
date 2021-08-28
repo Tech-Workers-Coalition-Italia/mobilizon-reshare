@@ -24,13 +24,13 @@ from mobilizon_reshare.publishers.coordinator import (
         [[PublicationStatus.COMPLETED], True],
     ],
 )
-def test_publication_report_successful(statuses, successful):
+def test_publication_report_successful(
+    statuses: list[PublicationStatus], successful: bool
+):
     reports = {}
     for i, status in enumerate(statuses):
-        reports[UUID(int=i)] = PublicationReport(
-            reason=None, publication_id=None, status=status
-        )
-    assert PublisherCoordinatorReport(None, reports).successful == successful
+        reports[UUID(int=i)] = PublicationReport(reason="", status=status)
+    assert PublisherCoordinatorReport(reports).successful == successful
 
 
 @pytest.fixture
@@ -113,17 +113,14 @@ async def test_notifier_coordinator_publication_failed(
     mock_send = MagicMock()
     mock_publisher_valid._send = mock_send
     report = PublisherCoordinatorReport(
-        {UUID(int=1): mock_publisher_valid, UUID(int=2): mock_publisher_valid},
         {
             UUID(int=1): PublicationReport(
                 status=PublicationStatus.FAILED,
                 reason="some failure",
-                publication_id=UUID(int=1),
             ),
             UUID(int=2): PublicationReport(
                 status=PublicationStatus.FAILED,
                 reason="some failure",
-                publication_id=UUID(int=2),
             ),
         },
     )

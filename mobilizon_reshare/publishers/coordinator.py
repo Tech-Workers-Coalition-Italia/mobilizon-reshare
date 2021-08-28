@@ -30,12 +30,10 @@ class BuildPublisherMixin:
 class PublicationReport:
     status: PublicationStatus
     reason: str
-    publication_id: UUID
 
 
 @dataclass
 class PublisherCoordinatorReport:
-    publishers: dict[UUID, AbstractPublisher]
     reports: dict[UUID, PublicationReport] = field(default_factory={})
 
     @property
@@ -57,7 +55,7 @@ class PublisherCoordinator(BuildPublisherMixin):
         errors = self._validate()
         if errors:
             return PublisherCoordinatorReport(
-                reports=errors, publishers=self.publishers_by_publication_id
+                reports=errors,
             )
 
         return self._post()
@@ -67,7 +65,6 @@ class PublisherCoordinator(BuildPublisherMixin):
             publication_id: PublicationReport(
                 status=PublicationStatus.COMPLETED,
                 reason="",
-                publication_id=publication_id,
             )
             for publication_id in self.publishers_by_publication_id
             if publication_id not in failed_ids
@@ -82,15 +79,12 @@ class PublisherCoordinator(BuildPublisherMixin):
                 failed_publishers_reports[publication_id] = PublicationReport(
                     status=PublicationStatus.FAILED,
                     reason=str(e),
-                    publication_id=publication_id,
                 )
 
         reports = failed_publishers_reports | self._make_successful_report(
             failed_publishers_reports.keys()
         )
-        return PublisherCoordinatorReport(
-            publishers=self.publishers_by_publication_id, reports=reports
-        )
+        return PublisherCoordinatorReport(reports=reports)
 
     def _validate(self):
         errors: dict[UUID, PublicationReport] = {}
@@ -107,7 +101,6 @@ class PublisherCoordinator(BuildPublisherMixin):
                 errors[publication_id] = PublicationReport(
                     status=PublicationStatus.FAILED,
                     reason=", ".join(reason),
-                    publication_id=publication_id,
                 )
 
         return errors
@@ -133,9 +126,9 @@ class PublicationFailureNotifiersCoordinator(AbstractNotifiersCoordinator):
         self.report = publisher_coordinator_report
         super(PublicationFailureNotifiersCoordinator, self).__init__(event)
 
-    def build_failure_message(self, report: PublicationReport):
+    def build_failure_message(self, publication_id: UUID, report: PublicationReport):
         return (
-            f"Publication {report.publication_id} failed with status: {report.status}.\n"
+            f"Publication {publication_id} failed with status: {report.status}.\n"
             f"Reason: {report.reason}"
         )
 
@@ -146,4 +139,4 @@ class PublicationFailureNotifiersCoordinator(AbstractNotifiersCoordinator):
                 f"Sending failure notifications for publication: {publication_id}"
             )
             if report.status == PublicationStatus.FAILED:
-                self.send_to_all(self.build_failure_message(report))
+                self.send_to_all(self.build_failure_message(publication_id, report))
