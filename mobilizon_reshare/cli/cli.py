@@ -51,7 +51,11 @@ def inspect(ctx, begin, end):
 @pass_obj
 def all(obj, settings_file):
     safe_execution(
-        functools.partial(inspect_events, frm=obj["begin"], to=obj["end"],),
+        functools.partial(
+            inspect_events,
+            frm=obj["begin"],
+            to=obj["end"],
+        ),
         settings_file,
     )
 

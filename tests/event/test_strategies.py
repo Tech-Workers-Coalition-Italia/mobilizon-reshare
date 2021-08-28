@@ -109,7 +109,9 @@ def test_window_simple_event_found(
 @pytest.mark.parametrize("current_hour", [15])
 @pytest.mark.parametrize("strategy_name", ["next_event"])
 def test_window_simple_no_published_events(
-    event_generator, set_strategy, mock_arrow_now,
+    event_generator,
+    set_strategy,
+    mock_arrow_now,
 ):
     "Testing that if no event is published, the function takes the first available unpublished event"
     unpublished_events = [
@@ -130,7 +132,9 @@ def test_window_simple_no_published_events(
 @pytest.mark.parametrize("current_hour", [15])
 @pytest.mark.parametrize("strategy_name", ["next_event"])
 def test_window_simple_event_too_recent(
-    event_generator, set_strategy, mock_arrow_now,
+    event_generator,
+    set_strategy,
+    mock_arrow_now,
 ):
     "Testing that if an event has been published too recently, no event is selected for publication"
     unpublished_events = [

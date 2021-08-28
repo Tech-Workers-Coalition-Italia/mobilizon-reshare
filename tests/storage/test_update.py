@@ -48,7 +48,10 @@ two_publishers_specification = {"publisher": ["telegram", "twitter"]}
     ],
 )
 async def test_update_publishers(
-    specification, names, expected_result, generate_models,
+    specification,
+    names,
+    expected_result,
+    generate_models,
 ):
     await generate_models(specification)
     await update_publishers(names)
@@ -107,12 +110,17 @@ async def test_update_publishers(
     ],
 )
 async def test_save_publication_report(
-    specification, report, event, expected_result, generate_models,
+    specification,
+    report,
+    event,
+    expected_result,
+    generate_models,
 ):
     await generate_models(specification)
 
     publications = await publications_with_status(
-        status=PublicationStatus.WAITING, event_mobilizon_id=event.mobilizon_id,
+        status=PublicationStatus.WAITING,
+        event_mobilizon_id=event.mobilizon_id,
     )
     await save_publication_report(report, publications)
     publication_ids = set(report.reports.keys())

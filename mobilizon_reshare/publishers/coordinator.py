@@ -85,7 +85,9 @@ class PublisherCoordinator(BuildPublisherMixin):
                     publication_id=publication_id,
                 )
 
-        reports = failed_publishers_reports | self._make_successful_report(failed_publishers_reports.keys())
+        reports = failed_publishers_reports | self._make_successful_report(
+            failed_publishers_reports.keys()
+        )
         return PublisherCoordinatorReport(
             publishers=self.publishers_by_publication_id, reports=reports
         )

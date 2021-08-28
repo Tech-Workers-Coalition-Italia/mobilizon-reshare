@@ -119,7 +119,9 @@ async def test_get_unpublished_events(specification, expected_result, generate_m
     ],
 )
 async def test_create_unpublished_events(
-    expected_result, generate_models, event_generator,
+    expected_result,
+    generate_models,
+    event_generator,
 ):
     await generate_models(complete_specification)
     event_3 = event_generator(begin_date=arrow.get(today + timedelta(days=6)))
@@ -130,7 +132,9 @@ async def test_create_unpublished_events(
 
     events_from_internet = [MobilizonEvent.from_model(models[0]), event_3, event_4]
 
-    await create_unpublished_events(unpublished_mobilizon_events=events_from_internet,)
+    await create_unpublished_events(
+        unpublished_mobilizon_events=events_from_internet,
+    )
     unpublished_events = list(await get_unpublished_events())
 
     assert len(unpublished_events) == 4
@@ -169,7 +173,9 @@ async def test_get_mobilizon_event_publications(generate_models):
     [[None, {"telegram", "twitter", "mastodon"}], ["telegram", {"telegram"}]],
 )
 async def test_get_publishers(
-    name, expected_result, generate_models,
+    name,
+    expected_result,
+    generate_models,
 ):
     await generate_models(complete_specification)
     result = await get_publishers(name)
@@ -232,7 +238,12 @@ async def test_get_publishers(
     ],
 )
 async def test_publications_with_status(
-    status, mobilizon_id, from_date, to_date, expected_result, generate_models,
+    status,
+    mobilizon_id,
+    from_date,
+    to_date,
+    expected_result,
+    generate_models,
 ):
     await generate_models(complete_specification)
     publications = await publications_with_status(

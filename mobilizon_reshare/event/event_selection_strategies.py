@@ -93,7 +93,8 @@ STRATEGY_NAME_TO_STRATEGY_CLASS = {"next_event": SelectNextEventStrategy}
 
 
 def select_event_to_publish(
-    published_events: List[MobilizonEvent], unpublished_events: List[MobilizonEvent],
+    published_events: List[MobilizonEvent],
+    unpublished_events: List[MobilizonEvent],
 ):
 
     strategy = STRATEGY_NAME_TO_STRATEGY_CLASS[
