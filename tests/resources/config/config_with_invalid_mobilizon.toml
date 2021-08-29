@@ -1,0 +1,7 @@
+[default.publishing.window]
+begin=12
+end=18
+
+[default.selection]
+strategy = "next_event"
+
