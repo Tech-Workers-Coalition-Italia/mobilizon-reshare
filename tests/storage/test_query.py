@@ -1,4 +1,5 @@
 from datetime import timedelta
+from uuid import UUID
 
 import arrow
 import pytest
@@ -56,7 +57,7 @@ async def test_get_published_events(generate_models):
                 MobilizonEvent(
                     name="event_3",
                     description="desc_3",
-                    mobilizon_id="mobid_3",
+                    mobilizon_id=UUID(int=3),
                     mobilizon_link="moblink_3",
                     thumbnail_link="thumblink_3",
                     location="loc_3",
@@ -87,7 +88,7 @@ async def test_get_unpublished_events(specification, expected_result, generate_m
                 Event(
                     name="event_1",
                     description="desc_1",
-                    mobilizon_id="mobid_1",
+                    mobilizon_id=UUID(int=101112),
                     mobilizon_link="moblink_1",
                     thumbnail_link="thumblink_1",
                     location="loc_1",
@@ -97,7 +98,7 @@ async def test_get_unpublished_events(specification, expected_result, generate_m
                 Event(
                     name="test event",
                     description="description of the event",
-                    mobilizon_id="12345",
+                    mobilizon_id=UUID(int=12345),
                     mobilizon_link="http://some_link.com/123",
                     thumbnail_link="http://some_link.com/123.jpg",
                     location="location",
@@ -107,7 +108,7 @@ async def test_get_unpublished_events(specification, expected_result, generate_m
                 Event(
                     name="test event",
                     description="description of the event",
-                    mobilizon_id="67890",
+                    mobilizon_id=UUID(int=67890),
                     mobilizon_link="http://some_link.com/123",
                     thumbnail_link="http://some_link.com/123.jpg",
                     location="location",
@@ -126,7 +127,7 @@ async def test_create_unpublished_events(
     await generate_models(complete_specification)
     event_3 = event_generator(begin_date=arrow.get(today + timedelta(days=6)))
     event_4 = event_generator(
-        begin_date=arrow.get(today + timedelta(days=12)), mobilizon_id="67890"
+        begin_date=arrow.get(today + timedelta(days=12)), mobilizon_id=UUID(int=67890)
     )
     models = await prefetch_event_relations(Event.filter(name="event_1"))
 
@@ -209,7 +210,7 @@ async def test_get_publishers(
         ],
         [
             PublicationStatus.WAITING,
-            "mobid_1",
+            UUID(int=1),
             None,
             None,
             [result_publication[3], result_publication[4]],

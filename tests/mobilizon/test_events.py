@@ -1,3 +1,5 @@
+from uuid import UUID
+
 import arrow
 import pytest
 
@@ -54,7 +56,7 @@ simple_event = MobilizonEvent(
     begin_datetime=arrow.get("2021-05-23T12:15:00Z"),
     end_datetime=arrow.get("2021-05-23T15:15:00Z"),
     mobilizon_link="https://some_mobilizon/events/1e2e5943-4a5c-497a-b65d-90457b715d7b",
-    mobilizon_id="1e2e5943-4a5c-497a-b65d-90457b715d7b",
+    mobilizon_id=UUID("1e2e5943-4a5c-497a-b65d-90457b715d7b"),
     thumbnail_link=None,
     location=None,
 )
@@ -65,7 +67,7 @@ full_event = MobilizonEvent(
     begin_datetime=arrow.get("2021-05-25T15:15:00+00:00]"),
     end_datetime=arrow.get("2021-05-25T16:15:00+00:00"),
     mobilizon_link="https://some_mobilizon/events/56e7ca43-1b6b-4c50-8362-0439393197e6",
-    mobilizon_id="56e7ca43-1b6b-4c50-8362-0439393197e6",
+    mobilizon_id=UUID("56e7ca43-1b6b-4c50-8362-0439393197e6"),
     thumbnail_link=None,
     location="http://some_location",
 )

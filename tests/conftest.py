@@ -1,5 +1,6 @@
 import os
 from datetime import datetime, timedelta, timezone
+from uuid import UUID
 
 import arrow
 import pytest
@@ -34,7 +35,7 @@ def event_generator():
         begin_date=arrow.Arrow(year=2021, month=1, day=1, hour=11, minute=30),
         published=False,
         publication_time=None,
-        mobilizon_id="12345",
+        mobilizon_id=UUID(int=12345),
     ):
 
         return MobilizonEvent(
@@ -72,7 +73,7 @@ def event() -> MobilizonEvent:
         begin_datetime=begin_date,
         end_datetime=begin_date.shift(hours=1),
         mobilizon_link="http://some_link.com/123",
-        mobilizon_id="12345",
+        mobilizon_id=UUID(int=12345),
         thumbnail_link="http://some_link.com/123.jpg",
         location="location",
     )
@@ -110,7 +111,7 @@ def event_model_generator():
         return Event(
             name=f"event_{idx}",
             description=f"desc_{idx}",
-            mobilizon_id=f"mobid_{idx}",
+            mobilizon_id=UUID(int=idx),
             mobilizon_link=f"moblink_{idx}",
             thumbnail_link=f"thumblink_{idx}",
             location=f"loc_{idx}",

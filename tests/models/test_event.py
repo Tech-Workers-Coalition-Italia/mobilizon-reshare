@@ -1,4 +1,5 @@
 from datetime import datetime, timedelta, timezone
+from uuid import UUID
 
 import arrow
 import pytest
@@ -100,7 +101,7 @@ async def test_mobilizon_event_to_model(event):
     assert event_db.begin_datetime == begin_date_utc
     assert event_db.end_datetime == begin_date_utc + timedelta(hours=1)
     assert event_db.mobilizon_link == "http://some_link.com/123"
-    assert event_db.mobilizon_id == "12345"
+    assert event_db.mobilizon_id == UUID(int=12345)
     assert event_db.thumbnail_link == "http://some_link.com/123.jpg"
     assert event_db.location == "location"
 
@@ -145,7 +146,7 @@ async def test_mobilizon_event_from_model(
     assert event.begin_datetime == begin_date_utc
     assert event.end_datetime == begin_date_utc.shift(hours=2)
     assert event.mobilizon_link == "moblink_1"
-    assert event.mobilizon_id == "mobid_1"
+    assert event.mobilizon_id == UUID(int=1)
     assert event.thumbnail_link == "thumblink_1"
     assert event.location == "loc_1"
     assert event.publication_time[publisher_model.name] == publication.timestamp
