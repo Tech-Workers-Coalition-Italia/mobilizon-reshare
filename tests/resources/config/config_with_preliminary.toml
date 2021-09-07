@@ -1,27 +1,5 @@
 
 [default.selection]
 strategy = "next_event"
-
-
-[default.publisher.telegram]
-active=true
-
-
-[default.publisher.facebook]
-active=false
-[default.publisher.zulip]
-active=false
-[default.publisher.twitter]
-active=false
-[default.publisher.mastodon]
-active=false
-
-
-[default.notifier.telegram]
-active=true
-[default.notifier.zulip]
-active=false
-[default.notifier.twitter]
-active=false
-[default.notifier.mastodon]
-active=false
+[default.selection.strategy_options]
+break_between_events_in_minutes = 60

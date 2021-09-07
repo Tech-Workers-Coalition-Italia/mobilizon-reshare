@@ -8,5 +8,4 @@ end=18
 
 [default.selection]
 strategy = "next_event"
-[default.selection.strategy_options]
-break_between_events_in_minutes = 60
+

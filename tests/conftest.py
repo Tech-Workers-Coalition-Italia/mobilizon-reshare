@@ -1,3 +1,4 @@
+import importlib.resources
 import os
 from datetime import datetime, timedelta, timezone
 from uuid import UUID
@@ -6,6 +7,7 @@ import arrow
 import pytest
 from tortoise.contrib.test import finalizer, initializer
 
+import mobilizon_reshare
 from mobilizon_reshare.event.event import MobilizonEvent, EventPublicationStatus
 from mobilizon_reshare.models.event import Event
 from mobilizon_reshare.models.notification import Notification, NotificationStatus
@@ -27,6 +29,17 @@ def generate_event_status(published):
 
 def generate_notification_status(published):
     return NotificationStatus.COMPLETED if published else NotificationStatus.WAITING
+
+
+@pytest.fixture(scope="session", autouse=True)
+def set_dynaconf_environment(request) -> None:
+    os.environ["ENV_FOR_DYNACONF"] = "testing"
+    os.environ["FORCE_ENV_FOR_DYNACONF"] = "testing"
+
+    yield None
+
+    os.environ["ENV_FOR_DYNACONF"] = ""
+    os.environ["FORCE_ENV_FOR_DYNACONF"] = ""
 
 
 @pytest.fixture
@@ -80,7 +93,7 @@ def event() -> MobilizonEvent:
 
 
 @pytest.fixture(scope="function", autouse=True)
-def initialize_db_tests(request) -> None:
+def initialize_db_tests() -> None:
     db_url = os.environ.get("TORTOISE_TEST_DB", "sqlite://:memory:")
     initializer(
         [
@@ -92,7 +105,15 @@ def initialize_db_tests(request) -> None:
         db_url=db_url,
         app_label="models",
     )
-    request.addfinalizer(finalizer)
+    with importlib.resources.path(
+        mobilizon_reshare, ".secrets.toml"
+    ) as bundled_secrets_path:
+        os.environ["SECRETS_FOR_DYNACONF"] = str(bundled_secrets_path)
+
+        yield None
+
+        os.environ["SECRETS_FOR_DYNACONF"] = ""
+        finalizer()
 
 
 @pytest.fixture()
