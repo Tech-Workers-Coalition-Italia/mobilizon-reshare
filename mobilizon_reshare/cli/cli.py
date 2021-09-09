@@ -5,6 +5,7 @@ from arrow import Arrow
 from click import pass_context, pass_obj
 
 from mobilizon_reshare.cli import safe_execution
+from mobilizon_reshare.cli.format import format_event
 from mobilizon_reshare.cli.inspect_event import inspect_events
 from mobilizon_reshare.cli.main import main
 from mobilizon_reshare.event.event import EventPublicationStatus
@@ -51,11 +52,7 @@ def inspect(ctx, begin, end):
 @pass_obj
 def all(obj, settings_file):
     safe_execution(
-        functools.partial(
-            inspect_events,
-            frm=obj["begin"],
-            to=obj["end"],
-        ),
+        functools.partial(inspect_events, frm=obj["begin"], to=obj["end"],),
         settings_file,
     )
 
@@ -117,6 +114,16 @@ def completed(obj, settings_file):
             to=obj["end"],
         ),
         settings_file,
+    )
+
+
+@mobilizon_reshare.command()
+@settings_file_option
+@click.argument("event-id", type=str)
+@click.argument("publisher", type=str)
+def format(settings_file, event_id, publisher):
+    safe_execution(
+        functools.partial(format_event, event_id, publisher), settings_file,
     )
 
 
