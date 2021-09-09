@@ -4,7 +4,7 @@ import traceback
 from logging.config import dictConfig
 from pathlib import Path
 
-from mobilizon_reshare.config.config import update_settings_files
+from mobilizon_reshare.config.config import get_settings
 from mobilizon_reshare.storage.db import tear_down, MoReDB
 
 logger = logging.getLogger(__name__)
@@ -16,7 +16,7 @@ async def graceful_exit(code):
 
 
 async def init(settings_file):
-    settings = update_settings_files(settings_file)
+    settings = get_settings(settings_file)
     dictConfig(settings["logging"])
     db_path = Path(settings.db_path)
     db = MoReDB(db_path)

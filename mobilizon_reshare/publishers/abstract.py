@@ -46,7 +46,7 @@ class AbstractNotifier(ABC):
                 "Abstract classes cannot access notifiers/publishers' settings"
             )
         try:
-            t, n = cls._conf or tuple()  # Avoid unpacking ``None``
+            t, n = cls._conf or tuple()
             return get_settings()[t][n]
         except (KeyError, ValueError):
             raise InvalidAttribute(

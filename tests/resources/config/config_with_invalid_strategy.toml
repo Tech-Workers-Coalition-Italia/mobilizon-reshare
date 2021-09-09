@@ -1,11 +1,11 @@
-[default.source.mobilizon]
+[testing.source.mobilizon]
 url="https://some_mobilizon"
 group="my_group"
 
-[default.publishing.window]
+[testing.publishing.window]
 begin=12
 end=18
 
-[default.selection]
+[testing.selection]
 strategy = "next_event"
 

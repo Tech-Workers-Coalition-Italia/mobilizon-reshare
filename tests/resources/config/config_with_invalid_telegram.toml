@@ -1,46 +1,46 @@
 
-[default.selection]
+[testing.selection]
 strategy = "next_event"
 
 
-[default.source.mobilizon]
+[testing.source.mobilizon]
 url="https://mobilizon.it/api"
 group="tech_workers_coalition_italia"
 
 
 
-[default.publishing.window]
+[testing.publishing.window]
 begin=12
 end=24
 
-[default.selection.strategy_options]
+[testing.selection.strategy_options]
 break_between_events_in_minutes =1
 
 
-[default.publisher.telegram]
+[testing.publisher.telegram]
 active=true
 chat_id="xxx"
 token="xxx"
 username="xxx"
 
-[default.publisher.facebook]
+[testing.publisher.facebook]
 active=false
-[default.publisher.zulip]
+[testing.publisher.zulip]
 active=false
-[default.publisher.twitter]
+[testing.publisher.twitter]
 active=false
-[default.publisher.mastodon]
+[testing.publisher.mastodon]
 active=false
 
 
-[default.notifier.telegram]
+[testing.notifier.telegram]
 active=true
 chat_id="xxx"
 misspelled_token="xxx"
 username="xxx"
-[default.notifier.zulip]
+[testing.notifier.zulip]
 active=false
-[default.notifier.twitter]
+[testing.notifier.twitter]
 active=false
-[default.notifier.mastodon]
+[testing.notifier.mastodon]
 active=false

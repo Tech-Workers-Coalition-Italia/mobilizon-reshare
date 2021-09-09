@@ -3,6 +3,7 @@ from uuid import UUID
 import pytest
 from asynctest import MagicMock
 
+from mobilizon_reshare.config.config import get_settings
 from mobilizon_reshare.event.event import MobilizonEvent
 from mobilizon_reshare.models.publication import PublicationStatus, Publication
 from mobilizon_reshare.models.publisher import Publisher
@@ -12,6 +13,7 @@ from mobilizon_reshare.publishers.coordinator import (
     PublisherCoordinator,
     PublicationFailureNotifiersCoordinator,
 )
+from mobilizon_reshare.publishers.telegram import TelegramPublisher
 
 
 @pytest.mark.parametrize(
@@ -35,9 +37,7 @@ def test_publication_report_successful(statuses, successful):
 
 @pytest.fixture
 @pytest.mark.asyncio
-async def mock_publication(
-    test_event: MobilizonEvent,
-):
+async def mock_publication(test_event: MobilizonEvent,):
     event = test_event.to_model()
     await event.save()
     publisher = Publisher(name="telegram")
@@ -136,3 +136,10 @@ async def test_notifier_coordinator_publication_failed(
 
     # 4 = 2 reports * 2 notifiers
     assert mock_send.call_count == 4
+
+
+def test_get_formatted_message(test_event):
+    settings = get_settings()
+    settings.update({"publisher.telegram.msg_template_path": None})
+    message = PublisherCoordinator.get_formatted_message(test_event, "telegram")
+    assert message == TelegramPublisher(test_event).get_message_from_event()
