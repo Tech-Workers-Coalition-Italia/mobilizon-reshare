@@ -113,11 +113,21 @@ def build_and_validate_settings(settings_file: Optional[str] = None):
 # better in the future.
 class CustomConfig:
     _instance = None
+    _settings_file = None
 
     def __new__(cls, settings_file: Optional[str] = None):
-        if cls._instance is None:
+        if (
+            settings_file is None and cls._settings_file is not None
+        ):  # normal access, I don't want to reload
+            return cls._instance
+
+        if (
+            cls._instance is None and cls._settings_file is None
+        ) or settings_file != cls._settings_file:
+            cls._settings_file = settings_file
             cls._instance = super(CustomConfig, cls).__new__(cls)
             cls.settings = build_and_validate_settings(settings_file)
+
         return cls._instance
 
     def update(self, settings_file: Optional[str] = None):
@@ -126,10 +136,4 @@ class CustomConfig:
 
 def get_settings(settings_file: Optional[str] = None):
     config = CustomConfig(settings_file)
-    return config.settings
-
-
-def update_settings_files(settings_file: Optional[str] = None):
-    config = CustomConfig()
-    config.update(settings_file)
     return config.settings
