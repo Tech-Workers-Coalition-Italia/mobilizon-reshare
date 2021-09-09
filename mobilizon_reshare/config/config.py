@@ -16,11 +16,7 @@ base_validators = [
     # strategy to decide events to publish
     Validator("selection.strategy", must_exist=True, is_type_of=str),
     Validator(
-        "publishing.window.begin",
-        must_exist=True,
-        is_type_of=int,
-        gte=0,
-        lte=24,
+        "publishing.window.begin", must_exist=True, is_type_of=int, gte=0, lte=24,
     ),
     Validator("publishing.window.end", must_exist=True, is_type_of=int, gte=0, lte=24),
     # url of the main Mobilizon instance to download events from
@@ -61,21 +57,15 @@ def build_settings(
     with importlib.resources.path(
         mobilizon_reshare, "settings.toml"
     ) as bundled_settings_path:
-        SETTINGS_FILE = (
-            [
-                bundled_settings_path,
-                Path(dirs.site_config_dir, "mobilizon_reshare.toml"),
-                Path(dirs.user_config_dir, "mobilizon_reshare.toml"),
-                os.environ.get("MOBILIZION_RESHARE_SETTINGS_FILE"),
-                settings_file,
-            ]
-            # FIXME: This is needed because otherwise dynaconf would load the bundled settings.toml file.
-            if os.environ.get("ENV_FOR_DYNACONF", "") != "testing"
-            else [settings_file]
-        )
+        SETTINGS_FILE = [
+            bundled_settings_path,
+            Path(dirs.site_config_dir, "mobilizon_reshare.toml"),
+            Path(dirs.user_config_dir, "mobilizon_reshare.toml"),
+            os.environ.get("MOBILIZION_RESHARE_SETTINGS_FILE"),
+            settings_file,
+        ]
 
     ENVVAR_PREFIX = "MOBILIZON_RESHARE"
-
     return Dynaconf(
         environments=True,
         envvar_prefix=ENVVAR_PREFIX,
@@ -140,5 +130,6 @@ def get_settings(settings_file: Optional[str] = None):
 
 
 def update_settings_files(settings_file: Optional[str] = None):
-    CustomConfig().update(settings_file)
-    return CustomConfig().settings
+    config = CustomConfig()
+    config.update(settings_file)
+    return config.settings

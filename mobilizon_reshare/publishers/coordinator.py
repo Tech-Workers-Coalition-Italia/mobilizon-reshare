@@ -12,13 +12,14 @@ from mobilizon_reshare.publishers.telegram import TelegramPublisher
 
 logger = logging.getLogger(__name__)
 
+name_to_publisher_class = {"telegram": TelegramPublisher}
+
 
 class BuildPublisherMixin:
     @staticmethod
     def build_publishers(
         event: MobilizonEvent, publisher_names
     ) -> dict[str, AbstractPublisher]:
-        name_to_publisher_class = {"telegram": TelegramPublisher}
 
         return {
             publisher_name: name_to_publisher_class[publisher_name](event)
@@ -111,6 +112,19 @@ class PublisherCoordinator(BuildPublisherMixin):
                 )
 
         return errors
+
+    @staticmethod
+    def get_formatted_message(event: MobilizonEvent, publisher: str) -> str:
+        """
+        Returns the formatted message for a given event and publisher.
+        """
+        if publisher not in name_to_publisher_class:
+            raise ValueError(
+                f"Publisher {publisher} does not exist.\nSupported publishers: "
+                f"{', '.join(list(name_to_publisher_class.keys()))}"
+            )
+
+        return name_to_publisher_class[publisher](event).get_message_from_event()
 
 
 class AbstractNotifiersCoordinator(BuildPublisherMixin):

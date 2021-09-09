@@ -30,11 +30,7 @@ def test_update_failure_invalid_preliminary_config(invalid_settings_file):
 
 @pytest.mark.parametrize(
     "invalid_toml,pattern_in_exception",
-    [
-        ["config_with_invalid_strategy.toml", "break_between_events_in_minutes"],
-        ["config_with_invalid_mobilizon.toml", "mobilizon"],
-        ["config_with_preliminary.toml", "publishing.window.begin"],
-    ],
+    [["config_with_invalid_strategy.toml", "break_between_events_in_minutes"]],
 )
 def test_update_failure_config_base_validators(invalid_toml, pattern_in_exception):
 
@@ -42,6 +38,7 @@ def test_update_failure_config_base_validators(invalid_toml, pattern_in_exceptio
         update_settings_files(
             pkg_resources.resource_filename("tests.resources.config", invalid_toml)
         )
+
     assert e.match(pattern_in_exception)
 
 
