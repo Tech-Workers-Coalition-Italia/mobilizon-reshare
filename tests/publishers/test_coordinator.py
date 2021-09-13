@@ -37,7 +37,9 @@ def test_publication_report_successful(statuses, successful):
 
 @pytest.fixture
 @pytest.mark.asyncio
-async def mock_publication(test_event: MobilizonEvent,):
+async def mock_publication(
+    test_event: MobilizonEvent,
+):
     event = test_event.to_model()
     await event.save()
     publisher = Publisher(name="telegram")

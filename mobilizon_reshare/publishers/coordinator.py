@@ -9,10 +9,11 @@ from mobilizon_reshare.publishers import get_active_notifiers, get_active_publis
 from mobilizon_reshare.publishers.abstract import AbstractPublisher
 from mobilizon_reshare.publishers.exceptions import PublisherError
 from mobilizon_reshare.publishers.telegram import TelegramPublisher
+from mobilizon_reshare.publishers.zulip import ZulipPublisher
 
 logger = logging.getLogger(__name__)
 
-name_to_publisher_class = {"telegram": TelegramPublisher}
+name_to_publisher_class = {"telegram": TelegramPublisher, "zulip": ZulipPublisher}
 
 
 class BuildPublisherMixin:

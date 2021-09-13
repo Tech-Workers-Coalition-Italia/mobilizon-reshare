@@ -30,7 +30,7 @@ complete_specification = {
         {"event_idx": 3, "publisher_idx": 1, "status": PublicationStatus.WAITING},
         {"event_idx": 3, "publisher_idx": 2, "status": PublicationStatus.WAITING},
     ],
-    "publisher": ["telegram", "twitter", "mastodon"],
+    "publisher": ["telegram", "twitter", "mastodon", "zulip"],
 }
 
 
