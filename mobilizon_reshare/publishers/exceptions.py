@@ -32,3 +32,7 @@ class InvalidResponse(PublisherError):
 
 class InvalidSettings(PublisherError):
     """ Publisher settings are either missing or badly configured """
+
+
+class ZulipError(PublisherError):
+    """ Publisher receives an error response from Zulip"""

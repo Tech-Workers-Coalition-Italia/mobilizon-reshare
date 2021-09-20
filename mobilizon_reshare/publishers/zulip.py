@@ -10,6 +10,7 @@ from mobilizon_reshare.publishers.exceptions import (
     InvalidCredentials,
     InvalidEvent,
     InvalidResponse,
+    ZulipError,
 )
 
 
@@ -96,15 +97,12 @@ class ZulipPublisher(AbstractPublisher):
         if not (text and text.strip()):
             self._log_error("No text was found", raise_error=InvalidEvent)
 
-    def _validate_response(self, res) -> dict:
-        try:
-            res.raise_for_status()
-        except requests.exceptions.HTTPError as e:
-            self._log_error(
-                f"Server returned invalid data: {str(e)}",
-                raise_error=InvalidResponse,
-            )
+    def validate_message(self) -> None:
+        # We don't need this for Zulip.
+        pass
 
+    def _validate_response(self, res) -> dict:
+        # See https://zulip.com/api/rest-error-handling
         try:
             data = res.json()
         except Exception as e:
@@ -115,8 +113,8 @@ class ZulipPublisher(AbstractPublisher):
 
         if data["result"] == "error":
             self._log_error(
-                f"Invalid request (response: {data})",
-                raise_error=InvalidResponse,
+                f"{res.status_code} Error - {data['code']} - {data['msg']})",
+                raise_error=ZulipError,
             )
 
         return data
