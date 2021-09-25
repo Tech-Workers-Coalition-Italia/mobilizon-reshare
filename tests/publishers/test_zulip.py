@@ -12,10 +12,9 @@ from mobilizon_reshare.storage.query import (
 )
 
 
+@pytest.fixture
 @pytest.mark.asyncio
-async def test_zulip_publisher(
-    mocked_responses, event_model_generator, publication_model_generator
-):
+async def setup_db(event_model_generator, publication_model_generator):
     settings = get_settings()
     for publisher in get_active_publishers():
         if publisher != "zulip":
@@ -33,9 +32,37 @@ async def test_zulip_publisher(
     )
     await publication.save()
 
+
+@pytest.mark.asyncio
+async def test_zulip_publisher(mocked_valid_response, setup_db):
+
     report = PublisherCoordinator(
         list(await get_all_events())[0],
         await publications_with_status(status=PublicationStatus.WAITING),
     ).run()
 
     assert list(report.reports.values())[0].status == PublicationStatus.COMPLETED
+
+
+@pytest.mark.asyncio
+async def test_zulip_publishr_failure_invalid_credentials(
+    mocked_credential_error_response, setup_db
+):
+    report = PublisherCoordinator(
+        list(await get_all_events())[0],
+        await publications_with_status(status=PublicationStatus.WAITING),
+    ).run()
+    assert list(report.reports.values())[0].status == PublicationStatus.FAILED
+    assert list(report.reports.values())[0].reason == "Invalid credentials"
+
+
+@pytest.mark.asyncio
+async def test_zulip_publishr_failure_client_error(
+    mocked_client_error_response, setup_db
+):
+    report = PublisherCoordinator(
+        list(await get_all_events())[0],
+        await publications_with_status(status=PublicationStatus.WAITING),
+    ).run()
+    assert list(report.reports.values())[0].status == PublicationStatus.FAILED
+    assert list(report.reports.values())[0].reason == "400 Error - Invalid request"

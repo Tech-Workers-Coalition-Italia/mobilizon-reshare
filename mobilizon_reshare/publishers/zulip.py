@@ -113,7 +113,7 @@ class ZulipPublisher(AbstractPublisher):
 
         if data["result"] == "error":
             self._log_error(
-                f"{res.status_code} Error - {data['code']} - {data['msg']})",
+                f"{res.status_code} Error - {data['msg']}",
                 raise_error=ZulipError,
             )
 
