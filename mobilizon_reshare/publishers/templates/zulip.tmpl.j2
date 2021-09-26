@@ -1,0 +1,9 @@
+# {{ name }}
+
+🕒 {{ begin_datetime.format('DD MMMM, HH:mm') }} - {{ end_datetime.format('DD MMMM, HH:mm') }}
+
+{% if location %}
+📍 {{ location }}
+
+{% endif %}
+{{ description }}

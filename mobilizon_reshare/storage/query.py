@@ -182,7 +182,7 @@ async def create_unpublished_events(
     unpublished_mobilizon_events: Iterable[MobilizonEvent],
 ) -> None:
     # We store only new events, i.e. events whose mobilizon_id wasn't found in the DB.
-    unpublished_event_models = set(
+    unpublished_event_models: set[UUID] = set(
         map(lambda event: event.mobilizon_id, await get_unpublished_events())
     )
     unpublished_events = list(

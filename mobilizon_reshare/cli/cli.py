@@ -54,7 +54,12 @@ def inspect(ctx, target, begin, end, settings_file):
         "all": None,
     }
     safe_execution(
-        functools.partial(inspect_events, target_to_status[target], frm=begin, to=end,),
+        functools.partial(
+            inspect_events,
+            target_to_status[target],
+            frm=begin,
+            to=end,
+        ),
         settings_file,
     )
 
@@ -65,7 +70,8 @@ def inspect(ctx, target, begin, end, settings_file):
 @click.argument("publisher", type=str)
 def format(settings_file, event_id, publisher):
     safe_execution(
-        functools.partial(format_event, event_id, publisher), settings_file,
+        functools.partial(format_event, event_id, publisher),
+        settings_file,
     )
 
 

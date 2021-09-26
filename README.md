@@ -41,6 +41,7 @@ A Publisher is responsible for formatting and publishing an event on a given pla
 Currently the following publishers are supported:
 
 * Telegram
+* Zulip
 
 ### Notifier
 

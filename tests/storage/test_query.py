@@ -171,7 +171,7 @@ async def test_get_mobilizon_event_publications(generate_models):
 @pytest.mark.asyncio
 @pytest.mark.parametrize(
     "name,expected_result",
-    [[None, {"telegram", "twitter", "mastodon"}], ["telegram", {"telegram"}]],
+    [[None, {"telegram", "twitter", "mastodon", "zulip"}], ["telegram", {"telegram"}]],
 )
 async def test_get_publishers(
     name,

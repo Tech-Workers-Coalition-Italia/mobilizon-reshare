@@ -5,6 +5,8 @@ set -eu
 myself="$(basename "$0")"
 version_file="$(pwd)/mobilizon_reshare/VERSION"
 pyproject_toml="$(pwd)/pyproject.toml"
+current-branch="$(git rev-parse --abbrev-ref HEAD)"
+current-commit="$(git log -1 --format='%H')"
 dryrun=0
 verbose=0
 publish=0
@@ -90,6 +92,16 @@ release-new-version() {
 
 }
 
+restore-git-state () {
+  # This way we can go back to a
+  # detached HEAD state as well.
+  if [ "${current-branch}" = "HEAD" ]; then
+    git checkout "${current-commit}"
+  else
+    git checkout "${current-branch}"
+  fi
+}
+
 parse-args() {
   [ "$#" -eq 0 ] && crash "$(usage)"
 
@@ -149,7 +161,15 @@ fi
 
 if [ "$publish" = "1" ]; then
   validate-pypi-token
+
+  # We make sure to actually publish the tagged version
+  git checkout "v$(current-version)"
+  set +e
+  # If this command fails we still want to go back to the
+  # branch we were on.
   poetry publish -u "__token__" -p "$PYPI_TOKEN"
+  set -e
+  restore-git-state
 fi
 
 exit 0
