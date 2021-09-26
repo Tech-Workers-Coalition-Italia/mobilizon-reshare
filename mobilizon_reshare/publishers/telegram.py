@@ -23,12 +23,14 @@ class TelegramPublisher(AbstractPublisher):
     )
 
     def _escape_message(self, message: str) -> str:
-        return (
+        message = (
             message.replace("-", "\\-")
             .replace(".", "\\.")
             .replace("(", "\\(")
             .replace(")", "\\)")
+            .replace("#", "")
         )
+        return message
 
     def _send(self, message: str) -> Response:
         return requests.post(
@@ -54,8 +56,7 @@ class TelegramPublisher(AbstractPublisher):
             err.append("username")
         if err:
             self._log_error(
-                ", ".join(err) + " is/are missing",
-                raise_error=InvalidCredentials,
+                ", ".join(err) + " is/are missing", raise_error=InvalidCredentials,
             )
 
         res = requests.get(f"https://api.telegram.org/bot{token}/getMe")
@@ -63,8 +64,7 @@ class TelegramPublisher(AbstractPublisher):
 
         if not username == data.get("result", {}).get("username"):
             self._log_error(
-                "Found a different bot than the expected one",
-                raise_error=InvalidBot,
+                "Found a different bot than the expected one", raise_error=InvalidBot,
             )
 
     def validate_event(self) -> None:
@@ -77,8 +77,7 @@ class TelegramPublisher(AbstractPublisher):
             res.raise_for_status()
         except requests.exceptions.HTTPError as e:
             self._log_error(
-                f"Server returned invalid data: {str(e)}",
-                raise_error=InvalidResponse,
+                f"Server returned invalid data: {str(e)}", raise_error=InvalidResponse,
             )
 
         try:
@@ -91,8 +90,7 @@ class TelegramPublisher(AbstractPublisher):
 
         if not data.get("ok"):
             self._log_error(
-                f"Invalid request (response: {data})",
-                raise_error=InvalidResponse,
+                f"Invalid request (response: {data})", raise_error=InvalidResponse,
             )
 
         return data
