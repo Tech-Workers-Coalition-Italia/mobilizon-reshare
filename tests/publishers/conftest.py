@@ -1,6 +1,7 @@
-from datetime import datetime, timedelta
+from datetime import timedelta
 from uuid import UUID
 
+import arrow
 import pytest
 
 from mobilizon_reshare.event.event import MobilizonEvent
@@ -11,7 +12,7 @@ from mobilizon_reshare.publishers.exceptions import PublisherError, InvalidRespo
 @pytest.fixture
 def test_event():
 
-    now = datetime.now()
+    now = arrow.now()
     return MobilizonEvent(
         **{
             "name": "TestName",

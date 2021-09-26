@@ -19,10 +19,13 @@ class MobilizonRequestFailed(Exception):
 
 
 def parse_location(data):
-    # TODO define a better logic (or a customizable strategy) to get the location
-    return (data.get("physicalAddress", {}) or {}).get("locality") or data.get(
-        "onlineAddress"
-    )
+    if "physicalAddress" in data and data["physicalAddress"]:
+        addr = data["physicalAddress"]
+        return f"{addr['description']}, {addr['locality']}, {addr['region']}"
+    elif "onlineAddress" in data and data["onlineAddress"]:
+        return data["onlineAddress"]
+    else:
+        return None
 
 
 def parse_picture(data):
