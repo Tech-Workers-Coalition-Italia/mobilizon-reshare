@@ -1,6 +1,7 @@
 import inspect
 import logging
 from abc import ABC, abstractmethod
+from typing import Optional
 
 from dynaconf.utils.boxing import DynaBox
 from jinja2 import Environment, FileSystemLoader, Template
@@ -35,6 +36,9 @@ class AbstractNotifier(ABC):
 
     __str__ = __repr__
 
+    def __init__(self, message):
+        self.message = message
+
     @property
     def conf(self) -> DynaBox:
         """
@@ -55,7 +59,7 @@ class AbstractNotifier(ABC):
             )
 
     @abstractmethod
-    def send(self, message):
+    def send(self):
         """
         Sends a message to the target channel
         """
@@ -98,15 +102,6 @@ class AbstractNotifier(ABC):
         """
         raise NotImplementedError
 
-    @abstractmethod
-    def publish(self) -> None:
-        """
-        Publishes the actual post on social media.
-        Should raise ``PublisherError`` (or one of its subclasses) if
-        anything goes wrong.
-        """
-        raise NotImplementedError
-
     def is_message_valid(self) -> bool:
         try:
             self.validate_message()
@@ -138,9 +133,16 @@ class AbstractPublisher(AbstractNotifier):
 
     _conf = tuple()
 
-    def __init__(self, event: MobilizonEvent):
-        self.event = event
-        super().__init__()
+    def __init__(
+        self, event: Optional[MobilizonEvent] = None, message: Optional[str] = None
+    ):
+        if (event and message) or (not event and not message):
+            raise ValueError(
+                "A publisher must publish either at least an event or a message but not both"
+            )
+        if event:
+            self.event = event
+        super().__init__(message=message or self.get_message_from_event())
 
     def is_event_valid(self) -> bool:
         try:
@@ -186,9 +188,6 @@ class AbstractPublisher(AbstractNotifier):
     def _validate_response(self, response: Response) -> None:
         pass
 
-    def send(self, message):
-        res = self._send(message)
+    def send(self):
+        res = self._send(self.message)
         self._validate_response(res)
-
-    def publish(self) -> None:
-        self.send(message=self.get_message_from_event())

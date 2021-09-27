@@ -45,14 +45,14 @@ async def main():
     if event:
 
         waiting_publications = await publications_with_status(
-            status=PublicationStatus.WAITING,
-            event_mobilizon_id=event.mobilizon_id,
+            status=PublicationStatus.WAITING, event_mobilizon_id=event.mobilizon_id,
         )
         logger.debug(f"Event to publish found: {event.name}")
-        report = PublisherCoordinator(event, waiting_publications).run()
-        await save_publication_report(report, waiting_publications)
-        PublicationFailureNotifiersCoordinator(event, report).notify_failures()
+        reports = PublisherCoordinator(event, waiting_publications).run()
+        await save_publication_report(reports, waiting_publications)
+        for _, report in reports.reports.items():
+            PublicationFailureNotifiersCoordinator(report).notify_failure()
 
-        return 0 if report.successful else 1
+        return 0 if reports.successful else 1
     else:
         return 0

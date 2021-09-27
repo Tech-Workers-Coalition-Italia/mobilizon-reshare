@@ -23,7 +23,15 @@ class BuildPublisherMixin:
     ) -> dict[str, AbstractPublisher]:
 
         return {
-            publisher_name: name_to_publisher_class[publisher_name](event)
+            publisher_name: name_to_publisher_class[publisher_name](event=event)
+            for publisher_name in publisher_names
+        }
+
+    @staticmethod
+    def build_notifier(message: str, publisher_names) -> dict[str, AbstractPublisher]:
+
+        return {
+            publisher_name: name_to_publisher_class[publisher_name](message=message)
             for publisher_name in publisher_names
         }
 
@@ -48,12 +56,21 @@ class PublisherCoordinatorReport:
 
 
 class PublisherCoordinator(BuildPublisherMixin):
-    def __init__(self, event: MobilizonEvent, publications: dict[UUID, Publication]):
-        publishers = self.build_publishers(event, get_active_publishers())
-        self.publishers_by_publication_id = {
-            publication_id: publishers[publication.publisher.name]
-            for publication_id, publication in publications.items()
-        }
+    def __init__(
+        self,
+        event: MobilizonEvent,
+        publications: dict[UUID, Publication],
+        publishers=None,
+    ):
+        # TODO simplify all this logic
+        if publishers is None:
+            publishers = self.build_publishers(event, get_active_publishers())
+            self.publishers_by_publication_id = {
+                publication_id: publishers[publication.publisher.name]
+                for publication_id, publication in publications.items()
+            }
+        else:
+            self.publishers_by_publication_id = publishers
 
     def run(self) -> PublisherCoordinatorReport:
         errors = self._validate()
@@ -79,7 +96,7 @@ class PublisherCoordinator(BuildPublisherMixin):
         failed_publishers_reports = {}
         for publication_id, p in self.publishers_by_publication_id.items():
             try:
-                p.publish()
+                p.send()
             except PublisherError as e:
                 failed_publishers_reports[publication_id] = PublicationReport(
                     status=PublicationStatus.FAILED,
@@ -129,36 +146,35 @@ class PublisherCoordinator(BuildPublisherMixin):
 
 
 class AbstractNotifiersCoordinator(BuildPublisherMixin):
-    def __init__(self, event: MobilizonEvent):
-        self.event = event
-        self.notifiers = self.build_publishers(event, get_active_notifiers())
+    def __init__(self, message: str, notifiers=None):
+        if notifiers:
+            self.notifiers = notifiers
+        else:
+            self.notifiers = self.build_notifier(message, get_active_notifiers())
 
-    def send_to_all(self, message):
+    def send_to_all(self):
         # TODO: failure to notify should fail safely and write to a dedicated log
         for notifier in self.notifiers.values():
-            notifier.send(message)
+            notifier.send()
 
 
 class PublicationFailureNotifiersCoordinator(AbstractNotifiersCoordinator):
-    def __init__(
-        self,
-        event: MobilizonEvent,
-        publisher_coordinator_report: PublisherCoordinatorReport,
-    ):
-        self.report = publisher_coordinator_report
-        super(PublicationFailureNotifiersCoordinator, self).__init__(event)
+    def __init__(self, report: PublicationReport, notifiers=None):
+        self.report = report
+        super(PublicationFailureNotifiersCoordinator, self).__init__(
+            message=self.build_failure_message(), notifiers=notifiers
+        )
 
-    def build_failure_message(self, report: PublicationReport):
+    def build_failure_message(self):
+        report = self.report
         return (
             f"Publication {report.publication_id} failed with status: {report.status}.\n"
             f"Reason: {report.reason}"
         )
 
-    def notify_failures(self):
-        for publication_id, report in self.report.reports.items():
-
-            logger.info(
-                f"Sending failure notifications for publication: {publication_id}"
-            )
-            if report.status == PublicationStatus.FAILED:
-                self.send_to_all(self.build_failure_message(report))
+    def notify_failure(self):
+        logger.info(
+            f"Sending failure notifications for publication: {self.report.publication_id}"
+        )
+        if self.report.status == PublicationStatus.FAILED:
+            self.send_to_all()

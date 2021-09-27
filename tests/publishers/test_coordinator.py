@@ -37,9 +37,7 @@ def test_publication_report_successful(statuses, successful):
 
 @pytest.fixture
 @pytest.mark.asyncio
-async def mock_publication(
-    test_event: MobilizonEvent,
-):
+async def mock_publication(test_event: MobilizonEvent,):
     event = test_event.to_model()
     await event.save()
     publisher = Publisher(name="telegram")
@@ -60,14 +58,15 @@ async def mock_publication(
 async def test_coordinator_run_success(
     test_event, mock_publication, mock_publisher_valid
 ):
-    coordinator = PublisherCoordinator(
-        test_event, {UUID(int=1): mock_publication, UUID(int=2): mock_publication}
-    )
-    coordinator.publishers_by_publication_id = {
+    publishers = {
         UUID(int=1): mock_publisher_valid,
         UUID(int=2): mock_publisher_valid,
     }
-
+    coordinator = PublisherCoordinator(
+        test_event,
+        {UUID(int=1): mock_publication, UUID(int=2): mock_publication},
+        publishers=publishers,
+    )
     report = coordinator.run()
     assert len(report.reports) == 2
     assert report.successful, "\n".join(
@@ -79,10 +78,12 @@ async def test_coordinator_run_success(
 async def test_coordinator_run_failure(
     test_event, mock_publication, mock_publisher_invalid
 ):
-    coordinator = PublisherCoordinator(test_event, {UUID(int=1): mock_publication})
-    coordinator.publishers_by_publication_id = {
+    publishers = {
         UUID(int=1): mock_publisher_invalid,
     }
+    coordinator = PublisherCoordinator(
+        test_event, {UUID(int=1): mock_publication}, publishers
+    )
 
     report = coordinator.run()
     assert len(report.reports) == 1
@@ -97,11 +98,11 @@ async def test_coordinator_run_failure(
 async def test_coordinator_run_failure_response(
     test_event, mock_publication, mock_publisher_invalid_response
 ):
-    coordinator = PublisherCoordinator(test_event, {UUID(int=1): mock_publication})
-    coordinator.publishers_by_publication_id = {
-        UUID(int=1): mock_publisher_invalid_response,
-    }
-
+    coordinator = PublisherCoordinator(
+        test_event,
+        {UUID(int=1): mock_publication},
+        {UUID(int=1): mock_publisher_invalid_response},
+    )
     report = coordinator.run()
     assert len(report.reports) == 1
     assert not report.successful
@@ -114,30 +115,18 @@ async def test_notifier_coordinator_publication_failed(
 ):
     mock_send = MagicMock()
     mock_publisher_valid._send = mock_send
-    report = PublisherCoordinatorReport(
-        {UUID(int=1): mock_publisher_valid, UUID(int=2): mock_publisher_valid},
-        {
-            UUID(int=1): PublicationReport(
-                status=PublicationStatus.FAILED,
-                reason="some failure",
-                publication_id=UUID(int=1),
-            ),
-            UUID(int=2): PublicationReport(
-                status=PublicationStatus.FAILED,
-                reason="some failure",
-                publication_id=UUID(int=2),
-            ),
-        },
+    report = PublicationReport(
+        status=PublicationStatus.FAILED,
+        reason="some failure",
+        publication_id=UUID(int=1),
     )
-    coordinator = PublicationFailureNotifiersCoordinator(test_event, report)
-    coordinator.notifiers = {
-        UUID(int=1): mock_publisher_valid,
-        UUID(int=2): mock_publisher_valid,
-    }
-    coordinator.notify_failures()
+    coordinator = PublicationFailureNotifiersCoordinator(
+        report, {UUID(int=1): mock_publisher_valid, UUID(int=2): mock_publisher_valid}
+    )
+    coordinator.notify_failure()
 
     # 4 = 2 reports * 2 notifiers
-    assert mock_send.call_count == 4
+    assert mock_send.call_count == 2
 
 
 def test_get_formatted_message(test_event):
