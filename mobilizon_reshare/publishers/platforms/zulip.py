@@ -4,7 +4,7 @@ from requests import Response
 from requests.auth import HTTPBasicAuth
 
 from mobilizon_reshare.formatting.description import html_to_markdown
-from mobilizon_reshare.publishers.abstract import AbstractPublisher
+from mobilizon_reshare.publishers.abstract import AbstractNotifier
 from mobilizon_reshare.publishers.exceptions import (
     InvalidBot,
     InvalidCredentials,
@@ -14,7 +14,7 @@ from mobilizon_reshare.publishers.exceptions import (
 )
 
 
-class ZulipPublisher(AbstractPublisher):
+class ZulipPublisher(AbstractNotifier):
     """
     Zulip publisher class.
     """
@@ -32,11 +32,7 @@ class ZulipPublisher(AbstractPublisher):
         return requests.post(
             url=self.api_uri + "messages",
             auth=HTTPBasicAuth(self.conf.bot_email, self.conf.bot_token),
-            data={
-                "type": "private",
-                "to": f"[{self.user_id}]",
-                "content": message,
-            },
+            data={"type": "private", "to": f"[{self.user_id}]", "content": message,},
         )
 
     def _send(self, message: str) -> Response:
@@ -68,8 +64,7 @@ class ZulipPublisher(AbstractPublisher):
             err.append("bot email")
         if err:
             self._log_error(
-                ", ".join(err) + " is/are missing",
-                raise_error=InvalidCredentials,
+                ", ".join(err) + " is/are missing", raise_error=InvalidCredentials,
             )
 
         res = requests.get(
@@ -80,8 +75,7 @@ class ZulipPublisher(AbstractPublisher):
 
         if not data["is_bot"]:
             self._log_error(
-                "These user is not a bot",
-                raise_error=InvalidBot,
+                "These user is not a bot", raise_error=InvalidBot,
             )
 
         if not bot_email == data["email"]:
@@ -113,8 +107,7 @@ class ZulipPublisher(AbstractPublisher):
 
         if data["result"] == "error":
             self._log_error(
-                f"{res.status_code} Error - {data['msg']}",
-                raise_error=ZulipError,
+                f"{res.status_code} Error - {data['msg']}", raise_error=ZulipError,
             )
 
         return data

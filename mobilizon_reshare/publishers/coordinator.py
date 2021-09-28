@@ -1,34 +1,24 @@
 import logging
 from dataclasses import dataclass, field
+from typing import List
 from uuid import UUID
 
 from mobilizon_reshare.event.event import MobilizonEvent
-from mobilizon_reshare.models.publication import Publication
-from mobilizon_reshare.models.publication import PublicationStatus
-from mobilizon_reshare.publishers import get_active_notifiers, get_active_publishers
-from mobilizon_reshare.publishers.abstract import AbstractPublisher
+from mobilizon_reshare.models.publication import (
+    PublicationStatus,
+    Publication as PublicationModel,
+)
+from mobilizon_reshare.publishers import get_active_notifiers
+from mobilizon_reshare.publishers.abstract import AbstractNotifier, EventPublication
 from mobilizon_reshare.publishers.exceptions import PublisherError
-from mobilizon_reshare.publishers.telegram import TelegramPublisher
-from mobilizon_reshare.publishers.zulip import ZulipPublisher
+from mobilizon_reshare.publishers.platforms import name_to_publisher_class
 
 logger = logging.getLogger(__name__)
-
-name_to_publisher_class = {"telegram": TelegramPublisher, "zulip": ZulipPublisher}
 
 
 class BuildPublisherMixin:
     @staticmethod
-    def build_publishers(
-        event: MobilizonEvent, publisher_names
-    ) -> dict[str, AbstractPublisher]:
-
-        return {
-            publisher_name: name_to_publisher_class[publisher_name](event=event)
-            for publisher_name in publisher_names
-        }
-
-    @staticmethod
-    def build_notifier(message: str, publisher_names) -> dict[str, AbstractPublisher]:
+    def build_notifier(message: str, publisher_names) -> dict[str, AbstractNotifier]:
 
         return {
             publisher_name: name_to_publisher_class[publisher_name](message=message)
@@ -45,7 +35,7 @@ class PublicationReport:
 
 @dataclass
 class PublisherCoordinatorReport:
-    publishers: dict[UUID, AbstractPublisher]
+    publications: List[EventPublication]
     reports: dict[UUID, PublicationReport] = field(default_factory={})
 
     @property
@@ -56,77 +46,65 @@ class PublisherCoordinatorReport:
 
 
 class PublisherCoordinator(BuildPublisherMixin):
-    def __init__(
-        self,
-        event: MobilizonEvent,
-        publications: dict[UUID, Publication],
-        publishers=None,
-    ):
-        # TODO simplify all this logic
-        if publishers is None:
-            publishers = self.build_publishers(event, get_active_publishers())
-            self.publishers_by_publication_id = {
-                publication_id: publishers[publication.publisher.name]
-                for publication_id, publication in publications.items()
-            }
-        else:
-            self.publishers_by_publication_id = publishers
+    def __init__(self, publications: List[EventPublication]):
+        self.publications = publications
 
     def run(self) -> PublisherCoordinatorReport:
         errors = self._validate()
         if errors:
             return PublisherCoordinatorReport(
-                reports=errors, publishers=self.publishers_by_publication_id
+                reports=errors, publications=self.publications
             )
 
         return self._post()
 
     def _make_successful_report(self, failed_ids):
         return {
-            publication_id: PublicationReport(
+            publication.id: PublicationReport(
                 status=PublicationStatus.COMPLETED,
                 reason="",
-                publication_id=publication_id,
+                publication_id=publication.id,
             )
-            for publication_id in self.publishers_by_publication_id
-            if publication_id not in failed_ids
+            for publication in self.publications
+            if publication.id not in failed_ids
         }
 
     def _post(self):
         failed_publishers_reports = {}
-        for publication_id, p in self.publishers_by_publication_id.items():
+        for publication in self.publications:
             try:
-                p.send()
+                message = publication.formatter.get_message_from_event()
+                publication.publisher.send(message)
             except PublisherError as e:
-                failed_publishers_reports[publication_id] = PublicationReport(
+                failed_publishers_reports[publication.id] = PublicationReport(
                     status=PublicationStatus.FAILED,
                     reason=str(e),
-                    publication_id=publication_id,
+                    publication_id=publication.id,
                 )
 
         reports = failed_publishers_reports | self._make_successful_report(
             failed_publishers_reports.keys()
         )
         return PublisherCoordinatorReport(
-            publishers=self.publishers_by_publication_id, reports=reports
+            publications=self.publications, reports=reports
         )
 
     def _validate(self):
         errors: dict[UUID, PublicationReport] = {}
-        for publication_id, p in self.publishers_by_publication_id.items():
+        for publication in self.publications:
             reason = []
-            if not p.are_credentials_valid():
+            if not publication.publisher.are_credentials_valid():
                 reason.append("Invalid credentials")
-            if not p.is_event_valid():
+            if not publication.formatter.is_event_valid():
                 reason.append("Invalid event")
-            if not p.is_message_valid():
+            if not publication.formatter.is_message_valid():
                 reason.append("Invalid message")
 
             if len(reason) > 0:
-                errors[publication_id] = PublicationReport(
+                errors[publication.id] = PublicationReport(
                     status=PublicationStatus.FAILED,
                     reason=", ".join(reason),
-                    publication_id=publication_id,
+                    publication_id=publication.id,
                 )
 
         return errors

@@ -13,7 +13,7 @@ from mobilizon_reshare.publishers.coordinator import (
     PublisherCoordinator,
     PublicationFailureNotifiersCoordinator,
 )
-from mobilizon_reshare.publishers.telegram import TelegramPublisher
+from mobilizon_reshare.publishers.platforms.telegram import TelegramPublisher
 
 
 @pytest.mark.parametrize(
