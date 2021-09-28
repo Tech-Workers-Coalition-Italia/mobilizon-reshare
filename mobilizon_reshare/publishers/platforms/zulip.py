@@ -3,8 +3,12 @@ import requests
 from requests import Response
 from requests.auth import HTTPBasicAuth
 
+from mobilizon_reshare.event.event import MobilizonEvent
 from mobilizon_reshare.formatting.description import html_to_markdown
-from mobilizon_reshare.publishers.abstract import AbstractNotifier
+from mobilizon_reshare.publishers.abstract import (
+    AbstractNotifier,
+    AbstractEventFormatter,
+)
 from mobilizon_reshare.publishers.exceptions import (
     InvalidBot,
     InvalidCredentials,
@@ -12,6 +16,27 @@ from mobilizon_reshare.publishers.exceptions import (
     InvalidResponse,
     ZulipError,
 )
+
+
+class ZulipFormatter(AbstractEventFormatter):
+
+    _conf = ("publisher", "zulip")
+    default_template_path = pkg_resources.resource_filename(
+        "mobilizon_reshare.publishers.templates", "zulip.tmpl.j2"
+    )
+
+    def validate_event(self, event: MobilizonEvent) -> None:
+        text = event.description
+        if not (text and text.strip()):
+            self._log_error("No text was found", raise_error=InvalidEvent)
+
+    def validate_message(self, message) -> None:
+        pass
+
+    def _preprocess_event(self, event: MobilizonEvent):
+        event.description = html_to_markdown(event.description)
+        event.name = html_to_markdown(event.name)
+        return event
 
 
 class ZulipPublisher(AbstractNotifier):
@@ -32,7 +57,7 @@ class ZulipPublisher(AbstractNotifier):
         return requests.post(
             url=self.api_uri + "messages",
             auth=HTTPBasicAuth(self.conf.bot_email, self.conf.bot_token),
-            data={"type": "private", "to": f"[{self.user_id}]", "content": message,},
+            data={"type": "private", "to": f"[{self.user_id}]", "content": message},
         )
 
     def _send(self, message: str) -> Response:
@@ -86,11 +111,6 @@ class ZulipPublisher(AbstractNotifier):
                 raise_error=InvalidBot,
             )
 
-    def validate_event(self) -> None:
-        text = self.event.description
-        if not (text and text.strip()):
-            self._log_error("No text was found", raise_error=InvalidEvent)
-
     def validate_message(self) -> None:
         # We don't need this for Zulip.
         pass
@@ -111,7 +131,3 @@ class ZulipPublisher(AbstractNotifier):
             )
 
         return data
-
-    def _preprocess_event(self):
-        self.event.description = html_to_markdown(self.event.description)
-        self.event.name = html_to_markdown(self.event.name)

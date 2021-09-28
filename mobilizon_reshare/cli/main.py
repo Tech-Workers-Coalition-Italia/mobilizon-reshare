@@ -1,8 +1,10 @@
 import logging.config
+from functools import partial
 
 from mobilizon_reshare.event.event_selection_strategies import select_event_to_publish
 from mobilizon_reshare.mobilizon.events import get_unpublished_events
 from mobilizon_reshare.models.publication import PublicationStatus
+from mobilizon_reshare.publishers.abstract import EventPublication
 from mobilizon_reshare.publishers.coordinator import (
     PublicationFailureNotifiersCoordinator,
 )
@@ -43,13 +45,21 @@ async def main():
     )
 
     if event:
+        logger.debug(f"Event to publish found: {event.name}")
 
-        waiting_publications = await publications_with_status(
+        waiting_publications_models = await publications_with_status(
             status=PublicationStatus.WAITING, event_mobilizon_id=event.mobilizon_id,
         )
-        logger.debug(f"Event to publish found: {event.name}")
-        reports = PublisherCoordinator(event, waiting_publications).run()
-        await save_publication_report(reports, waiting_publications)
+        waiting_publications = list(
+            map(
+                partial(EventPublication.from_orm, event=event),
+                waiting_publications_models.values(),
+            )
+        )
+
+        reports = PublisherCoordinator(waiting_publications).run()
+
+        await save_publication_report(reports, waiting_publications_models)
         for _, report in reports.reports.items():
             PublicationFailureNotifiersCoordinator(report).notify_failure()
 

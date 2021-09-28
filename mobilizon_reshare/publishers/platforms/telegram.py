@@ -2,6 +2,7 @@ import pkg_resources
 import requests
 from requests import Response
 
+from mobilizon_reshare.event.event import MobilizonEvent
 from mobilizon_reshare.formatting.description import html_to_markdown
 from mobilizon_reshare.publishers.abstract import (
     AbstractEventFormatter,
@@ -20,7 +21,10 @@ class TelegramFormatter(AbstractEventFormatter):
         "mobilizon_reshare.publishers.templates", "telegram.tmpl.j2"
     )
 
-    def _escape_message(self, message: str) -> str:
+    _conf = ("publisher", "telegram")
+
+    @staticmethod
+    def escape_message(message: str) -> str:
         message = (
             message.replace("-", "\\-")
             .replace(".", "\\.")
@@ -30,22 +34,22 @@ class TelegramFormatter(AbstractEventFormatter):
         )
         return message
 
-    def validate_event(self) -> None:
-        text = self.event.description
+    def validate_event(self, event: MobilizonEvent) -> None:
+        text = event.description
         if not (text and text.strip()):
             self._log_error("No text was found", raise_error=InvalidEvent)
 
-    def get_message_from_event(self) -> str:
-        message = super(TelegramFormatter, self).get_message_from_event()
-        return self._escape_message(message)
+    def get_message_from_event(self, event: MobilizonEvent) -> str:
+        return super(TelegramFormatter, self).get_message_from_event(event)
 
-    def validate_message(self) -> None:
+    def validate_message(self, message: str) -> None:
         # TODO implement
         pass
 
-    def _preprocess_event(self):
-        self.event.description = html_to_markdown(self.event.description)
-        self.event.name = html_to_markdown(self.event.name)
+    def _preprocess_event(self, event: MobilizonEvent):
+        event.description = html_to_markdown(event.description)
+        event.name = html_to_markdown(event.name)
+        return event
 
 
 class TelegramPublisher(AbstractNotifier):
@@ -54,6 +58,9 @@ class TelegramPublisher(AbstractNotifier):
     """
 
     _conf = ("publisher", "telegram")
+
+    def _preprocess_message(self, message: str):
+        return TelegramFormatter.escape_message(message)
 
     def validate_credentials(self):
         conf = self.conf

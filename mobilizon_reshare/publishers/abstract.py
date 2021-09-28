@@ -2,21 +2,15 @@ import inspect
 import logging
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
-from typing import Optional
 from uuid import UUID
 
 from dynaconf.utils.boxing import DynaBox
 from jinja2 import Environment, FileSystemLoader, Template
-from requests import Response
 
 from mobilizon_reshare.config.config import get_settings
 from mobilizon_reshare.event.event import MobilizonEvent
+from mobilizon_reshare.models.publication import Publication as PublicationModel
 from .exceptions import PublisherError, InvalidAttribute
-from mobilizon_reshare.models.publication import (
-    Publication as PublicationModel,
-    Publication,
-)
-from .platforms import name_to_publisher_class, name_to_formatter_class
 
 JINJA_ENV = Environment(loader=FileSystemLoader("/"))
 
@@ -46,7 +40,27 @@ class LoggerMixin:
             raise raise_error(msg)
 
 
-class AbstractNotifier(ABC, LoggerMixin):
+class ConfLoaderMixin:
+    _conf = tuple()
+
+    @property
+    def conf(self) -> DynaBox:
+        """
+        Retrieves class's settings.
+        """
+        cls = type(self)
+
+        try:
+            t, n = cls._conf or tuple()
+            return get_settings()[t][n]
+        except (KeyError, ValueError):
+            raise InvalidAttribute(
+                f"Class {cls.__name__} has invalid ``_conf`` attribute"
+                f" (should be 2-tuple)"
+            )
+
+
+class AbstractNotifier(ABC, LoggerMixin, ConfLoaderMixin):
     """
     Generic notifier class.
     Shall be inherited from specific subclasses that will manage validation
@@ -59,37 +73,29 @@ class AbstractNotifier(ABC, LoggerMixin):
     # Non-abstract subclasses should define ``_conf`` as a 2-tuple, where the
     # first element is the type of class (either 'notifier' or 'publisher') and
     # the second the name of its service (ie: 'facebook', 'telegram')
-    _conf = tuple()
 
     def __repr__(self):
         return type(self).__name__
 
     __str__ = __repr__
 
-    @property
-    def conf(self) -> DynaBox:
-        """
-        Retrieves class's settings.
-        """
-        cls = type(self)
-        if cls in (AbstractNotifier):
-            raise InvalidAttribute(
-                "Abstract classes cannot access notifiers/publishers' settings"
-            )
-        try:
-            t, n = cls._conf or tuple()
-            return get_settings()[t][n]
-        except (KeyError, ValueError):
-            raise InvalidAttribute(
-                f"Class {cls.__name__} has invalid ``_conf`` attribute"
-                f" (should be 2-tuple)"
-            )
-
     @abstractmethod
-    def send(self, message):
+    def _send(self, message: str):
+        raise NotImplementedError
+
+    def send(self, message: str):
         """
         Sends a message to the target channel
         """
+        message = self._preprocess_message(message)
+        response = self._send(message)
+        self._validate_response(response)
+
+    def _preprocess_message(self, message: str):
+        return message
+
+    @abstractmethod
+    def _validate_response(self, response):
         raise NotImplementedError
 
     def are_credentials_valid(self) -> bool:
@@ -109,12 +115,9 @@ class AbstractNotifier(ABC, LoggerMixin):
         raise NotImplementedError
 
 
-class AbstractEventFormatter(LoggerMixin):
-    def __init__(self, event: MobilizonEvent):
-        self.event = event
-
+class AbstractEventFormatter(LoggerMixin, ConfLoaderMixin):
     @abstractmethod
-    def validate_event(self) -> None:
+    def validate_event(self, message) -> None:
         """
         Validates publisher's event.
         Should raise ``PublisherError`` (or one of its subclasses) if event
@@ -122,18 +125,18 @@ class AbstractEventFormatter(LoggerMixin):
         """
         raise NotImplementedError
 
-    def _preprocess_event(self):
+    def _preprocess_event(self, event):
         """
         Allows publishers to preprocess events before feeding them to the template
         """
         pass
 
-    def get_message_from_event(self) -> str:
+    def get_message_from_event(self, event) -> str:
         """
         Retrieves a message from the event itself.
         """
-        self._preprocess_event()
-        return self.event.format(self.get_message_template())
+        event = self._preprocess_event(event)
+        return event.format(self.get_message_template())
 
     def get_message_template(self) -> Template:
         """
@@ -142,15 +145,15 @@ class AbstractEventFormatter(LoggerMixin):
         template_path = self.conf.msg_template_path or self.default_template_path
         return JINJA_ENV.get_template(template_path)
 
-    def is_message_valid(self) -> bool:
+    def is_message_valid(self, event: MobilizonEvent) -> bool:
         try:
-            self.validate_message()
+            self.validate_message(self.get_message_from_event(event))
         except PublisherError:
             return False
         return True
 
     @abstractmethod
-    def validate_message(self) -> None:
+    def validate_message(self, message: str) -> None:
         """
         Validates notifier's message.
         Should raise ``PublisherError`` (or one of its subclasses) if message
@@ -158,9 +161,9 @@ class AbstractEventFormatter(LoggerMixin):
         """
         raise NotImplementedError
 
-    def is_event_valid(self) -> bool:
+    def is_event_valid(self, event) -> bool:
         try:
-            self.validate_event()
+            self.validate_event(event)
         except PublisherError:
             return False
         return True
@@ -174,7 +177,25 @@ class EventPublication:
     formatter: AbstractEventFormatter
 
     @classmethod
-    def from_orm(cls, model: PublicationModel):
+    def from_orm(cls, model: PublicationModel, event: MobilizonEvent):
+        from mobilizon_reshare.publishers.platforms.telegram import (
+            TelegramPublisher,
+            TelegramFormatter,
+        )
+        from mobilizon_reshare.publishers.platforms.zulip import (
+            ZulipPublisher,
+            ZulipFormatter,
+        )
+
+        name_to_publisher_class = {
+            "telegram": TelegramPublisher,
+            "zulip": ZulipPublisher,
+        }
+        name_to_formatter_class = {
+            "telegram": TelegramFormatter,
+            "zulip": ZulipFormatter,
+        }
+
         publisher = name_to_publisher_class[model.publisher.name]()
         formatter = name_to_formatter_class[model.publisher.name]()
-        cls(model.event, model.id, publisher, formatter)
+        return cls(event, model.id, publisher, formatter)
