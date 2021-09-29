@@ -178,24 +178,12 @@ class EventPublication:
 
     @classmethod
     def from_orm(cls, model: PublicationModel, event: MobilizonEvent):
-        from mobilizon_reshare.publishers.platforms.telegram import (
-            TelegramPublisher,
-            TelegramFormatter,
-        )
-        from mobilizon_reshare.publishers.platforms.zulip import (
-            ZulipPublisher,
-            ZulipFormatter,
+        # imported here to avoid circular dependencies
+        from mobilizon_reshare.publishers.platforms.platform_mapping import (
+            get_publisher_class,
+            get_formatter_class,
         )
 
-        name_to_publisher_class = {
-            "telegram": TelegramPublisher,
-            "zulip": ZulipPublisher,
-        }
-        name_to_formatter_class = {
-            "telegram": TelegramFormatter,
-            "zulip": ZulipFormatter,
-        }
-
-        publisher = name_to_publisher_class[model.publisher.name]()
-        formatter = name_to_formatter_class[model.publisher.name]()
+        publisher = get_publisher_class(model.publisher.name)()
+        formatter = get_formatter_class(model.publisher.name)()
         return cls(event, model.id, publisher, formatter)

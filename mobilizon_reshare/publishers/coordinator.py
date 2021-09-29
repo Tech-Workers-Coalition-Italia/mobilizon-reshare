@@ -7,8 +7,7 @@ from mobilizon_reshare.models.publication import PublicationStatus
 from mobilizon_reshare.publishers import get_active_notifiers
 from mobilizon_reshare.publishers.abstract import EventPublication
 from mobilizon_reshare.publishers.exceptions import PublisherError
-from mobilizon_reshare.publishers.platforms.telegram import TelegramPublisher
-from mobilizon_reshare.publishers.platforms.zulip import ZulipPublisher
+from mobilizon_reshare.publishers.platforms.platform_mapping import get_publisher_class
 
 logger = logging.getLogger(__name__)
 
@@ -109,9 +108,9 @@ class AbstractNotifiersCoordinator:
         if notifiers:
             self.notifiers = notifiers
         else:
-            # TODO: move elsewhere and use notifier config
-            m = {"zulip": ZulipPublisher, "telegram": TelegramPublisher}
-            self.notifiers = [m[notifier]() for notifier in get_active_notifiers()]
+            self.notifiers = [
+                get_publisher_class(notifier)() for notifier in get_active_notifiers()
+            ]
 
     def send_to_all(self):
         # TODO: failure to notify should fail safely and write to a dedicated log

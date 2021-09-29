@@ -112,7 +112,6 @@ class ZulipPublisher(AbstractNotifier):
             )
 
     def validate_message(self) -> None:
-        # We don't need this for Zulip.
         pass
 
     def _validate_response(self, res) -> dict:
