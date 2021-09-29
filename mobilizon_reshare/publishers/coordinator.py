@@ -7,7 +7,7 @@ from mobilizon_reshare.models.publication import PublicationStatus
 from mobilizon_reshare.publishers import get_active_notifiers
 from mobilizon_reshare.publishers.abstract import EventPublication
 from mobilizon_reshare.publishers.exceptions import PublisherError
-from mobilizon_reshare.publishers.platforms.platform_mapping import get_publisher_class
+from mobilizon_reshare.publishers.platforms.platform_mapping import get_notifier_class
 
 logger = logging.getLogger(__name__)
 
@@ -105,12 +105,9 @@ class PublisherCoordinator:
 class AbstractNotifiersCoordinator:
     def __init__(self, message: str, notifiers=None):
         self.message = message
-        if notifiers:
-            self.notifiers = notifiers
-        else:
-            self.notifiers = [
-                get_publisher_class(notifier)() for notifier in get_active_notifiers()
-            ]
+        self.notifiers = notifiers or [
+            get_notifier_class(notifier)() for notifier in get_active_notifiers()
+        ]
 
     def send_to_all(self):
         # TODO: failure to notify should fail safely and write to a dedicated log

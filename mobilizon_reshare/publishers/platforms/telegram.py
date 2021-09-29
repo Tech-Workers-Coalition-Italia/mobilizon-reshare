@@ -6,7 +6,7 @@ from mobilizon_reshare.event.event import MobilizonEvent
 from mobilizon_reshare.formatting.description import html_to_markdown
 from mobilizon_reshare.publishers.abstract import (
     AbstractEventFormatter,
-    AbstractNotifier,
+    AbstractPlatform,
 )
 from mobilizon_reshare.publishers.exceptions import (
     InvalidBot,
@@ -52,12 +52,10 @@ class TelegramFormatter(AbstractEventFormatter):
         return event
 
 
-class TelegramPublisher(AbstractNotifier):
+class TelegramPlatform(AbstractPlatform):
     """
     Telegram publisher class.
     """
-
-    _conf = ("publisher", "telegram")
 
     def _preprocess_message(self, message: str):
         return TelegramFormatter.escape_message(message)
@@ -119,3 +117,13 @@ class TelegramPublisher(AbstractNotifier):
             )
 
         return data
+
+
+class TelegramPublisher(TelegramPlatform):
+
+    _conf = ("publisher", "telegram")
+
+
+class TelegramNotifier(TelegramPlatform):
+
+    _conf = ("notifier", "telegram")

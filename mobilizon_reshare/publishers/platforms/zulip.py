@@ -6,7 +6,7 @@ from requests.auth import HTTPBasicAuth
 from mobilizon_reshare.event.event import MobilizonEvent
 from mobilizon_reshare.formatting.description import html_to_markdown
 from mobilizon_reshare.publishers.abstract import (
-    AbstractNotifier,
+    AbstractPlatform,
     AbstractEventFormatter,
 )
 from mobilizon_reshare.publishers.exceptions import (
@@ -39,7 +39,7 @@ class ZulipFormatter(AbstractEventFormatter):
         return event
 
 
-class ZulipPublisher(AbstractNotifier):
+class ZulipPlatform(AbstractPlatform):
     """
     Zulip publisher class.
     """
@@ -130,3 +130,13 @@ class ZulipPublisher(AbstractNotifier):
             )
 
         return data
+
+
+class ZulipPublisher(ZulipPlatform):
+
+    _conf = ("publisher", "zulip")
+
+
+class ZulipNotifier(ZulipPlatform):
+
+    _conf = ("notifier", "zulip")

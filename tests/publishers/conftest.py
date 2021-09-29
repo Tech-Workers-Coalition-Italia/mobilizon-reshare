@@ -6,7 +6,7 @@ import pytest
 
 from mobilizon_reshare.event.event import MobilizonEvent
 from mobilizon_reshare.publishers.abstract import (
-    AbstractNotifier,
+    AbstractPlatform,
     AbstractEventFormatter,
 )
 from mobilizon_reshare.publishers.exceptions import PublisherError, InvalidResponse
@@ -62,7 +62,7 @@ def mock_formatter_invalid():
 
 @pytest.fixture
 def mock_publisher_valid():
-    class MockPublisher(AbstractNotifier):
+    class MockPublisher(AbstractPlatform):
         def _send(self, message):
             pass
 
@@ -77,7 +77,7 @@ def mock_publisher_valid():
 
 @pytest.fixture
 def mock_publisher_invalid():
-    class MockPublisher(AbstractNotifier):
+    class MockPublisher(AbstractPlatform):
         def _send(self, message):
             pass
 
@@ -92,7 +92,7 @@ def mock_publisher_invalid():
 
 @pytest.fixture
 def mock_publisher_invalid_response():
-    class MockPublisher(AbstractNotifier):
+    class MockPublisher(AbstractPlatform):
         def _send(self, message):
             pass
 

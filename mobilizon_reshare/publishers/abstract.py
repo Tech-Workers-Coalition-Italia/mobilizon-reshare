@@ -60,7 +60,7 @@ class ConfLoaderMixin:
             )
 
 
-class AbstractNotifier(ABC, LoggerMixin, ConfLoaderMixin):
+class AbstractPlatform(ABC, LoggerMixin, ConfLoaderMixin):
     """
     Generic notifier class.
     Shall be inherited from specific subclasses that will manage validation
@@ -173,7 +173,7 @@ class AbstractEventFormatter(LoggerMixin, ConfLoaderMixin):
 class EventPublication:
     event: MobilizonEvent
     id: UUID
-    publisher: AbstractNotifier
+    publisher: AbstractPlatform
     formatter: AbstractEventFormatter
 
     @classmethod
