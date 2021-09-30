@@ -26,15 +26,14 @@ class TelegramFormatter(AbstractEventFormatter):
 
     @staticmethod
     def escape_message(message: str) -> str:
-        message = (
-            message.replace("-", "\\-")
-            .replace(".", "\\.")
-            .replace("(", "\\(")
-            .replace("!", "\\!")
-            .replace(")", "\\)")
-            .replace("#", "")
+        return (
+            message.replace("-", r"\-")
+            .replace(".", r"\.")
+            .replace("(", r"\(")
+            .replace("!", r"\!")
+            .replace(")", r"\)")
+            .replace("#", r"")
         )
-        return message
 
     def validate_event(self, event: MobilizonEvent) -> None:
         text = event.description
