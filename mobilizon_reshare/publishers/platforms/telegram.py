@@ -36,9 +36,9 @@ class TelegramFormatter(AbstractEventFormatter):
         )
 
     def validate_event(self, event: MobilizonEvent) -> None:
-        text = event.description
-        if not (text and text.strip()):
-            self._log_error("No text was found", raise_error=InvalidEvent)
+        description = event.description
+        if not (description and description.strip()):
+            self._log_error("No description was found", raise_error=InvalidEvent)
 
     def get_message_from_event(self, event: MobilizonEvent) -> str:
         return super(TelegramFormatter, self).get_message_from_event(event)

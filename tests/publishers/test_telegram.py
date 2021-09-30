@@ -1,5 +1,6 @@
 import pytest
 
+from mobilizon_reshare.publishers.exceptions import InvalidEvent
 from mobilizon_reshare.publishers.platforms.telegram import TelegramFormatter
 
 
@@ -29,3 +30,9 @@ def test_message_length_failure(event):
 )
 def test_escape_message(message, result):
     assert TelegramFormatter().escape_message(message) == result
+
+
+def test_event_validation(event):
+    event.description = None
+    with pytest.raises(InvalidEvent):
+        TelegramFormatter().validate_event(event)
