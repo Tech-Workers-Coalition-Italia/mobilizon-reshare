@@ -29,6 +29,7 @@ class TelegramFormatter(AbstractEventFormatter):
             message.replace("-", "\\-")
             .replace(".", "\\.")
             .replace("(", "\\(")
+            .replace("!", "\\!")
             .replace(")", "\\)")
             .replace("#", "")
         )
@@ -97,6 +98,7 @@ class TelegramPlatform(AbstractPlatform):
 
     def _validate_response(self, res):
         try:
+
             res.raise_for_status()
         except requests.exceptions.HTTPError as e:
             self._log_error(
