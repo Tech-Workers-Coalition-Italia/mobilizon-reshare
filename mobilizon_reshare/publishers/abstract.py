@@ -1,13 +1,15 @@
 import inspect
 import logging
 from abc import ABC, abstractmethod
+from dataclasses import dataclass
+from uuid import UUID
 
 from dynaconf.utils.boxing import DynaBox
 from jinja2 import Environment, FileSystemLoader, Template
-from requests import Response
 
 from mobilizon_reshare.config.config import get_settings
 from mobilizon_reshare.event.event import MobilizonEvent
+from mobilizon_reshare.models.publication import Publication as PublicationModel
 from .exceptions import PublisherError, InvalidAttribute
 
 JINJA_ENV = Environment(loader=FileSystemLoader("/"))
@@ -15,52 +17,7 @@ JINJA_ENV = Environment(loader=FileSystemLoader("/"))
 logger = logging.getLogger(__name__)
 
 
-class AbstractNotifier(ABC):
-    """
-    Generic notifier class.
-    Shall be inherited from specific subclasses that will manage validation
-    process for messages and credentials, text formatting, posting, etc.
-
-    Attributes:
-        - ``message``: a formatted ``str``
-    """
-
-    # Non-abstract subclasses should define ``_conf`` as a 2-tuple, where the
-    # first element is the type of class (either 'notifier' or 'publisher') and
-    # the second the name of its service (ie: 'facebook', 'telegram')
-    _conf = tuple()
-
-    def __repr__(self):
-        return type(self).__name__
-
-    __str__ = __repr__
-
-    @property
-    def conf(self) -> DynaBox:
-        """
-        Retrieves class's settings.
-        """
-        cls = type(self)
-        if cls in (AbstractPublisher, AbstractNotifier):
-            raise InvalidAttribute(
-                "Abstract classes cannot access notifiers/publishers' settings"
-            )
-        try:
-            t, n = cls._conf or tuple()
-            return get_settings()[t][n]
-        except (KeyError, ValueError):
-            raise InvalidAttribute(
-                f"Class {cls.__name__} has invalid ``_conf`` attribute"
-                f" (should be 2-tuple)"
-            )
-
-    @abstractmethod
-    def send(self, message):
-        """
-        Sends a message to the target channel
-        """
-        raise NotImplementedError
-
+class LoggerMixin:
     def _log_debug(self, msg, *args, **kwargs):
         self.__log(logging.DEBUG, msg, *args, **kwargs)
 
@@ -82,6 +39,65 @@ class AbstractNotifier(ABC):
         if raise_error is not None:
             raise raise_error(msg)
 
+
+class ConfLoaderMixin:
+    _conf = tuple()
+
+    @property
+    def conf(self) -> DynaBox:
+        """
+        Retrieves class's settings.
+        """
+        cls = type(self)
+
+        try:
+            t, n = cls._conf or tuple()
+            return get_settings()[t][n]
+        except (KeyError, ValueError):
+            raise InvalidAttribute(
+                f"Class {cls.__name__} has invalid ``_conf`` attribute"
+                f" (should be 2-tuple)"
+            )
+
+
+class AbstractPlatform(ABC, LoggerMixin, ConfLoaderMixin):
+    """
+    Generic notifier class.
+    Shall be inherited from specific subclasses that will manage validation
+    process for messages and credentials, text formatting, posting, etc.
+
+    Attributes:
+        - ``message``: a formatted ``str``
+    """
+
+    # Non-abstract subclasses should define ``_conf`` as a 2-tuple, where the
+    # first element is the type of class (either 'notifier' or 'publisher') and
+    # the second the name of its service (ie: 'facebook', 'telegram')
+
+    def __repr__(self):
+        return type(self).__name__
+
+    __str__ = __repr__
+
+    @abstractmethod
+    def _send(self, message: str):
+        raise NotImplementedError
+
+    def send(self, message: str):
+        """
+        Sends a message to the target channel
+        """
+        message = self._preprocess_message(message)
+        response = self._send(message)
+        self._validate_response(response)
+
+    def _preprocess_message(self, message: str):
+        return message
+
+    @abstractmethod
+    def _validate_response(self, response):
+        raise NotImplementedError
+
     def are_credentials_valid(self) -> bool:
         try:
             self.validate_credentials()
@@ -98,59 +114,10 @@ class AbstractNotifier(ABC):
         """
         raise NotImplementedError
 
+
+class AbstractEventFormatter(LoggerMixin, ConfLoaderMixin):
     @abstractmethod
-    def publish(self) -> None:
-        """
-        Publishes the actual post on social media.
-        Should raise ``PublisherError`` (or one of its subclasses) if
-        anything goes wrong.
-        """
-        raise NotImplementedError
-
-    def is_message_valid(self) -> bool:
-        try:
-            self.validate_message()
-        except PublisherError:
-            return False
-        return True
-
-    @abstractmethod
-    def validate_message(self) -> None:
-        """
-        Validates notifier's message.
-        Should raise ``PublisherError`` (or one of its subclasses) if message
-        is not valid.
-        """
-        raise NotImplementedError
-
-
-class AbstractPublisher(AbstractNotifier):
-    """
-    Generic publisher class.
-    Shall be inherited from specific subclasses that will manage validation
-    process for events and credentials, text formatting, posting, etc.
-
-    Attributes:
-        - ``event``: a ``MobilizonEvent`` containing every useful info from
-            the event
-        - ``message``: a formatted ``str``
-    """
-
-    _conf = tuple()
-
-    def __init__(self, event: MobilizonEvent):
-        self.event = event
-        super().__init__()
-
-    def is_event_valid(self) -> bool:
-        try:
-            self.validate_event()
-        except PublisherError:
-            return False
-        return True
-
-    @abstractmethod
-    def validate_event(self) -> None:
+    def validate_event(self, message) -> None:
         """
         Validates publisher's event.
         Should raise ``PublisherError`` (or one of its subclasses) if event
@@ -158,18 +125,18 @@ class AbstractPublisher(AbstractNotifier):
         """
         raise NotImplementedError
 
-    def _preprocess_event(self):
+    def _preprocess_event(self, event):
         """
         Allows publishers to preprocess events before feeding them to the template
         """
         pass
 
-    def get_message_from_event(self) -> str:
+    def get_message_from_event(self, event) -> str:
         """
         Retrieves a message from the event itself.
         """
-        self._preprocess_event()
-        return self.event.format(self.get_message_template())
+        event = self._preprocess_event(event)
+        return event.format(self.get_message_template())
 
     def get_message_template(self) -> Template:
         """
@@ -178,17 +145,45 @@ class AbstractPublisher(AbstractNotifier):
         template_path = self.conf.msg_template_path or self.default_template_path
         return JINJA_ENV.get_template(template_path)
 
-    @abstractmethod
-    def _send(self, message) -> Response:
-        pass
+    def is_message_valid(self, event: MobilizonEvent) -> bool:
+        try:
+            self.validate_message(self.get_message_from_event(event))
+        except PublisherError:
+            return False
+        return True
 
     @abstractmethod
-    def _validate_response(self, response: Response) -> None:
-        pass
+    def validate_message(self, message: str) -> None:
+        """
+        Validates notifier's message.
+        Should raise ``PublisherError`` (or one of its subclasses) if message
+        is not valid.
+        """
+        raise NotImplementedError
 
-    def send(self, message):
-        res = self._send(message)
-        self._validate_response(res)
+    def is_event_valid(self, event) -> bool:
+        try:
+            self.validate_event(event)
+        except PublisherError:
+            return False
+        return True
 
-    def publish(self) -> None:
-        self.send(message=self.get_message_from_event())
+
+@dataclass
+class EventPublication:
+    event: MobilizonEvent
+    id: UUID
+    publisher: AbstractPlatform
+    formatter: AbstractEventFormatter
+
+    @classmethod
+    def from_orm(cls, model: PublicationModel, event: MobilizonEvent):
+        # imported here to avoid circular dependencies
+        from mobilizon_reshare.publishers.platforms.platform_mapping import (
+            get_publisher_class,
+            get_formatter_class,
+        )
+
+        publisher = get_publisher_class(model.publisher.name)()
+        formatter = get_formatter_class(model.publisher.name)()
+        return cls(event, model.id, publisher, formatter)

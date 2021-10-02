@@ -3,8 +3,12 @@ import requests
 from requests import Response
 from requests.auth import HTTPBasicAuth
 
+from mobilizon_reshare.event.event import MobilizonEvent
 from mobilizon_reshare.formatting.description import html_to_markdown
-from mobilizon_reshare.publishers.abstract import AbstractPublisher
+from mobilizon_reshare.publishers.abstract import (
+    AbstractPlatform,
+    AbstractEventFormatter,
+)
 from mobilizon_reshare.publishers.exceptions import (
     InvalidBot,
     InvalidCredentials,
@@ -14,7 +18,28 @@ from mobilizon_reshare.publishers.exceptions import (
 )
 
 
-class ZulipPublisher(AbstractPublisher):
+class ZulipFormatter(AbstractEventFormatter):
+
+    _conf = ("publisher", "zulip")
+    default_template_path = pkg_resources.resource_filename(
+        "mobilizon_reshare.publishers.templates", "zulip.tmpl.j2"
+    )
+
+    def validate_event(self, event: MobilizonEvent) -> None:
+        text = event.description
+        if not (text and text.strip()):
+            self._log_error("No text was found", raise_error=InvalidEvent)
+
+    def validate_message(self, message) -> None:
+        pass
+
+    def _preprocess_event(self, event: MobilizonEvent):
+        event.description = html_to_markdown(event.description)
+        event.name = html_to_markdown(event.name)
+        return event
+
+
+class ZulipPlatform(AbstractPlatform):
     """
     Zulip publisher class.
     """
@@ -32,11 +57,7 @@ class ZulipPublisher(AbstractPublisher):
         return requests.post(
             url=self.api_uri + "messages",
             auth=HTTPBasicAuth(self.conf.bot_email, self.conf.bot_token),
-            data={
-                "type": "private",
-                "to": f"[{self.user_id}]",
-                "content": message,
-            },
+            data={"type": "private", "to": f"[{self.user_id}]", "content": message},
         )
 
     def _send(self, message: str) -> Response:
@@ -68,8 +89,7 @@ class ZulipPublisher(AbstractPublisher):
             err.append("bot email")
         if err:
             self._log_error(
-                ", ".join(err) + " is/are missing",
-                raise_error=InvalidCredentials,
+                ", ".join(err) + " is/are missing", raise_error=InvalidCredentials,
             )
 
         res = requests.get(
@@ -80,8 +100,7 @@ class ZulipPublisher(AbstractPublisher):
 
         if not data["is_bot"]:
             self._log_error(
-                "These user is not a bot",
-                raise_error=InvalidBot,
+                "These user is not a bot", raise_error=InvalidBot,
             )
 
         if not bot_email == data["email"]:
@@ -92,13 +111,7 @@ class ZulipPublisher(AbstractPublisher):
                 raise_error=InvalidBot,
             )
 
-    def validate_event(self) -> None:
-        text = self.event.description
-        if not (text and text.strip()):
-            self._log_error("No text was found", raise_error=InvalidEvent)
-
     def validate_message(self) -> None:
-        # We don't need this for Zulip.
         pass
 
     def _validate_response(self, res) -> dict:
@@ -113,12 +126,17 @@ class ZulipPublisher(AbstractPublisher):
 
         if data["result"] == "error":
             self._log_error(
-                f"{res.status_code} Error - {data['msg']}",
-                raise_error=ZulipError,
+                f"{res.status_code} Error - {data['msg']}", raise_error=ZulipError,
             )
 
         return data
 
-    def _preprocess_event(self):
-        self.event.description = html_to_markdown(self.event.description)
-        self.event.name = html_to_markdown(self.event.name)
+
+class ZulipPublisher(ZulipPlatform):
+
+    _conf = ("publisher", "zulip")
+
+
+class ZulipNotifier(ZulipPlatform):
+
+    _conf = ("notifier", "zulip")

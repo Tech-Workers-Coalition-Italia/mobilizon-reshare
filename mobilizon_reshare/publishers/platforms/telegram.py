@@ -2,8 +2,12 @@ import pkg_resources
 import requests
 from requests import Response
 
+from mobilizon_reshare.event.event import MobilizonEvent
 from mobilizon_reshare.formatting.description import html_to_markdown
-from mobilizon_reshare.publishers.abstract import AbstractPublisher
+from mobilizon_reshare.publishers.abstract import (
+    AbstractEventFormatter,
+    AbstractPlatform,
+)
 from mobilizon_reshare.publishers.exceptions import (
     InvalidBot,
     InvalidCredentials,
@@ -12,35 +16,50 @@ from mobilizon_reshare.publishers.exceptions import (
 )
 
 
-class TelegramPublisher(AbstractPublisher):
-    """
-    Telegram publisher class.
-    """
-
-    _conf = ("publisher", "telegram")
+class TelegramFormatter(AbstractEventFormatter):
     default_template_path = pkg_resources.resource_filename(
         "mobilizon_reshare.publishers.templates", "telegram.tmpl.j2"
     )
 
-    def _escape_message(self, message: str) -> str:
+    _conf = ("publisher", "telegram")
+
+    @staticmethod
+    def escape_message(message: str) -> str:
         message = (
             message.replace("-", "\\-")
             .replace(".", "\\.")
             .replace("(", "\\(")
+            .replace("!", "\\!")
             .replace(")", "\\)")
             .replace("#", "")
         )
         return message
 
-    def _send(self, message: str) -> Response:
-        return requests.post(
-            url=f"https://api.telegram.org/bot{self.conf.token}/sendMessage",
-            json={
-                "chat_id": self.conf.chat_id,
-                "text": self._escape_message(message),
-                "parse_mode": "markdownv2",
-            },
-        )
+    def validate_event(self, event: MobilizonEvent) -> None:
+        text = event.description
+        if not (text and text.strip()):
+            self._log_error("No text was found", raise_error=InvalidEvent)
+
+    def get_message_from_event(self, event: MobilizonEvent) -> str:
+        return super(TelegramFormatter, self).get_message_from_event(event)
+
+    def validate_message(self, message: str) -> None:
+        # TODO implement
+        pass
+
+    def _preprocess_event(self, event: MobilizonEvent):
+        event.description = html_to_markdown(event.description)
+        event.name = html_to_markdown(event.name)
+        return event
+
+
+class TelegramPlatform(AbstractPlatform):
+    """
+    Telegram publisher class.
+    """
+
+    def _preprocess_message(self, message: str):
+        return TelegramFormatter.escape_message(message)
 
     def validate_credentials(self):
         conf = self.conf
@@ -67,13 +86,19 @@ class TelegramPublisher(AbstractPublisher):
                 "Found a different bot than the expected one", raise_error=InvalidBot,
             )
 
-    def validate_event(self) -> None:
-        text = self.event.description
-        if not (text and text.strip()):
-            self._log_error("No text was found", raise_error=InvalidEvent)
+    def _send(self, message) -> Response:
+        return requests.post(
+            url=f"https://api.telegram.org/bot{self.conf.token}/sendMessage",
+            json={
+                "chat_id": self.conf.chat_id,
+                "text": message,
+                "parse_mode": "markdownv2",
+            },
+        )
 
     def _validate_response(self, res):
         try:
+
             res.raise_for_status()
         except requests.exceptions.HTTPError as e:
             self._log_error(
@@ -95,10 +120,12 @@ class TelegramPublisher(AbstractPublisher):
 
         return data
 
-    def validate_message(self) -> None:
-        # TODO implement
-        pass
 
-    def _preprocess_event(self):
-        self.event.description = html_to_markdown(self.event.description)
-        self.event.name = html_to_markdown(self.event.name)
+class TelegramPublisher(TelegramPlatform):
+
+    _conf = ("publisher", "telegram")
+
+
+class TelegramNotifier(TelegramPlatform):
+
+    _conf = ("notifier", "telegram")
