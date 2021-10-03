@@ -8,6 +8,7 @@ from mobilizon_reshare.models.publication import PublicationStatus
 from mobilizon_reshare.publishers import get_active_publishers
 from mobilizon_reshare.publishers.abstract import EventPublication
 from mobilizon_reshare.publishers.coordinator import PublisherCoordinator
+from mobilizon_reshare.publishers.platforms.zulip import ZulipFormatter
 from mobilizon_reshare.storage.query import (
     get_publishers,
     update_publishers,
@@ -136,7 +137,7 @@ async def test_zulip_publishr_failure_invalid_credentials(
 
 
 @pytest.mark.asyncio
-async def test_zulip_publishr_failure_client_error(
+async def test_zulip_publisher_failure_client_error(
     mocked_client_error_response, setup_db, event
 ):
     publication_models = await publications_with_status(
@@ -152,3 +153,15 @@ async def test_zulip_publishr_failure_client_error(
     ).run()
     assert list(report.reports.values())[0].status == PublicationStatus.FAILED
     assert list(report.reports.values())[0].reason == "400 Error - Invalid request"
+
+
+def test_message_length_success(event):
+    message = "a" * 500
+    event.description = message
+    assert ZulipFormatter().is_message_valid(event)
+
+
+def test_message_length_failure(event):
+    message = "a" * 10000
+    event.description = message
+    assert not ZulipFormatter().is_message_valid(event)

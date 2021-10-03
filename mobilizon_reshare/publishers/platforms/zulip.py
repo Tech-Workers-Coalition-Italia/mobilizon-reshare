@@ -15,6 +15,7 @@ from mobilizon_reshare.publishers.exceptions import (
     InvalidEvent,
     InvalidResponse,
     ZulipError,
+    PublisherError,
 )
 
 
@@ -31,7 +32,8 @@ class ZulipFormatter(AbstractEventFormatter):
             self._log_error("No text was found", raise_error=InvalidEvent)
 
     def validate_message(self, message) -> None:
-        pass
+        if len(message.encode("utf-8")) >= 10000:
+            raise PublisherError("Message is too long")
 
     def _preprocess_event(self, event: MobilizonEvent):
         event.description = html_to_markdown(event.description)
@@ -110,9 +112,6 @@ class ZulipPlatform(AbstractPlatform):
                 f"\n\texpected: {bot_email}",
                 raise_error=InvalidBot,
             )
-
-    def validate_message(self) -> None:
-        pass
 
     def _validate_response(self, res) -> dict:
         # See https://zulip.com/api/rest-error-handling
