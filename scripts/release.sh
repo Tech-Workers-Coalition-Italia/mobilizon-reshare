@@ -5,8 +5,8 @@ set -eu
 myself="$(basename "$0")"
 version_file="$(pwd)/mobilizon_reshare/VERSION"
 pyproject_toml="$(pwd)/pyproject.toml"
-current-branch="$(git rev-parse --abbrev-ref HEAD)"
-current-commit="$(git log -1 --format='%H')"
+current_branch="$(git rev-parse --abbrev-ref HEAD)"
+current_commit="$(git log -1 --format='%H')"
 dryrun=0
 verbose=0
 publish=0
@@ -95,10 +95,10 @@ release-new-version() {
 restore-git-state () {
   # This way we can go back to a
   # detached HEAD state as well.
-  if [ "${current-branch}" = "HEAD" ]; then
-    git checkout "${current-commit}"
+  if [ "${current_branch}" = "HEAD" ]; then
+    git checkout "${current_commit}"
   else
-    git checkout "${current-branch}"
+    git checkout "${current_branch}"
   fi
 }
 
