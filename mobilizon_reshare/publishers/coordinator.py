@@ -5,7 +5,11 @@ from uuid import UUID
 
 from mobilizon_reshare.models.publication import PublicationStatus
 from mobilizon_reshare.publishers import get_active_notifiers
-from mobilizon_reshare.publishers.abstract import EventPublication
+from mobilizon_reshare.publishers.abstract import (
+    EventPublication,
+    AbstractPlatform,
+    RecapPublication,
+)
 from mobilizon_reshare.publishers.exceptions import PublisherError
 from mobilizon_reshare.publishers.platforms.platform_mapping import get_notifier_class
 
@@ -102,24 +106,30 @@ class PublisherCoordinator:
         return errors
 
 
-class AbstractNotifiersCoordinator:
-    def __init__(self, message: str, notifiers=None):
+class AbstractCoordinator:
+    def __init__(self, message: str, platforms: List[AbstractPlatform] = None):
         self.message = message
-        self.notifiers = notifiers or [
-            get_notifier_class(notifier)() for notifier in get_active_notifiers()
-        ]
+        self.platforms = platforms
 
     def send_to_all(self):
-        # TODO: failure to notify should fail safely and write to a dedicated log
-        for notifier in self.notifiers:
-            notifier.send(self.message)
+        # TODO: failure to send should fail safely and write to a dedicated log
+        for platform in self.platforms:
+            platform.send(self.message)
+
+
+class AbstractNotifiersCoordinator(AbstractCoordinator):
+    def __init__(self, message: str, notifiers: List[AbstractPlatform] = None):
+        platforms = notifiers or [
+            get_notifier_class(notifier)() for notifier in get_active_notifiers()
+        ]
+        super(AbstractNotifiersCoordinator, self).__init__(message, platforms)
 
 
 class PublicationFailureNotifiersCoordinator(AbstractNotifiersCoordinator):
-    def __init__(self, report: PublicationReport, notifiers=None):
+    def __init__(self, report: PublicationReport, platforms=None):
         self.report = report
         super(PublicationFailureNotifiersCoordinator, self).__init__(
-            message=self.build_failure_message(), notifiers=notifiers
+            message=self.build_failure_message(), platforms=platforms
         )
 
     def build_failure_message(self):
@@ -135,3 +145,16 @@ class PublicationFailureNotifiersCoordinator(AbstractNotifiersCoordinator):
         )
         if self.report.status == PublicationStatus.FAILED:
             self.send_to_all()
+
+
+class RecapCoordinator:
+    def __init__(self, recap_publications: List[RecapPublication]):
+        self.recap_publications = recap_publications
+
+    def run(self):
+        for recap_publication in self.recap_publications:
+            fragments = []
+            for event in recap_publication.events:
+                fragments.append(recap_publication.formatter.get_recap_fragment(event))
+            message = "\n\n".join(fragments)
+            recap_publication.publisher.send(message)

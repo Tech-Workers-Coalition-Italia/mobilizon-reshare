@@ -2,6 +2,7 @@ import inspect
 import logging
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
+from typing import List
 from uuid import UUID
 
 from dynaconf.utils.boxing import DynaBox
@@ -168,6 +169,16 @@ class AbstractEventFormatter(LoggerMixin, ConfLoaderMixin):
             return False
         return True
 
+    def get_recap_fragment_template(self) -> Template:
+        template_path = (
+            self.conf.recap_template_path or self.default_recap_template_path
+        )
+        return JINJA_ENV.get_template(template_path)
+
+    def get_recap_fragment(self, event) -> str:
+        event = self._preprocess_event(event)
+        return event.format(self.get_recap_fragment_template())
+
 
 @dataclass
 class EventPublication:
@@ -187,3 +198,10 @@ class EventPublication:
         publisher = get_publisher_class(model.publisher.name)()
         formatter = get_formatter_class(model.publisher.name)()
         return cls(event, model.id, publisher, formatter)
+
+
+@dataclass
+class RecapPublication:
+    events: List[MobilizonEvent]
+    publisher: AbstractPlatform
+    formatter: AbstractEventFormatter
