@@ -129,7 +129,7 @@ class PublicationFailureNotifiersCoordinator(AbstractNotifiersCoordinator):
     def __init__(self, report: PublicationReport, platforms=None):
         self.report = report
         super(PublicationFailureNotifiersCoordinator, self).__init__(
-            message=self.build_failure_message(), platforms=platforms
+            message=self.build_failure_message(), notifiers=platforms
         )
 
     def build_failure_message(self):

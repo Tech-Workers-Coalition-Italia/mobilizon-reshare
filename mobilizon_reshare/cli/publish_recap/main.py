@@ -30,9 +30,9 @@ async def main():
     if events_to_recap:
         recap_publications = [
             RecapPublication(
-                events_to_recap,
                 get_publisher_class(publisher)(),
                 get_formatter_class(publisher)(),
+                events_to_recap,
             )
             for publisher in get_active_publishers()
         ]

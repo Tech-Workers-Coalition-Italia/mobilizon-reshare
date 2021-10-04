@@ -181,11 +181,15 @@ class AbstractEventFormatter(LoggerMixin, ConfLoaderMixin):
 
 
 @dataclass
-class EventPublication:
-    event: MobilizonEvent
-    id: UUID
+class BasePublication:
     publisher: AbstractPlatform
     formatter: AbstractEventFormatter
+
+
+@dataclass
+class EventPublication(BasePublication):
+    event: MobilizonEvent
+    id: UUID
 
     @classmethod
     def from_orm(cls, model: PublicationModel, event: MobilizonEvent):
@@ -197,11 +201,9 @@ class EventPublication:
 
         publisher = get_publisher_class(model.publisher.name)()
         formatter = get_formatter_class(model.publisher.name)()
-        return cls(event, model.id, publisher, formatter)
+        return cls(publisher, formatter, event, model.id,)
 
 
 @dataclass
-class RecapPublication:
+class RecapPublication(BasePublication):
     events: List[MobilizonEvent]
-    publisher: AbstractPlatform
-    formatter: AbstractEventFormatter
