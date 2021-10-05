@@ -34,7 +34,10 @@ def test_publication_report_successful(statuses, successful):
         reports[UUID(int=i)] = PublicationReport(
             reason=None, publication_id=None, status=status
         )
-    assert PublisherCoordinatorReport(None, reports).successful == successful
+    assert (
+        PublisherCoordinatorReport(publications=[], reports=reports).successful
+        == successful
+    )
 
 
 @pytest.fixture

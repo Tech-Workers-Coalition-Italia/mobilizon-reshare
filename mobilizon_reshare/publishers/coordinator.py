@@ -1,5 +1,5 @@
 import logging
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from typing import List
 from uuid import UUID
 
@@ -17,22 +17,30 @@ logger = logging.getLogger(__name__)
 
 
 @dataclass
-class PublicationReport:
+class BasePublicationReport:
     status: PublicationStatus
     reason: str
+
+
+@dataclass
+class PublicationReport(BasePublicationReport):
     publication_id: UUID
 
 
 @dataclass
-class PublisherCoordinatorReport:
-    publications: List[EventPublication]
-    reports: dict[UUID, PublicationReport] = field(default_factory={})
+class BaseCoordinatorReport:
+    reports: dict[UUID, BasePublicationReport]
 
     @property
     def successful(self):
         return all(
             r.status == PublicationStatus.COMPLETED for r in self.reports.values()
         )
+
+
+@dataclass
+class PublisherCoordinatorReport(BaseCoordinatorReport):
+    publications: List[EventPublication]
 
 
 class PublisherCoordinator:
