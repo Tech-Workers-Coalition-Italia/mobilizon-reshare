@@ -130,7 +130,7 @@ class AbstractEventFormatter(LoggerMixin, ConfLoaderMixin):
         """
         Allows publishers to preprocess events before feeding them to the template
         """
-        pass  # pragma: no cover
+        return event
 
     def get_message_from_event(self, event) -> str:
         """
@@ -175,7 +175,7 @@ class AbstractEventFormatter(LoggerMixin, ConfLoaderMixin):
         )
         return JINJA_ENV.get_template(template_path)
 
-    def get_recap_fragment(self, event) -> str:
+    def get_recap_fragment(self, event: MobilizonEvent) -> str:
         event = self._preprocess_event(event)
         return event.format(self.get_recap_fragment_template())
 

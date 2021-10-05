@@ -9,12 +9,13 @@ from mobilizon_reshare.models.publication import (
     Publication as PublicationModel,
 )
 from mobilizon_reshare.models.publisher import Publisher
-from mobilizon_reshare.publishers.abstract import EventPublication
+from mobilizon_reshare.publishers.abstract import EventPublication, RecapPublication
 from mobilizon_reshare.publishers.coordinator import (
     PublisherCoordinatorReport,
     EventPublicationReport,
     PublisherCoordinator,
     PublicationFailureNotifiersCoordinator,
+    RecapCoordinator,
 )
 
 
@@ -38,6 +39,27 @@ def test_publication_report_successful(statuses, successful):
         PublisherCoordinatorReport(publications=[], reports=reports).successful
         == successful
     )
+
+
+@pytest.fixture
+@pytest.mark.asyncio
+async def mock_recap_publications(
+    num_publications: int,
+    test_event: MobilizonEvent,
+    mock_publisher_valid,
+    mock_formatter_valid,
+):
+    result = []
+    for _ in range(num_publications):
+        result.append(
+            RecapPublication(
+                publisher=mock_publisher_valid,
+                formatter=mock_formatter_valid,
+                events=[test_event, test_event],
+            )
+        )
+
+    return result
 
 
 @pytest.fixture
@@ -72,7 +94,7 @@ async def mock_publications(
 
 @pytest.mark.parametrize("num_publications", [2])
 @pytest.mark.asyncio
-async def test_coordinator_run_success(mock_publications,):
+async def test_publication_coordinator_run_success(mock_publications,):
     coordinator = PublisherCoordinator(publications=mock_publications,)
     report = coordinator.run()
     assert len(report.reports) == 2
@@ -81,7 +103,7 @@ async def test_coordinator_run_success(mock_publications,):
 
 @pytest.mark.parametrize("num_publications", [1])
 @pytest.mark.asyncio
-async def test_coordinator_run_failure(
+async def test_publication_coordinator_run_failure(
     mock_publications, mock_publisher_invalid, mock_formatter_invalid
 ):
     for pub in mock_publications:
@@ -100,7 +122,7 @@ async def test_coordinator_run_failure(
 
 @pytest.mark.parametrize("num_publications", [1])
 @pytest.mark.asyncio
-async def test_coordinator_run_failure_response(
+async def test_publication_coordinator_run_failure_response(
     mock_publications, mock_publisher_invalid_response
 ):
 
@@ -129,3 +151,12 @@ async def test_notifier_coordinator_publication_failed(mock_publisher_valid):
 
     # 4 = 2 reports * 2 notifiers
     assert mock_send.call_count == 2
+
+
+@pytest.mark.parametrize("num_publications", [2])
+@pytest.mark.asyncio
+async def test_recap_coordinator_run_success(mock_recap_publications,):
+    coordinator = RecapCoordinator(recap_publications=mock_recap_publications)
+    report = coordinator.run()
+    assert len(report.reports) == 2
+    assert report.successful, "\n".join(map(lambda rep: rep.reason, report.reports))
