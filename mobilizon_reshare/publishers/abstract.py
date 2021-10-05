@@ -81,7 +81,7 @@ class AbstractPlatform(ABC, LoggerMixin, ConfLoaderMixin):
 
     @abstractmethod
     def _send(self, message: str):
-        raise NotImplementedError
+        raise NotImplementedError  # pragma: no cover
 
     def send(self, message: str):
         """
@@ -96,7 +96,7 @@ class AbstractPlatform(ABC, LoggerMixin, ConfLoaderMixin):
 
     @abstractmethod
     def _validate_response(self, response):
-        raise NotImplementedError
+        raise NotImplementedError  # pragma: no cover
 
     def are_credentials_valid(self) -> bool:
         try:
@@ -112,7 +112,7 @@ class AbstractPlatform(ABC, LoggerMixin, ConfLoaderMixin):
         Should raise ``PublisherError`` (or one of its subclasses) if
         credentials are not valid.
         """
-        raise NotImplementedError
+        raise NotImplementedError  # pragma: no cover
 
 
 class AbstractEventFormatter(LoggerMixin, ConfLoaderMixin):
@@ -123,13 +123,13 @@ class AbstractEventFormatter(LoggerMixin, ConfLoaderMixin):
         Should raise ``PublisherError`` (or one of its subclasses) if event
         is not valid.
         """
-        raise NotImplementedError
+        raise NotImplementedError  # pragma: no cover
 
     def _preprocess_event(self, event):
         """
         Allows publishers to preprocess events before feeding them to the template
         """
-        pass
+        pass  # pragma: no cover
 
     def get_message_from_event(self, event) -> str:
         """
@@ -159,7 +159,7 @@ class AbstractEventFormatter(LoggerMixin, ConfLoaderMixin):
         Should raise ``PublisherError`` (or one of its subclasses) if message
         is not valid.
         """
-        raise NotImplementedError
+        raise NotImplementedError  # pragma: no cover
 
     def is_event_valid(self, event) -> bool:
         try:

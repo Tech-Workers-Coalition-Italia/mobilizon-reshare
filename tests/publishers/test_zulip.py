@@ -1,6 +1,7 @@
 from functools import partial
 
 import pytest
+import requests
 import responses
 
 from mobilizon_reshare.config.config import get_settings
@@ -8,7 +9,12 @@ from mobilizon_reshare.models.publication import PublicationStatus
 from mobilizon_reshare.publishers import get_active_publishers
 from mobilizon_reshare.publishers.abstract import EventPublication
 from mobilizon_reshare.publishers.coordinator import PublisherCoordinator
-from mobilizon_reshare.publishers.platforms.zulip import ZulipFormatter
+from mobilizon_reshare.publishers.exceptions import (
+    InvalidEvent,
+    InvalidResponse,
+    ZulipError,
+)
+from mobilizon_reshare.publishers.platforms.zulip import ZulipFormatter, ZulipPublisher
 from mobilizon_reshare.storage.query import (
     get_publishers,
     update_publishers,
@@ -155,6 +161,12 @@ async def test_zulip_publisher_failure_client_error(
     assert list(report.reports.values())[0].reason == "400 Error - Invalid request"
 
 
+def test_event_validation(event):
+    event.description = None
+    with pytest.raises(InvalidEvent):
+        ZulipFormatter().validate_event(event)
+
+
 def test_message_length_success(event):
     message = "a" * 500
     event.description = message
@@ -165,3 +177,31 @@ def test_message_length_failure(event):
     message = "a" * 10000
     event.description = message
     assert not ZulipFormatter().is_message_valid(event)
+
+
+def test_validate_response():
+    response = requests.Response()
+    response.status_code = 200
+    response._content = b"""{"result":"ok"}"""
+    ZulipPublisher()._validate_response(response)
+
+
+def test_validate_response_invalid_json():
+    response = requests.Response()
+    response.status_code = 200
+    response._content = b"""{"osxsa"""
+    with pytest.raises(InvalidResponse) as e:
+        ZulipPublisher()._validate_response(response)
+
+    e.match("json")
+
+
+def test_validate_response_invalid_request():
+    response = requests.Response()
+    response.status_code = 400
+    response._content = b"""{"result":"error", "msg":"wrong request"}"""
+    with pytest.raises(ZulipError) as e:
+
+        ZulipPublisher()._validate_response(response)
+
+    e.match("wrong request")
