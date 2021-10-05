@@ -5,6 +5,16 @@ to events and their promotion.
 
 # Usage
 
+## Installation
+
+mobilizon-reshare is distributed through Pypi. Use 
+
+```pip install mobilizon-reshare```
+
+to install the tool in your system or virtualenv.
+
+This should install the command `mobilizon-reshare` in your system. Use it to access the CLI and discover the available
+commands and their description.
 
 ## Scheduling and temporal logic
 
@@ -53,6 +63,15 @@ Currently only one strategy is supported: `next_event`. The semantic of the stra
 event in chronological order that hasn't been published yet and publish it only if at least 
 `break_between_events_in_minutes` minutes have passed.
 
+## Recap
+
+In addition to the event publication feature, `mobilizon-reshare` allows you to do periodical recap of your events.
+In the current version, the two features are handled separately and triggered by different CLI commands (respectively
+`mobilizon-reshare start` and `mobilizon-reshare recap`).
+
+The recap command, when executed, will retrieve the list of already published events and summarize in a single message 
+to publish on all the active publishers. At the moment it doesn't support any decision logic and will always publish
+when triggered.
 
 ## Core Concepts
 
