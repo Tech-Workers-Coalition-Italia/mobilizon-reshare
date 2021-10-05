@@ -1,8 +1,12 @@
 [tool.poetry]
 name = "mobilizon-reshare"
 version = "0.1.0"
-description = ""
+description = "A suite to reshare Mobilizon events on a broad selection of platforms"
+readme = "README.md"
+homepage = "https://github.com/Tech-Workers-Coalition-Italia/mobilizon-reshare"
+repository = "https://github.com/Tech-Workers-Coalition-Italia/mobilizon-reshare"
 authors = ["Simone Robutti <simone.robutti@protonmail.com>"]
+license = "Coopyleft"
 
 [tool.poetry.dependencies]
 python = "^3.9"
