@@ -12,7 +12,7 @@ from mobilizon_reshare.models.publisher import Publisher
 from mobilizon_reshare.publishers.abstract import EventPublication
 from mobilizon_reshare.publishers.coordinator import (
     PublisherCoordinatorReport,
-    PublicationReport,
+    EventPublicationReport,
     PublisherCoordinator,
     PublicationFailureNotifiersCoordinator,
 )
@@ -29,10 +29,10 @@ from mobilizon_reshare.publishers.coordinator import (
     ],
 )
 def test_publication_report_successful(statuses, successful):
-    reports = {}
+    reports = []
     for i, status in enumerate(statuses):
-        reports[UUID(int=i)] = PublicationReport(
-            reason=None, publication_id=None, status=status
+        reports.append(
+            EventPublicationReport(reason=None, publication_id=None, status=status)
         )
     assert (
         PublisherCoordinatorReport(publications=[], reports=reports).successful
@@ -76,9 +76,7 @@ async def test_coordinator_run_success(mock_publications,):
     coordinator = PublisherCoordinator(publications=mock_publications,)
     report = coordinator.run()
     assert len(report.reports) == 2
-    assert report.successful, "\n".join(
-        map(lambda rep: rep.reason, report.reports.values())
-    )
+    assert report.successful, "\n".join(map(lambda rep: rep.reason, report.reports))
 
 
 @pytest.mark.parametrize("num_publications", [1])
@@ -95,7 +93,7 @@ async def test_coordinator_run_failure(
     assert len(report.reports) == 1
     assert not report.successful
     assert (
-        list(report.reports.values())[0].reason
+        list(report.reports)[0].reason
         == "Invalid credentials, Invalid event, Invalid message"
     )
 
@@ -112,14 +110,14 @@ async def test_coordinator_run_failure_response(
     report = coordinator.run()
     assert len(report.reports) == 1
     assert not report.successful
-    assert list(report.reports.values())[0].reason == "Invalid response"
+    assert list(report.reports)[0].reason == "Invalid response"
 
 
 @pytest.mark.asyncio
 async def test_notifier_coordinator_publication_failed(mock_publisher_valid):
     mock_send = MagicMock()
     mock_publisher_valid._send = mock_send
-    report = PublicationReport(
+    report = EventPublicationReport(
         status=PublicationStatus.FAILED,
         reason="some failure",
         publication_id=UUID(int=1),

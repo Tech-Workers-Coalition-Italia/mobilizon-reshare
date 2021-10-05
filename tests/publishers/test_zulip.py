@@ -120,7 +120,7 @@ async def test_zulip_publisher(mocked_valid_response, setup_db, event):
         )
     ).run()
 
-    assert list(report.reports.values())[0].status == PublicationStatus.COMPLETED
+    assert report.reports[0].status == PublicationStatus.COMPLETED
 
 
 @pytest.mark.asyncio
@@ -138,8 +138,8 @@ async def test_zulip_publishr_failure_invalid_credentials(
             )
         )
     ).run()
-    assert list(report.reports.values())[0].status == PublicationStatus.FAILED
-    assert list(report.reports.values())[0].reason == "Invalid credentials"
+    assert report.reports[0].status == PublicationStatus.FAILED
+    assert report.reports[0].reason == "Invalid credentials"
 
 
 @pytest.mark.asyncio
@@ -157,8 +157,8 @@ async def test_zulip_publisher_failure_client_error(
             )
         )
     ).run()
-    assert list(report.reports.values())[0].status == PublicationStatus.FAILED
-    assert list(report.reports.values())[0].reason == "400 Error - Invalid request"
+    assert report.reports[0].status == PublicationStatus.FAILED
+    assert report.reports[0].reason == "400 Error - Invalid request"
 
 
 def test_event_validation(event):

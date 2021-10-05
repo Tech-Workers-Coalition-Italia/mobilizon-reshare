@@ -6,7 +6,10 @@ from arrow import now
 from mobilizon_reshare.event.event import EventPublicationStatus, MobilizonEvent
 from mobilizon_reshare.publishers import get_active_publishers
 from mobilizon_reshare.publishers.abstract import RecapPublication
-from mobilizon_reshare.publishers.coordinator import RecapCoordinator
+from mobilizon_reshare.publishers.coordinator import (
+    RecapCoordinator,
+    PublicationFailureNotifiersCoordinator,
+)
 from mobilizon_reshare.publishers.platforms.platform_mapping import (
     get_publisher_class,
     get_formatter_class,
@@ -36,7 +39,12 @@ async def main():
             )
             for publisher in get_active_publishers()
         ]
-        RecapCoordinator(recap_publications).run()
-        return 0
+        reports = RecapCoordinator(recap_publications).run()
+
+        for report in reports.reports:
+            if report.status == EventPublicationStatus.FAILED:
+                PublicationFailureNotifiersCoordinator(report).notify_failure()
+
+        return 0 if reports.successful else 1
     else:
         return 0

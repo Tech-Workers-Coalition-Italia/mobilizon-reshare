@@ -60,7 +60,7 @@ async def main():
         reports = PublisherCoordinator(waiting_publications).run()
 
         await save_publication_report(reports, waiting_publications_models)
-        for _, report in reports.reports.items():
+        for report in reports.reports:
             PublicationFailureNotifiersCoordinator(report).notify_failure()
 
         return 0 if reports.successful else 1

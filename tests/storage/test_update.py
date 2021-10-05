@@ -9,7 +9,7 @@ from mobilizon_reshare.models.publication import PublicationStatus, Publication
 from mobilizon_reshare.models.publisher import Publisher
 from mobilizon_reshare.publishers.coordinator import (
     PublisherCoordinatorReport,
-    PublicationReport,
+    EventPublicationReport,
 )
 from mobilizon_reshare.storage.query import (
     get_publishers,
@@ -69,18 +69,18 @@ async def test_update_publishers(
             complete_specification,
             PublisherCoordinatorReport(
                 publications=[],
-                reports={
-                    UUID(int=3): PublicationReport(
+                reports=[
+                    EventPublicationReport(
                         status=PublicationStatus.FAILED,
                         reason="Invalid credentials",
                         publication_id=UUID(int=3),
                     ),
-                    UUID(int=4): PublicationReport(
+                    EventPublicationReport(
                         status=PublicationStatus.COMPLETED,
                         reason="",
                         publication_id=UUID(int=4),
                     ),
-                },
+                ],
             ),
             MobilizonEvent(
                 name="event_1",
@@ -115,7 +115,7 @@ async def test_save_publication_report(
         status=PublicationStatus.WAITING, event_mobilizon_id=event.mobilizon_id,
     )
     await save_publication_report(report, publications)
-    publication_ids = set(report.reports.keys())
+    publication_ids = set(publications.keys())
     publications = {
         p_id: await Publication.filter(id=p_id).first() for p_id in publication_ids
     }
