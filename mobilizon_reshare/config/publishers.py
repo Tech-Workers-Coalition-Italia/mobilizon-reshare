@@ -17,7 +17,14 @@ zulip_validators = [
     Validator("publisher.zulip.bot_email", must_exist=True),
 ]
 mastodon_validators = []
-twitter_validators = []
+twitter_validators = [
+    Validator("publisher.twitter.msg_template_path", must_exist=True, default=None),
+    Validator("publisher.twitter.recap_template_path", must_exist=True, default=None),
+    Validator("publisher.twitter.api_key", must_exist=True),
+    Validator("publisher.twitter.api_key_secret", must_exist=True),
+    Validator("publisher.twitter.access_token", must_exist=True),
+    Validator("publisher.twitter.access_secret", must_exist=True),
+]
 facebook_validators = []
 
 publisher_name_to_validators = {
