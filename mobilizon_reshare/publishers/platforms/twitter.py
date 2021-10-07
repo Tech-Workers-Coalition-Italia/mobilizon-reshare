@@ -56,29 +56,10 @@ class TwitterPlatform(AbstractPlatform):
         return self._get_api().update_status(message)
 
     def validate_credentials(self):
-        conf = self.conf
-        api_key = conf.api_key
-        api_key_secret = conf.api_key_secret
-        access_token = conf.access_token
-        access_secret = conf.access_secret
-        err = []
-        if not api_key:
-            err.append("api_key")
-        if not api_key_secret:
-            err.append("api_key_secret")
-        if not access_token:
-            err.append("access_token")
-        if not access_secret:
-            err.append("access_secret")
-
-        if err:
-            self._log_error(
-                ", ".join(err) + " is/are missing", raise_error=InvalidCredentials,
-            )
-
         if not self._get_api().verify_credentials():
-            raise InvalidCredentials(
-                "Invalid Twitter credentials. Authentication Failed"
+            self._log_error(
+                "Invalid Twitter credentials. Authentication Failed",
+                raise_error=InvalidCredentials,
             )
 
     def _validate_response(self, res: Status) -> dict:

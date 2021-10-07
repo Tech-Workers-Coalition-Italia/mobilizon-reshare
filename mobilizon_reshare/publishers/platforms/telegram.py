@@ -10,7 +10,6 @@ from mobilizon_reshare.publishers.abstract import (
 )
 from mobilizon_reshare.publishers.exceptions import (
     InvalidBot,
-    InvalidCredentials,
     InvalidEvent,
     InvalidResponse,
     PublisherError,
@@ -63,26 +62,10 @@ class TelegramPlatform(AbstractPlatform):
         return TelegramFormatter.escape_message(message)
 
     def validate_credentials(self):
-        conf = self.conf
-        chat_id = conf.chat_id
-        token = conf.token
-        username = conf.username
-        err = []
-        if not chat_id:
-            err.append("chat ID")
-        if not token:
-            err.append("token")
-        if not username:
-            err.append("username")
-        if err:
-            self._log_error(
-                ", ".join(err) + " is/are missing", raise_error=InvalidCredentials,
-            )
-
-        res = requests.get(f"https://api.telegram.org/bot{token}/getMe")
+        res = requests.get(f"https://api.telegram.org/bot{self.conf.token}/getMe")
         data = self._validate_response(res)
 
-        if not username == data.get("result", {}).get("username"):
+        if not self.conf.username == data.get("result", {}).get("username"):
             self._log_error(
                 "Found a different bot than the expected one", raise_error=InvalidBot,
             )
