@@ -42,14 +42,18 @@ class TwitterPlatform(AbstractPlatform):
 
     _conf = ("publisher", "twitter")
 
-    def __init__(self):
-        self.api = None
+    def _get_api(self):
+
+        api_key = self.conf.api_key
+        api_key_secret = self.conf.api_key_secret
+        access_token = self.conf.access_token
+        access_secret = self.conf.access_secret
+        auth = OAuthHandler(api_key, api_key_secret)
+        auth.set_access_token(access_token, access_secret)
+        return API(auth)
 
     def _send(self, message: str) -> Status:
-        """
-        Send stream messages
-        """
-        return self.api.update_status(message)
+        return self._get_api().update_status(message)
 
     def validate_credentials(self):
         conf = self.conf
@@ -72,12 +76,10 @@ class TwitterPlatform(AbstractPlatform):
                 ", ".join(err) + " is/are missing", raise_error=InvalidCredentials,
             )
 
-        auth = OAuthHandler(api_key, api_key_secret)
-        auth.set_access_token(access_token, access_secret)
-        api = API(auth)
-        if not api.verify_credentials():
-            raise InvalidCredentials()
-        self.api = api
+        if not self._get_api().verify_credentials():
+            raise InvalidCredentials(
+                "Invalid Twitter credentials. Authentication Failed"
+            )
 
     def _validate_response(self, res: Status) -> dict:
         pass
