@@ -1,7 +1,11 @@
 import pytest
 import requests
 
-from mobilizon_reshare.publishers.exceptions import InvalidEvent, InvalidResponse
+from mobilizon_reshare.publishers.exceptions import (
+    InvalidEvent,
+    InvalidResponse,
+    InvalidMessage,
+)
 from mobilizon_reshare.publishers.platforms.telegram import (
     TelegramFormatter,
     TelegramPublisher,
@@ -11,13 +15,22 @@ from mobilizon_reshare.publishers.platforms.telegram import (
 def test_message_length_success(event):
     message = "a" * 500
     event.description = message
-    assert TelegramFormatter().is_message_valid(event)
+    assert (
+        TelegramFormatter().validate_message(
+            TelegramFormatter().get_message_from_event(event)
+        )
+        is None
+    )
 
 
 def test_message_length_failure(event):
     message = "a" * 10000
     event.description = message
-    assert not TelegramFormatter().is_message_valid(event)
+
+    with pytest.raises(InvalidMessage):
+        TelegramFormatter().validate_message(
+            TelegramFormatter().get_message_from_event(event)
+        )
 
 
 @pytest.mark.parametrize(

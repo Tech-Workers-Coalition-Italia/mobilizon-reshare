@@ -22,6 +22,8 @@ class BasePublicationReport:
     reason: Optional[str]
 
     def get_failure_message(self):
+        if not self.reason:
+            logger.error("Report of failure without reason.", exc_info=True)
 
         return (
             f"Publication failed with status: {self.status}.\n" f"Reason: {self.reason}"
@@ -33,6 +35,9 @@ class EventPublicationReport(BasePublicationReport):
     publication_id: UUID
 
     def get_failure_message(self):
+
+        if not self.reason:
+            logger.error("Report of failure without reason.", exc_info=True)
 
         return (
             f"Publication {self.publication_id } failed with status: {self.status}.\n"
@@ -110,24 +115,36 @@ class PublisherCoordinator:
             publications=self.publications, reports=reports
         )
 
+    def _safe_run(self, reasons, f, *args, **kwargs):
+        try:
+            f(*args, **kwargs)
+            return reasons
+        except Exception as e:
+            logger.error(str(e))
+            return reasons + [str(e)]
+
     def _validate(self):
         errors = []
 
         for publication in self.publications:
+            reasons = []
+            reasons = self._safe_run(
+                reasons, publication.publisher.validate_credentials,
+            )
+            reasons = self._safe_run(
+                reasons, publication.formatter.validate_event, publication.event
+            )
+            reasons = self._safe_run(
+                reasons,
+                publication.formatter.validate_message,
+                publication.formatter.get_message_from_event(publication.event),
+            )
 
-            reason = []
-            if not publication.publisher.are_credentials_valid():
-                reason.append("Invalid credentials")
-            if not publication.formatter.is_event_valid(publication.event):
-                reason.append("Invalid event")
-            if not publication.formatter.is_message_valid(publication.event):
-                reason.append("Invalid message")
-
-            if len(reason) > 0:
+            if len(reasons) > 0:
                 errors.append(
                     EventPublicationReport(
                         status=PublicationStatus.FAILED,
-                        reason=", ".join(reason),
+                        reason=", ".join(reasons),
                         publication_id=publication.id,
                     )
                 )

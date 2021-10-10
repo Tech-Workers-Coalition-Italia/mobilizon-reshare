@@ -116,7 +116,7 @@ async def test_publication_coordinator_run_failure(
     assert not report.successful
     assert (
         list(report.reports)[0].reason
-        == "Invalid credentials, Invalid event, Invalid message"
+        == "credentials error, Invalid event error, Invalid message error"
     )
 
 

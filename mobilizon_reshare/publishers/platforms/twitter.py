@@ -58,7 +58,7 @@ class TwitterPlatform(AbstractPlatform):
         try:
             return self._get_api().update_status(message)
         except TweepyException as e:
-            raise PublisherError from e
+            raise PublisherError(e.args[0])
 
     def validate_credentials(self):
         if not self._get_api().verify_credentials():
