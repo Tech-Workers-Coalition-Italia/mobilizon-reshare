@@ -83,6 +83,7 @@ Currently the following publishers are supported:
 
 * Telegram
 * Zulip
+* Twitter
 
 ### Notifier
 
