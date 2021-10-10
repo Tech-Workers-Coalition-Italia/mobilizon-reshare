@@ -28,21 +28,35 @@ class TelegramFormatter(AbstractEventFormatter):
     )
 
     _conf = ("publisher", "telegram")
+    _escape_characters = [
+        "-",
+        ".",
+        "(",
+        "!",
+        ")",
+    ]
 
     @staticmethod
     def restore_links(message: str) -> str:
-        return re.sub(r"\[(\w*)]\\\(([\w\-/\\.:]*)\\\)", r"[\g<1>](\g<2>)", message,)
+        """The escape_message function should ignore actually valid links that involve square brackets and parenthesis.
+        This function de-escapes actual links without altering other escaped square brackets and parenthesis"""
+
+        def build_link(match):
+            result = match.group(0)
+            for character in TelegramFormatter._escape_characters:
+                result = result.replace("\\" + character, character)
+            return result
+
+        return re.sub(r"\[(\w*)]\\\(([\w\-/\\.:]*)\\\)", build_link, message,)
 
     @staticmethod
     def escape_message(message: str) -> str:
-        message = (
-            message.replace("-", r"\-")
-            .replace(".", r"\.")
-            .replace("(", r"\(")
-            .replace("!", r"\!")
-            .replace(")", r"\)")
-            .replace("#", r"")
-        )
+        """Escape message to comply with Telegram standards"""
+        for character in TelegramFormatter._escape_characters:
+            message = message.replace(character, "\\" + character)
+
+        # Telegram doesn't use headers so # can be removed
+        message = message.replace("#", r"")
 
         return TelegramFormatter.restore_links(message)
 
