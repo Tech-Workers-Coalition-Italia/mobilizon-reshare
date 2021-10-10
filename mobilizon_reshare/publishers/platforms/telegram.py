@@ -1,3 +1,5 @@
+import re
+
 import pkg_resources
 import requests
 from requests import Response
@@ -28,8 +30,12 @@ class TelegramFormatter(AbstractEventFormatter):
     _conf = ("publisher", "telegram")
 
     @staticmethod
+    def restore_links(message: str) -> str:
+        return re.sub(r"\[(\w*)]\\\(([\w\-/\\.:]*)\\\)", r"[\g<1>](\g<2>)", message,)
+
+    @staticmethod
     def escape_message(message: str) -> str:
-        return (
+        message = (
             message.replace("-", r"\-")
             .replace(".", r"\.")
             .replace("(", r"\(")
@@ -37,6 +43,8 @@ class TelegramFormatter(AbstractEventFormatter):
             .replace(")", r"\)")
             .replace("#", r"")
         )
+
+        return TelegramFormatter.restore_links(message)
 
     def validate_event(self, event: MobilizonEvent) -> None:
         description = event.description

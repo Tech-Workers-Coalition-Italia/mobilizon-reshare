@@ -132,7 +132,7 @@ class AbstractEventFormatter(LoggerMixin, ConfLoaderMixin):
         """
         return event
 
-    def get_message_from_event(self, event) -> str:
+    def get_message_from_event(self, event: MobilizonEvent) -> str:
         """
         Retrieves a message from the event itself.
         """
@@ -147,6 +147,7 @@ class AbstractEventFormatter(LoggerMixin, ConfLoaderMixin):
         return JINJA_ENV.get_template(template_path)
 
     def is_message_valid(self, event: MobilizonEvent) -> bool:
+        # TODO: this thing swallows exception messages. It should be handled differently
         try:
             self.validate_message(self.get_message_from_event(event))
         except PublisherError:
