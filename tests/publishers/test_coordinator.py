@@ -155,8 +155,17 @@ async def test_notifier_coordinator_publication_failed(mock_publisher_valid):
 
 @pytest.mark.parametrize("num_publications", [2])
 @pytest.mark.asyncio
-async def test_recap_coordinator_run_success(mock_recap_publications,):
+async def test_recap_coordinator_run_success(
+    mock_recap_publications, message_collector
+):
     coordinator = RecapCoordinator(recap_publications=mock_recap_publications)
     report = coordinator.run()
+
+    # one recap per publication
+    assert len(message_collector) == 2
+
+    # check that header is in all messages
+    assert all(("Upcoming" in message) for message in message_collector)
+
     assert len(report.reports) == 2
     assert report.successful, "\n".join(map(lambda rep: rep.reason, report.reports))
