@@ -33,7 +33,7 @@ def test_publication_report_successful(statuses, successful):
     reports = []
     for i, status in enumerate(statuses):
         reports.append(
-            EventPublicationReport(reason=None, publication_id=None, status=status)
+            EventPublicationReport(reason=None, publication=None, status=status)
         )
     assert (
         PublisherCoordinatorReport(publications=[], reports=reports).successful
@@ -142,7 +142,9 @@ async def test_notifier_coordinator_publication_failed(mock_publisher_valid):
     report = EventPublicationReport(
         status=PublicationStatus.FAILED,
         reason="some failure",
-        publication_id=UUID(int=1),
+        publication=EventPublication(
+            id=UUID(int=4), publisher=mock_publisher_valid, formatter=None, event=None
+        ),
     )
     coordinator = PublicationFailureNotifiersCoordinator(
         report, [mock_publisher_valid, mock_publisher_valid]

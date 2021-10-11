@@ -71,14 +71,13 @@ class AbstractPlatform(ABC, LoggerMixin, ConfLoaderMixin):
         - ``message``: a formatted ``str``
     """
 
-    # Non-abstract subclasses should define ``_conf`` as a 2-tuple, where the
-    # first element is the type of class (either 'notifier' or 'publisher') and
-    # the second the name of its service (ie: 'facebook', 'telegram')
+    def __str__(self):
+        return self.name
 
-    def __repr__(self):
-        return type(self).__name__
-
-    __str__ = __repr__
+    @property
+    @abstractmethod
+    def name(self):
+        pass
 
     @abstractmethod
     def _send(self, message: str):

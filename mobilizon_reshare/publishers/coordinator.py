@@ -1,7 +1,6 @@
 import logging
 from dataclasses import dataclass
 from typing import List, Optional
-from uuid import UUID
 
 from mobilizon_reshare.models.publication import PublicationStatus
 from mobilizon_reshare.publishers import get_active_notifiers
@@ -32,7 +31,7 @@ class BasePublicationReport:
 
 @dataclass
 class EventPublicationReport(BasePublicationReport):
-    publication_id: UUID
+    publication: EventPublication
 
     def get_failure_message(self):
 
@@ -40,8 +39,9 @@ class EventPublicationReport(BasePublicationReport):
             logger.error("Report of failure without reason.", exc_info=True)
 
         return (
-            f"Publication {self.publication_id } failed with status: {self.status}.\n"
-            f"Reason: {self.reason}"
+            f"Publication {self.publication.id} failed with status: {self.status}.\n"
+            f"Reason: {self.reason}\n"
+            f"Publisher: {self.publication.publisher.name}"
         )
 
 
@@ -77,9 +77,7 @@ class PublisherCoordinator:
     def _make_successful_report(self, failed_ids):
         return [
             EventPublicationReport(
-                status=PublicationStatus.COMPLETED,
-                reason="",
-                publication_id=publication.id,
+                status=PublicationStatus.COMPLETED, reason="", publication=publication,
             )
             for publication in self.publications
             if publication.id not in failed_ids
@@ -98,7 +96,7 @@ class PublisherCoordinator:
                 reports.append(
                     EventPublicationReport(
                         status=PublicationStatus.COMPLETED,
-                        publication_id=publication.id,
+                        publication=publication,
                         reason=None,
                     )
                 )
@@ -107,7 +105,7 @@ class PublisherCoordinator:
                     EventPublicationReport(
                         status=PublicationStatus.FAILED,
                         reason=str(e),
-                        publication_id=publication.id,
+                        publication=publication,
                     )
                 )
 
@@ -145,7 +143,7 @@ class PublisherCoordinator:
                     EventPublicationReport(
                         status=PublicationStatus.FAILED,
                         reason=", ".join(reasons),
-                        publication_id=publication.id,
+                        publication=publication,
                     )
                 )
 

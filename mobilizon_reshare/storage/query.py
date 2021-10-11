@@ -201,7 +201,7 @@ async def save_publication_report(
     publications: Dict[UUID, Publication],
 ) -> None:
     for publication_report in coordinator_report.reports:
-        publication_id = publication_report.publication_id
+        publication_id = publication_report.publication.id
         publications[publication_id].status = publication_report.status
         publications[publication_id].reason = publication_report.reason
         publications[publication_id].timestamp = arrow.now().datetime

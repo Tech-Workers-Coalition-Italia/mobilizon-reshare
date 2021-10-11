@@ -66,6 +66,8 @@ def mock_formatter_invalid():
 @pytest.fixture
 def mock_publisher_valid():
     class MockPublisher(AbstractPlatform):
+        name = "mock"
+
         def _send(self, message):
             pass
 
@@ -81,6 +83,9 @@ def mock_publisher_valid():
 @pytest.fixture
 def mock_publisher_invalid():
     class MockPublisher(AbstractPlatform):
+
+        name = "mock"
+
         def _send(self, message):
             pass
 
@@ -96,6 +101,9 @@ def mock_publisher_invalid():
 @pytest.fixture
 def mock_publisher_invalid_response():
     class MockPublisher(AbstractPlatform):
+
+        name = "mock"
+
         def _send(self, message):
             pass
 

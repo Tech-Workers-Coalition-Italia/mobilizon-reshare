@@ -52,6 +52,7 @@ class ZulipPlatform(AbstractPlatform):
     _conf = ("publisher", "zulip")
 
     api_uri = "https://zulip.twc-italia.org/api/v1/"
+    name = "zulip"
 
     def _send_private(self, message: str) -> Response:
         """

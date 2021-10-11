@@ -43,6 +43,7 @@ class TwitterPlatform(AbstractPlatform):
     """
 
     _conf = ("publisher", "twitter")
+    name = "twitter"
 
     def _get_api(self):
 

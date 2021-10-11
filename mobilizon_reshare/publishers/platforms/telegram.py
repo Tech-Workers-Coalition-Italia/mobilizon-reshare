@@ -80,6 +80,8 @@ class TelegramPlatform(AbstractPlatform):
     Telegram publisher class.
     """
 
+    name = "telegram"
+
     def _preprocess_message(self, message: str):
         return TelegramFormatter.escape_message(message)
 
