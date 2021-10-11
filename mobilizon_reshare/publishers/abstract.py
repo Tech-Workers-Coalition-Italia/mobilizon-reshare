@@ -155,6 +155,9 @@ class AbstractEventFormatter(LoggerMixin, ConfLoaderMixin):
         return JINJA_ENV.get_template(template_path)
 
     def get_recap_fragment(self, event: MobilizonEvent) -> str:
+        """
+        Retrieves the fragment that describes a single event inside the event recap.
+        """
         event = self._preprocess_event(event)
         return event.format(self.get_recap_fragment_template())
 
