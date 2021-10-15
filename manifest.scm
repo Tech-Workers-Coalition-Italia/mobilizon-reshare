@@ -10,9 +10,9 @@
   (map specification->package+output
        '("meld" "git-cal" "man-db" "texinfo"
          "python-pre-commit" "poetry" "bzip2"
-         "guix" "grep" "sed" "unzip" "bash"
+         "guix" "grep" "sed" "unzip" "bash" "ncurses"
          "findutils" "ripgrep" "python-semver"
          "util-linux" "python-black" "gawk" "fd"
          "coreutils" "less" "git" "git:credential-libsecret"
          "gitg" "direnv" "which" "vim" "emacs"
-         "tar" "gzip" "openssh"))))
+         "tar" "gzip" "openssh" "docker-cli" "docker-compose"))))

@@ -1,0 +1,10 @@
+version: "3.7"
+services:
+  mobilizon-reshare:
+    image: fishinthecalculator/mobilizon-reshare-test:latest
+    environment:
+      SECRETS_FOR_DYNACONF: /root/.config/mobilizon-reshare/0.1.0/.secrets.toml
+      ENV_FOR_DYNACONF: production
+    volumes:
+      - ./etc:/root/.config/mobilizon-reshare/0.1.0
+      - ./var:/var/mobilizon-reshare

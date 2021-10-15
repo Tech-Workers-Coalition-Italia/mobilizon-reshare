@@ -16,6 +16,7 @@
   #:use-module (gnu packages python-xyz)
   #:use-module (gnu packages serialization)
   #:use-module (gnu packages time)
+  #:use-module (gnu packages web)
   #:use-module (ice-9 popen)
   #:use-module (ice-9 rdelim)
   #:use-module (srfi srfi-1))
@@ -231,6 +232,132 @@ development, testing, production]};
     (description "Convert HTML to markdown.")
     (license license:expat)))
 
+(define-public python-coveralls
+  (package
+    (name "python-coveralls")
+    (version "3.2.0")
+    (source
+     (origin
+       (method url-fetch)
+       (uri (pypi-uri "coveralls" version))
+       (sha256
+        (base32 "1vjnc7lmi0w86zvl6d3vfpxymdpz0rc8r541rm2gyzw7vzcqga8m"))))
+    (build-system python-build-system)
+    (native-inputs
+     `(("python-mock" ,python-mock)
+       ("python-pytest" ,python-pytest)
+       ("python-responses" ,python-responses)))
+    (propagated-inputs
+     `(("python-coverage" ,python-coverage)
+       ("python-docopt" ,python-docopt)
+       ("python-requests" ,python-requests)))
+    (home-page "http://github.com/TheKevJames/coveralls-python")
+    (synopsis "Show coverage stats online via coveralls.io")
+    (description "Show coverage stats online via coveralls.io")
+    (license license:expat)))
+
+(define-public python-ipaddress
+  (package
+    (name "python-ipaddress")
+    (version "1.0.23")
+    (source
+     (origin
+       (method url-fetch)
+       (uri (pypi-uri "ipaddress" version))
+       (sha256
+        (base32 "1qp743h30s04m3cg3yk3fycad930jv17q7dsslj4mfw0jlvf1y5p"))))
+    (build-system python-build-system)
+    (home-page "https://github.com/phihag/ipaddress")
+    (synopsis "IPv4/IPv6 manipulation library")
+    (description "IPv4/IPv6 manipulation library")
+    (license #f)))
+
+(define-public python-vcrpy
+  (package
+    (name "python-vcrpy")
+    (version "4.1.1")
+    (source
+     (origin
+       (method url-fetch)
+       (uri (pypi-uri "vcrpy" version))
+       (sha256
+        (base32 "16gmzxs3lzbgf1828n0q61vbmwyhpvzdlk37x6gdk8n05zr5n2ap"))))
+    (build-system python-build-system)
+    (arguments
+     `(#:phases
+       (modify-phases %standard-phases
+         (replace 'check
+           (lambda* (#:key tests? outputs #:allow-other-keys)
+             (when tests?
+               (substitute* "tox.ini"
+                 (("AWS_ACCESS_KEY_ID") "PYTHONPATH"))
+               (setenv "PYTHONPATH" (string-append ".:" (getenv "PYTHONPATH")))
+               ;; These tests require network access.
+               (delete-file "tests/unit/test_stubs.py")
+               (invoke "pytest" "tests/unit")))))))
+    (native-inputs
+     `(
+       ("python-black" ,python-black)
+       ("python-coverage" ,python-coverage)
+       ("python-flake8" ,python-flake8)
+       ("python-flask" ,python-flask)
+       ("python-httplib2" ,python-httplib2)
+       ("python-ipaddress" ,python-ipaddress)
+       ("python-mock" ,python-mock)
+       ("python-pytest" ,python-pytest)
+       ("python-pytest-cov" ,python-pytest-cov)
+       ("python-pytest-httpbin" ,python-pytest-httpbin)
+       ("python-tox" ,python-tox)
+       ("python-urllib3" ,python-urllib3)))
+
+    (propagated-inputs
+     `(("python-pyyaml" ,python-pyyaml)
+       ("python-six" ,python-six)
+       ("python-wrapt" ,python-wrapt)
+       ("python-yarl" ,python-yarl)))
+    (home-page "https://github.com/kevin1024/vcrpy")
+    (synopsis
+     "Automatically mock your HTTP interactions to simplify and speed up testing")
+    (description
+     "Automatically mock your HTTP interactions to simplify and speed up testing")
+    (license license:expat)))
+
+(define-public python-tweepy
+  (package
+    (name "python-tweepy")
+    (version "4.1.0")
+    (source
+     (origin
+       (method git-fetch)
+       (uri
+        (git-reference
+         (url "https://github.com/tweepy/tweepy")
+         (commit (string-append "v" version))))
+       (file-name (git-file-name name version))
+       (sha256
+        (base32
+         "1c0paxc38i5jq8i20f9xwv966sap4nnhgnbdxg3611pllnzg5wdv"))))
+    (build-system python-build-system)
+    (arguments
+     `(#:phases
+       (modify-phases %standard-phases
+         (replace 'check
+           (lambda* (#:key tests? inputs outputs #:allow-other-keys)
+             (when tests?
+               (invoke "python" "-m" "unittest")))))))
+    (propagated-inputs
+     `(("python-aiohttp" ,python-aiohttp)
+       ("python-requests" ,python-requests)
+       ("python-requests-oauthlib" ,python-requests-oauthlib)))
+    (native-inputs
+     `(("python-coveralls" ,python-coveralls)
+       ("python-tox" ,python-tox)
+       ("python-vcrpy" ,python-vcrpy)))
+    (home-page "https://www.tweepy.org/")
+    (synopsis "Twitter library for Python")
+    (description "Twitter library for Python")
+    (license license:expat)))
+
 (define-public mobilizon-reshare.git
   (let ((source-version (with-input-from-file
                             (string-append %source-dir
@@ -285,6 +412,7 @@ development, testing, production]};
          ("python-jinja2" ,python-jinja2)
          ("python-markdownify" ,python-markdownify)
          ("python-requests" ,python-requests)
+         ("python-tweepy" ,python-tweepy)
          ("python-tortoise-orm" ,python-tortoise-orm-0.17)))
       (home-page
        "https://github.com/Tech-Workers-Coalition-Italia/mobilizon-reshare")

@@ -177,3 +177,5 @@ fabric.properties
 .idea
 */local_testing.toml
 direnv/
+etc/
+var/
