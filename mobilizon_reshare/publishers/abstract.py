@@ -2,6 +2,7 @@ import inspect
 import logging
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
+from typing import List
 from uuid import UUID
 
 from dynaconf.utils.boxing import DynaBox
@@ -129,7 +130,7 @@ class AbstractEventFormatter(LoggerMixin, ConfLoaderMixin):
         """
         Allows publishers to preprocess events before feeding them to the template
         """
-        pass  # pragma: no cover
+        return event
 
     def get_message_from_event(self, event) -> str:
         """
@@ -168,13 +169,27 @@ class AbstractEventFormatter(LoggerMixin, ConfLoaderMixin):
             return False
         return True
 
+    def get_recap_fragment_template(self) -> Template:
+        template_path = (
+            self.conf.recap_template_path or self.default_recap_template_path
+        )
+        return JINJA_ENV.get_template(template_path)
+
+    def get_recap_fragment(self, event: MobilizonEvent) -> str:
+        event = self._preprocess_event(event)
+        return event.format(self.get_recap_fragment_template())
+
 
 @dataclass
-class EventPublication:
-    event: MobilizonEvent
-    id: UUID
+class BasePublication:
     publisher: AbstractPlatform
     formatter: AbstractEventFormatter
+
+
+@dataclass
+class EventPublication(BasePublication):
+    event: MobilizonEvent
+    id: UUID
 
     @classmethod
     def from_orm(cls, model: PublicationModel, event: MobilizonEvent):
@@ -186,4 +201,9 @@ class EventPublication:
 
         publisher = get_publisher_class(model.publisher.name)()
         formatter = get_formatter_class(model.publisher.name)()
-        return cls(event, model.id, publisher, formatter)
+        return cls(publisher, formatter, event, model.id,)
+
+
+@dataclass
+class RecapPublication(BasePublication):
+    events: List[MobilizonEvent]

@@ -26,6 +26,10 @@ class ZulipFormatter(AbstractEventFormatter):
         "mobilizon_reshare.publishers.templates", "zulip.tmpl.j2"
     )
 
+    default_recap_template_path = pkg_resources.resource_filename(
+        "mobilizon_reshare.publishers.templates", "zulip_recap.tmpl.j2"
+    )
+
     def validate_event(self, event: MobilizonEvent) -> None:
         text = event.description
         if not (text and text.strip()):
@@ -47,9 +51,7 @@ class ZulipPlatform(AbstractPlatform):
     """
 
     _conf = ("publisher", "zulip")
-    default_template_path = pkg_resources.resource_filename(
-        "mobilizon_reshare.publishers.templates", "zulip.tmpl.j2"
-    )
+
     api_uri = "https://zulip.twc-italia.org/api/v1/"
 
     def _send_private(self, message: str) -> Response:

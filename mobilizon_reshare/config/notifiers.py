@@ -10,7 +10,6 @@ telegram_validators = [
 zulip_validators = [
     Validator("publisher.zulip.chat_id", must_exist=True),
     Validator("publisher.zulip.subject", must_exist=True),
-    Validator("publisher.zulip.msg_template_path", must_exist=True, default=None),
     Validator("publisher.zulip.bot_token", must_exist=True),
     Validator("publisher.zulip.bot_email", must_exist=True),
 ]

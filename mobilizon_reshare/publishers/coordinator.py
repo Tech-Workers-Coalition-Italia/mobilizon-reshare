@@ -1,11 +1,15 @@
 import logging
-from dataclasses import dataclass, field
-from typing import List
+from dataclasses import dataclass
+from typing import List, Optional
 from uuid import UUID
 
 from mobilizon_reshare.models.publication import PublicationStatus
 from mobilizon_reshare.publishers import get_active_notifiers
-from mobilizon_reshare.publishers.abstract import EventPublication
+from mobilizon_reshare.publishers.abstract import (
+    EventPublication,
+    AbstractPlatform,
+    RecapPublication,
+)
 from mobilizon_reshare.publishers.exceptions import PublisherError
 from mobilizon_reshare.publishers.platforms.platform_mapping import get_notifier_class
 
@@ -13,22 +17,43 @@ logger = logging.getLogger(__name__)
 
 
 @dataclass
-class PublicationReport:
+class BasePublicationReport:
     status: PublicationStatus
-    reason: str
-    publication_id: UUID
+    reason: Optional[str]
+
+    def get_failure_message(self):
+
+        return (
+            f"Publication failed with status: {self.status}.\n" f"Reason: {self.reason}"
+        )
 
 
 @dataclass
-class PublisherCoordinatorReport:
-    publications: List[EventPublication]
-    reports: dict[UUID, PublicationReport] = field(default_factory={})
+class EventPublicationReport(BasePublicationReport):
+    publication_id: UUID
+
+    def get_failure_message(self):
+
+        return (
+            f"Publication {self.publication_id } failed with status: {self.status}.\n"
+            f"Reason: {self.reason}"
+        )
+
+
+@dataclass
+class BaseCoordinatorReport:
+    reports: List[BasePublicationReport]
 
     @property
     def successful(self):
-        return all(
-            r.status == PublicationStatus.COMPLETED for r in self.reports.values()
-        )
+        return all(r.status == PublicationStatus.COMPLETED for r in self.reports)
+
+
+@dataclass
+class PublisherCoordinatorReport(BaseCoordinatorReport):
+
+    reports: List[EventPublicationReport]
+    publications: List[EventPublication]
 
 
 class PublisherCoordinator:
@@ -45,18 +70,18 @@ class PublisherCoordinator:
         return self._post()
 
     def _make_successful_report(self, failed_ids):
-        return {
-            publication.id: PublicationReport(
+        return [
+            EventPublicationReport(
                 status=PublicationStatus.COMPLETED,
                 reason="",
                 publication_id=publication.id,
             )
             for publication in self.publications
             if publication.id not in failed_ids
-        }
+        ]
 
     def _post(self):
-        failed_publishers_reports = {}
+        reports = []
 
         for publication in self.publications:
 
@@ -65,22 +90,28 @@ class PublisherCoordinator:
                     publication.event
                 )
                 publication.publisher.send(message)
+                reports.append(
+                    EventPublicationReport(
+                        status=PublicationStatus.COMPLETED,
+                        publication_id=publication.id,
+                        reason=None,
+                    )
+                )
             except PublisherError as e:
-                failed_publishers_reports[publication.id] = PublicationReport(
-                    status=PublicationStatus.FAILED,
-                    reason=str(e),
-                    publication_id=publication.id,
+                reports.append(
+                    EventPublicationReport(
+                        status=PublicationStatus.FAILED,
+                        reason=str(e),
+                        publication_id=publication.id,
+                    )
                 )
 
-        reports = failed_publishers_reports | self._make_successful_report(
-            failed_publishers_reports.keys()
-        )
         return PublisherCoordinatorReport(
             publications=self.publications, reports=reports
         )
 
     def _validate(self):
-        errors: dict[UUID, PublicationReport] = {}
+        errors = []
 
         for publication in self.publications:
 
@@ -93,45 +124,75 @@ class PublisherCoordinator:
                 reason.append("Invalid message")
 
             if len(reason) > 0:
-                errors[publication.id] = PublicationReport(
-                    status=PublicationStatus.FAILED,
-                    reason=", ".join(reason),
-                    publication_id=publication.id,
+                errors.append(
+                    EventPublicationReport(
+                        status=PublicationStatus.FAILED,
+                        reason=", ".join(reason),
+                        publication_id=publication.id,
+                    )
                 )
 
         return errors
 
 
-class AbstractNotifiersCoordinator:
-    def __init__(self, message: str, notifiers=None):
+class AbstractCoordinator:
+    def __init__(self, message: str, platforms: List[AbstractPlatform] = None):
         self.message = message
-        self.notifiers = notifiers or [
-            get_notifier_class(notifier)() for notifier in get_active_notifiers()
-        ]
+        self.platforms = platforms
 
     def send_to_all(self):
-        # TODO: failure to notify should fail safely and write to a dedicated log
-        for notifier in self.notifiers:
-            notifier.send(self.message)
+        # TODO: failure to send should fail safely and write to a dedicated log
+        for platform in self.platforms:
+            platform.send(self.message)
+
+
+class AbstractNotifiersCoordinator(AbstractCoordinator):
+    def __init__(self, message: str, notifiers: List[AbstractPlatform] = None):
+        platforms = notifiers or [
+            get_notifier_class(notifier)() for notifier in get_active_notifiers()
+        ]
+        super(AbstractNotifiersCoordinator, self).__init__(message, platforms)
 
 
 class PublicationFailureNotifiersCoordinator(AbstractNotifiersCoordinator):
-    def __init__(self, report: PublicationReport, notifiers=None):
+    def __init__(self, report: EventPublicationReport, platforms=None):
         self.report = report
         super(PublicationFailureNotifiersCoordinator, self).__init__(
-            message=self.build_failure_message(), notifiers=notifiers
-        )
-
-    def build_failure_message(self):
-        report = self.report
-        return (
-            f"Publication {report.publication_id} failed with status: {report.status}.\n"
-            f"Reason: {report.reason}"
+            message=report.get_failure_message(), notifiers=platforms
         )
 
     def notify_failure(self):
-        logger.info(
-            f"Sending failure notifications for publication: {self.report.publication_id}"
-        )
+        logger.info("Sending failure notifications")
         if self.report.status == PublicationStatus.FAILED:
             self.send_to_all()
+
+
+class RecapCoordinator:
+    def __init__(self, recap_publications: List[RecapPublication]):
+        self.recap_publications = recap_publications
+
+    def run(self):
+        reports = []
+        for recap_publication in self.recap_publications:
+            try:
+
+                fragments = []
+                for event in recap_publication.events:
+                    fragments.append(
+                        recap_publication.formatter.get_recap_fragment(event)
+                    )
+                message = "\n\n".join(fragments)
+                recap_publication.publisher.send(message)
+                reports.append(
+                    BasePublicationReport(
+                        status=PublicationStatus.COMPLETED, reason=None,
+                    )
+                )
+            except PublisherError as e:
+                reports.append(
+                    BasePublicationReport(
+                        status=PublicationStatus.FAILED, reason=str(e),
+                    )
+                )
+
+        return BaseCoordinatorReport(reports=reports)

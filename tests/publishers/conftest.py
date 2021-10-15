@@ -42,6 +42,9 @@ def mock_formatter_valid():
         def _send(self, message):
             pass
 
+        def get_recap_fragment(self, event):
+            return event.name
+
     return MockFormatter()
 
 

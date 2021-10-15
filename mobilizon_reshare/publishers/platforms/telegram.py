@@ -22,6 +22,10 @@ class TelegramFormatter(AbstractEventFormatter):
         "mobilizon_reshare.publishers.templates", "telegram.tmpl.j2"
     )
 
+    default_recap_template_path = pkg_resources.resource_filename(
+        "mobilizon_reshare.publishers.templates", "telegram_recap.tmpl.j2"
+    )
+
     _conf = ("publisher", "telegram")
 
     @staticmethod
@@ -39,9 +43,6 @@ class TelegramFormatter(AbstractEventFormatter):
         description = event.description
         if not (description and description.strip()):
             self._log_error("No description was found", raise_error=InvalidEvent)
-
-    def get_message_from_event(self, event: MobilizonEvent) -> str:
-        return super(TelegramFormatter, self).get_message_from_event(event)
 
     def validate_message(self, message: str) -> None:
         if len(message) >= 4096:

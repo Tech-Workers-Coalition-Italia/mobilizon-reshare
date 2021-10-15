@@ -94,8 +94,7 @@ async def events_with_status(
 
 
 async def get_all_events(
-    from_date: Optional[Arrow] = None,
-    to_date: Optional[Arrow] = None,
+    from_date: Optional[Arrow] = None, to_date: Optional[Arrow] = None,
 ) -> Iterable[MobilizonEvent]:
 
     return map(
@@ -154,9 +153,7 @@ async def create_publisher(name: str, account_ref: Optional[str] = None) -> None
 
 
 @atomic(CONNECTION_NAME)
-async def update_publishers(
-    names: Iterable[str],
-) -> None:
+async def update_publishers(names: Iterable[str],) -> None:
     names = set(names)
     known_publisher_names = set(p.name for p in await get_publishers())
     for name in names.difference(known_publisher_names):
@@ -171,9 +168,7 @@ async def save_publication(
 
     publisher = await get_publishers(publisher_name)
     await Publication.create(
-        status=status,
-        event_id=event_model.id,
-        publisher_id=publisher.id,
+        status=status, event_id=event_model.id, publisher_id=publisher.id,
     )
 
 
@@ -205,8 +200,8 @@ async def save_publication_report(
     coordinator_report: PublisherCoordinatorReport,
     publications: Dict[UUID, Publication],
 ) -> None:
-    for publication_id, publication_report in coordinator_report.reports.items():
-
+    for publication_report in coordinator_report.reports:
+        publication_id = publication_report.publication_id
         publications[publication_id].status = publication_report.status
         publications[publication_id].reason = publication_report.reason
         publications[publication_id].timestamp = arrow.now().datetime
