@@ -169,6 +169,13 @@ class AbstractEventFormatter(LoggerMixin, ConfLoaderMixin):
             return False
         return True
 
+    def get_recap_header(self):
+        template_path = (
+            self.conf.recap_header_template_path
+            or self.default_recap_header_template_path
+        )
+        return JINJA_ENV.get_template(template_path).render()
+
     def get_recap_fragment_template(self) -> Template:
         template_path = (
             self.conf.recap_template_path or self.default_recap_template_path
@@ -178,13 +185,6 @@ class AbstractEventFormatter(LoggerMixin, ConfLoaderMixin):
     def get_recap_fragment(self, event: MobilizonEvent) -> str:
         event = self._preprocess_event(event)
         return event.format(self.get_recap_fragment_template())
-
-    def get_recap_header(self):
-        template_path = (
-            self.conf.recap_header_template_path
-            or self.default_recap_header_template_path
-        )
-        return JINJA_ENV.get_template(template_path).render()
 
 
 @dataclass
