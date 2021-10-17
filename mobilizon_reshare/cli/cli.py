@@ -5,10 +5,10 @@ from arrow import Arrow
 from click import pass_context
 
 from mobilizon_reshare.cli import safe_execution
-from mobilizon_reshare.cli.format import format_event
-from mobilizon_reshare.cli.inspect_event import inspect_events
-from mobilizon_reshare.cli.publish_event.main import main as start_main
-from mobilizon_reshare.cli.publish_recap.main import main as recap_main
+from mobilizon_reshare.cli.commands.format.format import format_event
+from mobilizon_reshare.cli.commands.inspect.inspect_event import inspect_events
+from mobilizon_reshare.cli.commands.start.main import main as start_main
+from mobilizon_reshare.cli.commands.recap.main import main as recap_main
 
 from mobilizon_reshare.event.event import EventPublicationStatus
 
