@@ -1,3 +1,4 @@
+from collections import UserList
 from datetime import timedelta
 from uuid import UUID
 
@@ -45,7 +46,19 @@ def mock_formatter_valid():
         def get_recap_fragment(self, event):
             return event.name
 
+        def get_recap_header(self):
+            return "Upcoming"
+
     return MockFormatter()
+
+
+@pytest.fixture()
+def message_collector():
+    class MessageCollector(UserList):
+        def collect_message(self, message):
+            self.append(message)
+
+    return MessageCollector()
 
 
 @pytest.fixture
@@ -64,10 +77,10 @@ def mock_formatter_invalid():
 
 
 @pytest.fixture
-def mock_publisher_valid():
+def mock_publisher_valid(message_collector):
     class MockPublisher(AbstractPlatform):
         def _send(self, message):
-            pass
+            message_collector.collect_message(message)
 
         def _validate_response(self, response):
             pass
@@ -79,10 +92,11 @@ def mock_publisher_valid():
 
 
 @pytest.fixture
-def mock_publisher_invalid():
+def mock_publisher_invalid(message_collector):
     class MockPublisher(AbstractPlatform):
         def _send(self, message):
-            pass
+
+            message_collector.collect_message(message)
 
         def _validate_response(self, response):
             return InvalidResponse("error")
@@ -94,10 +108,10 @@ def mock_publisher_invalid():
 
 
 @pytest.fixture
-def mock_publisher_invalid_response():
+def mock_publisher_invalid_response(message_collector):
     class MockPublisher(AbstractPlatform):
         def _send(self, message):
-            pass
+            message_collector.collect_message(message)
 
         def _validate_response(self, response):
             raise InvalidResponse("Invalid response")

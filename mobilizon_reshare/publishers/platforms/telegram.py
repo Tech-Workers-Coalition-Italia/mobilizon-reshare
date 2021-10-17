@@ -25,6 +25,10 @@ class TelegramFormatter(AbstractEventFormatter):
         "mobilizon_reshare.publishers.templates", "telegram_recap.tmpl.j2"
     )
 
+    default_recap_header_template_path = pkg_resources.resource_filename(
+        "mobilizon_reshare.publishers.templates", "telegram_recap_header.tmpl.j2"
+    )
+
     _conf = ("publisher", "telegram")
 
     @staticmethod
