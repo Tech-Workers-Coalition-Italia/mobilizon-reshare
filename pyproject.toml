@@ -20,6 +20,7 @@ click = "^8.0"
 beautifulsoup4 = "^4.9"
 markdownify = "^0.9"
 appdirs = "^1.4"
+tweepy = "^4.1.0"
 
 [tool.poetry.dev-dependencies]
 responses = "^0.13"

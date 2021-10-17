@@ -11,7 +11,6 @@ from mobilizon_reshare.publishers.abstract import (
 )
 from mobilizon_reshare.publishers.exceptions import (
     InvalidBot,
-    InvalidCredentials,
     InvalidEvent,
     InvalidResponse,
     ZulipError,
@@ -81,20 +80,6 @@ class ZulipPlatform(AbstractPlatform):
 
     def validate_credentials(self):
         conf = self.conf
-        chat_id = conf.chat_id
-        bot_token = conf.bot_token
-        bot_email = conf.bot_email
-        err = []
-        if not chat_id:
-            err.append("chat ID")
-        if not bot_token:
-            err.append("bot token")
-        if not bot_email:
-            err.append("bot email")
-        if err:
-            self._log_error(
-                ", ".join(err) + " is/are missing", raise_error=InvalidCredentials,
-            )
 
         res = requests.get(
             auth=HTTPBasicAuth(self.conf.bot_email, self.conf.bot_token),
@@ -107,11 +92,11 @@ class ZulipPlatform(AbstractPlatform):
                 "These user is not a bot", raise_error=InvalidBot,
             )
 
-        if not bot_email == data["email"]:
+        if not conf.bot_email == data["email"]:
             self._log_error(
                 "Found a different bot than the expected one"
                 f"\n\tfound: {data['email']}"
-                f"\n\texpected: {bot_email}",
+                f"\n\texpected: {conf.bot_email}",
                 raise_error=InvalidBot,
             )
 
