@@ -1,3 +1,8 @@
+from mobilizon_reshare.publishers.platforms.mastodon import (
+    MastodonPublisher,
+    MastodonFormatter,
+    MastodonNotifier,
+)
 from mobilizon_reshare.publishers.platforms.telegram import (
     TelegramPublisher,
     TelegramFormatter,
@@ -15,16 +20,19 @@ from mobilizon_reshare.publishers.platforms.zulip import (
 )
 
 name_to_publisher_class = {
+    "mastodon": MastodonPublisher,
     "telegram": TelegramPublisher,
     "zulip": ZulipPublisher,
     "twitter": TwitterPublisher,
 }
 name_to_formatter_class = {
+    "mastodon": MastodonFormatter,
     "telegram": TelegramFormatter,
     "zulip": ZulipFormatter,
     "twitter": TwitterFormatter,
 }
 name_to_notifier_class = {
+    "mastodon": MastodonNotifier,
     "telegram": TelegramNotifier,
     "zulip": ZulipNotifier,
     "twitter": TwitterNotifier,

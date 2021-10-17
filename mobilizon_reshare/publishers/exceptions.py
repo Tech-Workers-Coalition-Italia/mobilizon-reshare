@@ -34,5 +34,13 @@ class InvalidSettings(PublisherError):
     """ Publisher settings are either missing or badly configured """
 
 
+class ClientError(PublisherError):
+    """ Generic HTTP client error """
+
+
+class ServerError(PublisherError):
+    """ Generic HTTP server error """
+
+
 class ZulipError(PublisherError):
     """ Publisher receives an error response from Zulip"""
