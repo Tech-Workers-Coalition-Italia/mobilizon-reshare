@@ -176,7 +176,7 @@ class RecapCoordinator:
         for recap_publication in self.recap_publications:
             try:
 
-                fragments = []
+                fragments = [recap_publication.formatter.get_recap_header()]
                 for event in recap_publication.events:
                     fragments.append(
                         recap_publication.formatter.get_recap_fragment(event)
