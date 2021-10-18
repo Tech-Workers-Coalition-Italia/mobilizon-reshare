@@ -19,6 +19,7 @@ zulip_validators = [
 mastodon_validators = [
     Validator("publisher.mastodon.instance", must_exist=True),
     Validator("publisher.mastodon.token", must_exist=True),
+    Validator("publisher.mastodon.toot_length", default=500),
     Validator("publisher.mastodon.msg_template_path", must_exist=True, default=None),
     Validator("publisher.mastodon.recap_template_path", must_exist=True, default=None),
     Validator(

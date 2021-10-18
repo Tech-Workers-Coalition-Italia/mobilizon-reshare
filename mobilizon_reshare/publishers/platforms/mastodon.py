@@ -39,7 +39,7 @@ class MastodonFormatter(AbstractEventFormatter):
             self._log_error("No text was found", raise_error=InvalidEvent)
 
     def validate_message(self, message) -> None:
-        if len(message.encode("utf-8")) >= 500:
+        if len(message.encode("utf-8")) >= self.conf.toot_length:
             raise PublisherError("Message is too long")
 
 
