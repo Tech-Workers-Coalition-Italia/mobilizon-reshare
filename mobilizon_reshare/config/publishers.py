@@ -21,6 +21,9 @@ mastodon_validators = [
     Validator("publisher.mastodon.token", must_exist=True),
     Validator("publisher.mastodon.msg_template_path", must_exist=True, default=None),
     Validator("publisher.mastodon.recap_template_path", must_exist=True, default=None),
+    Validator(
+        "publisher.mastodon.recap_header_template_path", must_exist=True, default=None
+    ),
     Validator("publisher.mastodon.name", must_exist=True),
 ]
 twitter_validators = [
