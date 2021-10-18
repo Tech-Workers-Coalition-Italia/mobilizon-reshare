@@ -13,6 +13,7 @@ from mobilizon_reshare.publishers.exceptions import (
     InvalidEvent,
     InvalidResponse,
     PublisherError,
+    HTTPResponseError,
 )
 
 
@@ -86,11 +87,12 @@ class TelegramPlatform(AbstractPlatform):
 
     def _validate_response(self, res):
         try:
-
             res.raise_for_status()
         except requests.exceptions.HTTPError as e:
+            self._log_debug(str(res))
             self._log_error(
-                f"Server returned invalid data: {str(e)}", raise_error=InvalidResponse,
+                str(e),
+                raise_error=HTTPResponseError,
             )
 
         try:

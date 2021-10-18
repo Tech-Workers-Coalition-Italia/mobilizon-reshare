@@ -4,8 +4,7 @@ import requests
 from mobilizon_reshare.publishers.exceptions import (
     InvalidEvent,
     InvalidResponse,
-    ServerError,
-    ClientError,
+    HTTPResponseError,
 )
 from mobilizon_reshare.publishers.platforms.mastodon import (
     MastodonFormatter,
@@ -52,17 +51,17 @@ def test_validate_response_client_error():
     response = requests.Response()
     response.status_code = 403
     response._content = b"""{"error":true}"""
-    with pytest.raises(ClientError) as e:
+    with pytest.raises(HTTPResponseError) as e:
         MastodonPublisher()._validate_response(response)
 
-    e.match("403 ERROR")
+    e.match("403 Client Error")
 
 
 def test_validate_response_server_error():
     response = requests.Response()
     response.status_code = 500
     response._content = b"""{"error":true}"""
-    with pytest.raises(ServerError) as e:
+    with pytest.raises(HTTPResponseError) as e:
         MastodonPublisher()._validate_response(response)
 
-    e.match("500 ERROR")
+    e.match("500 Server Error")

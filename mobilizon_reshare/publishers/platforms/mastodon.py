@@ -11,12 +11,10 @@ from mobilizon_reshare.publishers.abstract import (
 )
 from mobilizon_reshare.publishers.exceptions import (
     InvalidBot,
-    InvalidCredentials,
     InvalidEvent,
     InvalidResponse,
     PublisherError,
-    ServerError,
-    ClientError,
+    HTTPResponseError,
 )
 
 
@@ -67,46 +65,28 @@ class MastodonPlatform(AbstractPlatform):
         )
 
     def validate_credentials(self):
-        conf = self.conf
-        instance = conf.instance
-        token = conf.token
-        name = conf.name
-        err = []
-        if not name:
-            err.append("application name")
-        if not instance:
-            err.append("instance domain name")
-        if not token:
-            err.append("application token")
-        if err:
-            self._log_error(
-                ", ".join(err) + " is/are missing",
-                raise_error=InvalidCredentials,
-            )
-
         res = requests.get(
-            headers={"Authorization": f"Bearer {token}"},
-            url=urljoin(instance, self.api_uri)
-            + "apps/verify_credentials",
+            headers={"Authorization": f"Bearer {self.conf.token}"},
+            url=urljoin(self.conf.instance, self.api_uri) + "apps/verify_credentials",
         )
         data = self._validate_response(res)
 
-        if not name == data["name"]:
+        if not self.conf.name == data["name"]:
             self._log_error(
                 "Found a different bot than the expected one"
                 f"\n\tfound: {data['name']}"
-                f"\n\texpected: {name}",
+                f"\n\texpected: {self.conf.name}",
                 raise_error=InvalidBot,
             )
 
     def _validate_response(self, res: Response) -> dict:
         try:
             res.raise_for_status()
-        except requests.exceptions.HTTPError:
+        except requests.exceptions.HTTPError as e:
             self._log_debug(str(res))
             self._log_error(
-                f"{res.status_code} ERROR",
-                raise_error=ServerError if res.status_code >= 500 else ClientError,
+                str(e),
+                raise_error=HTTPResponseError,
             )
 
         try:
