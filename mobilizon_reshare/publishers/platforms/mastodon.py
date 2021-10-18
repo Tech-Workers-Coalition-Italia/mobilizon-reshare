@@ -1,4 +1,6 @@
 import pkg_resources
+from urllib.parse import urljoin
+
 import requests
 from requests import Response
 
@@ -16,7 +18,6 @@ from mobilizon_reshare.publishers.exceptions import (
     ServerError,
     ClientError,
 )
-from mobilizon_reshare.publishers.platforms.utils import uri_join, fqdn_to_uri
 
 
 class MastodonFormatter(AbstractEventFormatter):
@@ -57,7 +58,7 @@ class MastodonPlatform(AbstractPlatform):
         Send messages
         """
         return requests.post(
-            url=uri_join(fqdn_to_uri(self.conf.instance), self.api_uri) + "statuses",
+            url=urljoin(self.conf.instance, self.api_uri) + "statuses",
             headers={"Authorization": f"Bearer {self.conf.token}"},
             data={
                 "status": message,
@@ -85,7 +86,7 @@ class MastodonPlatform(AbstractPlatform):
 
         res = requests.get(
             headers={"Authorization": f"Bearer {token}"},
-            url=uri_join(fqdn_to_uri(instance), self.api_uri)
+            url=urljoin(instance, self.api_uri)
             + "apps/verify_credentials",
         )
         data = self._validate_response(res)
