@@ -35,7 +35,7 @@ class InvalidSettings(PublisherError):
 
 
 class HTTPResponseError(PublisherError):
-    """ Request received an HTTP error status code"""
+    """ Response received with an HTTP error status code"""
 
 
 class ZulipError(PublisherError):
