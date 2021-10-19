@@ -22,7 +22,17 @@ zulip_validators = [
     Validator("publisher.zulip.bot_token", must_exist=True),
     Validator("publisher.zulip.bot_email", must_exist=True),
 ]
-mastodon_validators = []
+mastodon_validators = [
+    Validator("publisher.mastodon.instance", must_exist=True),
+    Validator("publisher.mastodon.token", must_exist=True),
+    Validator("publisher.mastodon.toot_length", default=500),
+    Validator("publisher.mastodon.msg_template_path", must_exist=True, default=None),
+    Validator("publisher.mastodon.recap_template_path", must_exist=True, default=None),
+    Validator(
+        "publisher.mastodon.recap_header_template_path", must_exist=True, default=None
+    ),
+    Validator("publisher.mastodon.name", must_exist=True),
+]
 twitter_validators = [
     Validator("publisher.twitter.msg_template_path", must_exist=True, default=None),
     Validator("publisher.twitter.recap_template_path", must_exist=True, default=None),

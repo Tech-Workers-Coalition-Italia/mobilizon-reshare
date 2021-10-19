@@ -8,12 +8,16 @@ telegram_validators = [
     Validator("notifier.telegram.username", must_exist=True),
 ]
 zulip_validators = [
-    Validator("publisher.zulip.chat_id", must_exist=True),
-    Validator("publisher.zulip.subject", must_exist=True),
-    Validator("publisher.zulip.bot_token", must_exist=True),
-    Validator("publisher.zulip.bot_email", must_exist=True),
+    Validator("notifier.zulip.chat_id", must_exist=True),
+    Validator("notifier.zulip.subject", must_exist=True),
+    Validator("notifier.zulip.bot_token", must_exist=True),
+    Validator("notifier.zulip.bot_email", must_exist=True),
 ]
-mastodon_validators = []
+mastodon_validators = [
+    Validator("notifier.mastodon.instance", must_exist=True),
+    Validator("notifier.mastodon.token", must_exist=True),
+    Validator("notifier.mastodon.name", must_exist=True),
+]
 twitter_validators = [
     Validator("publisher.twitter.api_key", must_exist=True),
     Validator("publisher.twitter.api_key_secret", must_exist=True),

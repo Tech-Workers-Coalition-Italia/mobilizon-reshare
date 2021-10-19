@@ -1,7 +1,7 @@
 import pytest
 import requests
 
-from mobilizon_reshare.publishers.exceptions import InvalidEvent, InvalidResponse
+from mobilizon_reshare.publishers.exceptions import InvalidEvent, InvalidResponse, HTTPResponseError
 from mobilizon_reshare.publishers.platforms.telegram import (
     TelegramFormatter,
     TelegramPublisher,
@@ -68,11 +68,11 @@ def test_validate_response_invalid_request():
     response = requests.Response()
     response.status_code = 400
     response._content = b"""{"error":true}"""
-    with pytest.raises(InvalidResponse) as e:
+    with pytest.raises(HTTPResponseError) as e:
 
         TelegramPublisher()._validate_response(response)
 
-    e.match("Server returned invalid data")
+    e.match("400 Client Error")
 
 
 def test_validate_response_invalid_response():
