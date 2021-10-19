@@ -30,6 +30,11 @@ def test_message_length_failure(event):
         ["!", "\\!"],
         [")", "\\)"],
         [")!", "\\)\\!"],
+        ["[link](https://link.com)", "[link](https://link.com)"],
+        [
+            "[link](https://link.com) [link2](https://link.com)",
+            "[link](https://link.com) [link2](https://link.com)",
+        ],
     ],
 )
 def test_escape_message(message, result):

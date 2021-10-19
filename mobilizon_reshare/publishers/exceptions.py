@@ -1,9 +1,7 @@
 class PublisherError(Exception):
     """ Generic publisher error """
 
-    def __init__(self, message):
-        """ :param str message: exception message """
-        super().__init__(message)
+    pass
 
 
 class InvalidAttribute(PublisherError):
