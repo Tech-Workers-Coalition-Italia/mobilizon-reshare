@@ -1,4 +1,5 @@
 import functools
+from enum import Enum
 
 import click
 from arrow import Arrow
@@ -12,7 +13,20 @@ from mobilizon_reshare.cli.commands.recap.main import main as recap_main
 
 from mobilizon_reshare.event.event import EventPublicationStatus
 
-settings_file_option = click.option("--settings-file", type=click.Path(exists=True))
+status_name_to_enum = {
+    "waiting": EventPublicationStatus.WAITING,
+    "completed": EventPublicationStatus.COMPLETED,
+    "failed": EventPublicationStatus.FAILED,
+    "partial": EventPublicationStatus.PARTIAL,
+    "all": None,
+}
+
+settings_file_option = click.option(
+    "--settings-file",
+    type=click.Path(exists=True),
+    help="The path for the settings file. "
+    "Overrides the one specified in the environment variables.",
+)
 from_date_option = click.option(
     "--begin",
     type=click.DateTime(),
@@ -27,47 +41,56 @@ to_date_option = click.option(
 )
 
 
+class InspectTarget(Enum):
+    ALL = "all"
+    WAITING = "waiting"
+
+    def __str__(self):
+        return self.value
+
+
 @click.group()
 def mobilizon_reshare():
     pass
 
 
-@mobilizon_reshare.command()
+@mobilizon_reshare.command(help="Synchronize and publish events")
 @settings_file_option
 def start(settings_file):
     safe_execution(start_main, settings_file=settings_file)
 
 
-@mobilizon_reshare.command()
+@mobilizon_reshare.command(help="Publish a recap of already published events")
 @settings_file_option
 def recap(settings_file):
     safe_execution(recap_main, settings_file=settings_file)
 
 
-@mobilizon_reshare.command()
+@mobilizon_reshare.command(help="Print events in the database that are in STATUS")
 @from_date_option
 @to_date_option
-@click.argument("target", type=str)
+@click.argument(
+    "status", type=click.Choice(list(status_name_to_enum.keys())),
+)
 @settings_file_option
 @pass_context
-def inspect(ctx, target, begin, end, settings_file):
+def inspect(ctx, status, begin, end, settings_file):
     ctx.ensure_object(dict)
     begin = Arrow.fromdatetime(begin) if begin else None
     end = Arrow.fromdatetime(end) if end else None
-    target_to_status = {
-        "waiting": EventPublicationStatus.WAITING,
-        "completed": EventPublicationStatus.COMPLETED,
-        "failed": EventPublicationStatus.FAILED,
-        "partial": EventPublicationStatus.PARTIAL,
-        "all": None,
-    }
+
     safe_execution(
-        functools.partial(inspect_events, target_to_status[target], frm=begin, to=end,),
+        functools.partial(
+            inspect_events, status_name_to_enum[status], frm=begin, to=end,
+        ),
         settings_file,
     )
 
 
-@mobilizon_reshare.command()
+@mobilizon_reshare.command(
+    help="Format and print event with mobilizon id EVENT-ID using the publisher's format named"
+    "PUBLISHER (i.e.:'telegram','twitter', ...)"
+)
 @settings_file_option
 @click.argument("event-id", type=str)
 @click.argument("publisher", type=str)
