@@ -58,9 +58,9 @@ To make Guix applications work out of the box you should add the following varia
 GUIX_PROFILE="${HOME}/.guix-profile"
 . "$GUIX_PROFILE/etc/profile"
 
-export GUIX_LOCPATH="$1/lib/locale"
-export SSL_CERT_DIR="$1/etc/ssl/certs"
-export SSL_CERT_FILE="$1/etc/ssl/certs/ca-certificates.crt"
+export GUIX_LOCPATH="$GUIX_PROFILE/lib/locale"
+export SSL_CERT_DIR="$GUIX_PROFILE/etc/ssl/certs"
+export SSL_CERT_FILE="$GUIX_PROFILE/etc/ssl/certs/ca-certificates.crt"
 export GIT_SSL_CAINFO="$SSL_CERT_FILE"
 export CURL_CA_BUNDLE="$SSL_CERT_FILE"
 export INFOPATH="$GUIX_PROFILE${INFOPATH:+:}${INFOPATH}"

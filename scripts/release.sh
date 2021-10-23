@@ -5,6 +5,7 @@ set -eu
 myself="$(basename "$0")"
 version_file="$(pwd)/mobilizon_reshare/VERSION"
 pyproject_toml="$(pwd)/pyproject.toml"
+docker_compose_yml="$(pwd)/docker-compose.yml"
 current_branch="$(git rev-parse --abbrev-ref HEAD)"
 current_commit="$(git log -1 --format='%H')"
 dryrun=0
@@ -81,8 +82,11 @@ release-new-version() {
   [ "$verbose" = "1" ] && echo "Updating $pyproject_toml"
   [ "$dryrun" = "0" ] && sed -i -E "s/version.*=.*\"${current}\"$/version = \"${next}\"/" "$pyproject_toml"
 
-  [ "$verbose" = "1" ] && echo "Committing ${pyproject_toml} and ${version_file}"
-  [ "$dryrun" = "0" ] && git add "${pyproject_toml}" "${version_file}" && git commit -m "Release v${next}."
+  [ "$verbose" = "1" ] && echo "Updating $docker_compose_yml"
+  [ "$dryrun" = "0" ] && sed -i "s/${current}/${next}/" "$docker_compose_yml"
+
+  [ "$verbose" = "1" ] && echo "Committing ${pyproject_toml}, ${docker_compose_yml} and ${version_file}"
+  [ "$dryrun" = "0" ] && git add "$docker_compose_yml" "${pyproject_toml}" "${version_file}" && git commit -m "Release v${next}."
 
   [ "$verbose" = "1" ] && echo "Tagging Git HEAD with v${next}"
   [ "$dryrun" = "0" ] && git tag "v${next}"

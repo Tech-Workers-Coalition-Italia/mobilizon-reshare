@@ -176,6 +176,6 @@ crashlytics-build.properties
 fabric.properties
 .idea
 */local_testing.toml
-direnv/
+.direnv/
 etc/
 var/
