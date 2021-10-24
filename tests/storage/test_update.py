@@ -7,6 +7,7 @@ import pytest
 from mobilizon_reshare.event.event import MobilizonEvent, EventPublicationStatus
 from mobilizon_reshare.models.publication import PublicationStatus, Publication
 from mobilizon_reshare.models.publisher import Publisher
+from mobilizon_reshare.publishers.abstract import EventPublication
 from mobilizon_reshare.publishers.coordinator import (
     PublisherCoordinatorReport,
     EventPublicationReport,
@@ -73,12 +74,16 @@ async def test_update_publishers(
                     EventPublicationReport(
                         status=PublicationStatus.FAILED,
                         reason="Invalid credentials",
-                        publication_id=UUID(int=3),
+                        publication=EventPublication(
+                            id=UUID(int=3), formatter=None, event=None, publisher=None
+                        ),
                     ),
                     EventPublicationReport(
                         status=PublicationStatus.COMPLETED,
                         reason="",
-                        publication_id=UUID(int=4),
+                        publication=EventPublication(
+                            id=UUID(int=4), formatter=None, event=None, publisher=None
+                        ),
                     ),
                 ],
             ),

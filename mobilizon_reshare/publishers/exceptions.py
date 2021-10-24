@@ -32,9 +32,9 @@ class InvalidSettings(PublisherError):
     """ Publisher settings are either missing or badly configured """
 
 
-class HTTPResponseError(PublisherError):
-    """ Response received with an HTTP error status code"""
-
-
 class ZulipError(PublisherError):
     """ Publisher receives an error response from Zulip"""
+
+
+class HTTPResponseError(PublisherError):
+    """ Publisher receives a HTTP error"""

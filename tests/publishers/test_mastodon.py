@@ -5,6 +5,7 @@ from mobilizon_reshare.publishers.exceptions import (
     InvalidEvent,
     InvalidResponse,
     HTTPResponseError,
+    InvalidMessage,
 )
 from mobilizon_reshare.publishers.platforms.mastodon import (
     MastodonFormatter,
@@ -15,13 +16,16 @@ from mobilizon_reshare.publishers.platforms.mastodon import (
 def test_message_length_success(event):
     message = "a" * 200
     event.name = message
-    assert MastodonFormatter().is_message_valid(event)
+    message = MastodonFormatter().get_message_from_event(event)
+    MastodonFormatter().validate_message(message)
 
 
 def test_message_length_failure(event):
     message = "a" * 500
     event.name = message
-    assert not MastodonFormatter().is_message_valid(event)
+    message = MastodonFormatter().get_message_from_event(event)
+    with pytest.raises(InvalidMessage):
+        MastodonFormatter().validate_message(message)
 
 
 def test_event_validation(event):

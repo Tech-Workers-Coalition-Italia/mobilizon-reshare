@@ -76,9 +76,12 @@ class AbstractPlatform(ABC, LoggerMixin, ConfLoaderMixin):
     # the second the name of its service (ie: 'facebook', 'telegram')
 
     def __repr__(self):
-        return type(self).__name__
+        return self.name
 
-    __str__ = __repr__
+    @property
+    @abstractmethod
+    def name(self):
+        pass
 
     @abstractmethod
     def _send(self, message: str):
@@ -98,13 +101,6 @@ class AbstractPlatform(ABC, LoggerMixin, ConfLoaderMixin):
     @abstractmethod
     def _validate_response(self, response):
         raise NotImplementedError  # pragma: no cover
-
-    def are_credentials_valid(self) -> bool:
-        try:
-            self.validate_credentials()
-        except PublisherError:
-            return False
-        return True
 
     @abstractmethod
     def validate_credentials(self) -> None:
@@ -146,14 +142,6 @@ class AbstractEventFormatter(LoggerMixin, ConfLoaderMixin):
         template_path = self.conf.msg_template_path or self.default_template_path
         return JINJA_ENV.get_template(template_path)
 
-    def is_message_valid(self, event: MobilizonEvent) -> bool:
-        # TODO: this thing swallows exception messages. It should be handled differently
-        try:
-            self.validate_message(self.get_message_from_event(event))
-        except PublisherError:
-            return False
-        return True
-
     @abstractmethod
     def validate_message(self, message: str) -> None:
         """
@@ -162,13 +150,6 @@ class AbstractEventFormatter(LoggerMixin, ConfLoaderMixin):
         is not valid.
         """
         raise NotImplementedError  # pragma: no cover
-
-    def is_event_valid(self, event) -> bool:
-        try:
-            self.validate_event(event)
-        except PublisherError:
-            return False
-        return True
 
     def get_recap_header(self):
         template_path = (
@@ -184,6 +165,9 @@ class AbstractEventFormatter(LoggerMixin, ConfLoaderMixin):
         return JINJA_ENV.get_template(template_path)
 
     def get_recap_fragment(self, event: MobilizonEvent) -> str:
+        """
+        Retrieves the fragment that describes a single event inside the event recap.
+        """
         event = self._preprocess_event(event)
         return event.format(self.get_recap_fragment_template())
 

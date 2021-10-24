@@ -13,6 +13,7 @@ from mobilizon_reshare.publishers.exceptions import (
     InvalidEvent,
     InvalidResponse,
     ZulipError,
+    InvalidMessage,
 )
 from mobilizon_reshare.publishers.platforms.zulip import ZulipFormatter, ZulipPublisher
 from mobilizon_reshare.storage.query import (
@@ -139,7 +140,7 @@ async def test_zulip_publishr_failure_invalid_credentials(
         )
     ).run()
     assert report.reports[0].status == PublicationStatus.FAILED
-    assert report.reports[0].reason == "Invalid credentials"
+    assert report.reports[0].reason == "403 Error - Your credentials are not valid!"
 
 
 @pytest.mark.asyncio
@@ -170,13 +171,21 @@ def test_event_validation(event):
 def test_message_length_success(event):
     message = "a" * 500
     event.description = message
-    assert ZulipFormatter().is_message_valid(event)
+    assert (
+        ZulipFormatter().validate_message(
+            ZulipFormatter().get_message_from_event(event)
+        )
+        is None
+    )
 
 
 def test_message_length_failure(event):
     message = "a" * 10000
     event.description = message
-    assert not ZulipFormatter().is_message_valid(event)
+    with pytest.raises(InvalidMessage):
+        ZulipFormatter().validate_message(
+            ZulipFormatter().get_message_from_event(event)
+        )
 
 
 def test_validate_response():
