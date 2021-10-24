@@ -1,6 +1,6 @@
-import pkg_resources
 from urllib.parse import urljoin
 
+import pkg_resources
 import requests
 from requests import Response
 
@@ -13,8 +13,8 @@ from mobilizon_reshare.publishers.exceptions import (
     InvalidBot,
     InvalidEvent,
     InvalidResponse,
-    PublisherError,
     HTTPResponseError,
+    InvalidMessage,
 )
 
 
@@ -40,7 +40,7 @@ class MastodonFormatter(AbstractEventFormatter):
 
     def validate_message(self, message) -> None:
         if len(message.encode("utf-8")) >= self.conf.toot_length:
-            raise PublisherError("Message is too long")
+            raise InvalidMessage("Message is too long")
 
 
 class MastodonPlatform(AbstractPlatform):
@@ -50,6 +50,7 @@ class MastodonPlatform(AbstractPlatform):
 
     _conf = ("publisher", "mastodon")
     api_uri = "api/v1/"
+    name = "mastodon"
 
     def _send(self, message: str) -> Response:
         """
@@ -58,10 +59,7 @@ class MastodonPlatform(AbstractPlatform):
         return requests.post(
             url=urljoin(self.conf.instance, self.api_uri) + "statuses",
             headers={"Authorization": f"Bearer {self.conf.token}"},
-            data={
-                "status": message,
-                "visibility": "public",
-            },
+            data={"status": message, "visibility": "public"},
         )
 
     def validate_credentials(self):
@@ -85,8 +83,7 @@ class MastodonPlatform(AbstractPlatform):
         except requests.exceptions.HTTPError as e:
             self._log_debug(str(res))
             self._log_error(
-                str(e),
-                raise_error=HTTPResponseError,
+                str(e), raise_error=HTTPResponseError,
             )
 
         try:
