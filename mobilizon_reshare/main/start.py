@@ -1,9 +1,11 @@
-import logging
+import logging.config
 from functools import partial
+from typing import List
 
 from mobilizon_reshare.event.event_selection_strategies import select_event_to_publish
 from mobilizon_reshare.mobilizon.events import get_unpublished_events
 from mobilizon_reshare.models.publication import PublicationStatus
+from mobilizon_reshare.publishers import get_active_publishers
 from mobilizon_reshare.publishers.abstract import EventPublication
 from mobilizon_reshare.publishers.coordinator import (
     PublicationFailureNotifiersCoordinator,
@@ -20,7 +22,19 @@ from mobilizon_reshare.storage.query import (
 logger = logging.getLogger(__name__)
 
 
-async def start():
+def filter_publications_with_inactive_publishers(
+    publications: List[EventPublication],
+) -> List[EventPublication]:
+    active_publishers = get_active_publishers()
+    return [p for p in publications if p.publisher.name in active_publishers]
+
+
+async def main():
+    """
+    STUB
+    :return:
+    """
+
     # TODO: the logic to get published and unpublished events is probably redundant.
     # We need a simpler way to bring together events from mobilizon, unpublished events from the db
     # and published events from the DB
@@ -51,8 +65,10 @@ async def start():
                 waiting_publications_models.values(),
             )
         )
-
-        reports = PublisherCoordinator(waiting_publications).run()
+        waiting_publications_with_active_publisher = filter_publications_with_inactive_publishers(
+            waiting_publications
+        )
+        reports = PublisherCoordinator(waiting_publications_with_active_publisher).run()
 
         await save_publication_report(reports, waiting_publications_models)
         for report in reports.reports:
