@@ -154,9 +154,12 @@ class AbstractCoordinator:
         self.platforms = platforms
 
     def send_to_all(self):
-        # TODO: failure to send should fail safely and write to a dedicated log
         for platform in self.platforms:
-            platform.send(self.message)
+            try:
+                platform.send(self.message)
+            except Exception as e:
+                logger.critical(f"Notifier failed to send message:\n{self.message}")
+                logger.exception(e)
 
 
 class AbstractNotifiersCoordinator(AbstractCoordinator):
