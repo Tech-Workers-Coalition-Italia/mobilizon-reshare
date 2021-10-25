@@ -65,13 +65,13 @@ def message_collector():
 def mock_formatter_invalid():
     class MockFormatter(AbstractEventFormatter):
         def validate_event(self, event) -> None:
-            raise PublisherError("Invalid event")
+            raise PublisherError("Invalid event error")
 
         def get_message_from_event(self, event) -> str:
             return ""
 
         def validate_message(self, event) -> None:
-            raise PublisherError("Invalid message")
+            raise PublisherError("Invalid message error")
 
     return MockFormatter()
 
@@ -79,8 +79,10 @@ def mock_formatter_invalid():
 @pytest.fixture
 def mock_publisher_valid(message_collector):
     class MockPublisher(AbstractPlatform):
+        name = "mock"
+
         def _send(self, message):
-            message_collector.collect_message(message)
+            message_collector.append(message)
 
         def _validate_response(self, response):
             pass
@@ -94,15 +96,17 @@ def mock_publisher_valid(message_collector):
 @pytest.fixture
 def mock_publisher_invalid(message_collector):
     class MockPublisher(AbstractPlatform):
-        def _send(self, message):
 
-            message_collector.collect_message(message)
+        name = "mock"
+
+        def _send(self, message):
+            message_collector.append(message)
 
         def _validate_response(self, response):
-            return InvalidResponse("error")
+            return InvalidResponse("response error")
 
         def validate_credentials(self) -> None:
-            raise PublisherError("error")
+            raise PublisherError("credentials error")
 
     return MockPublisher()
 
@@ -110,8 +114,11 @@ def mock_publisher_invalid(message_collector):
 @pytest.fixture
 def mock_publisher_invalid_response(message_collector):
     class MockPublisher(AbstractPlatform):
+
+        name = "mock"
+
         def _send(self, message):
-            message_collector.collect_message(message)
+            message_collector.append(message)
 
         def _validate_response(self, response):
             raise InvalidResponse("Invalid response")

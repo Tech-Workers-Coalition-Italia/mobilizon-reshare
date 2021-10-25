@@ -1,7 +1,6 @@
 import logging
 from dataclasses import dataclass
 from typing import List, Optional
-from uuid import UUID
 
 from mobilizon_reshare.models.publication import PublicationStatus
 from mobilizon_reshare.publishers import get_active_notifiers
@@ -30,13 +29,17 @@ class BasePublicationReport:
 
 @dataclass
 class EventPublicationReport(BasePublicationReport):
-    publication_id: UUID
+    publication: EventPublication
 
     def get_failure_message(self):
 
+        if not self.reason:
+            logger.error("Report of failure without reason.", exc_info=True)
+
         return (
-            f"Publication {self.publication_id } failed with status: {self.status}.\n"
-            f"Reason: {self.reason}"
+            f"Publication {self.publication.id} failed with status: {self.status}.\n"
+            f"Reason: {self.reason}\n"
+            f"Publisher: {self.publication.publisher.name}"
         )
 
 
@@ -72,9 +75,7 @@ class PublisherCoordinator:
     def _make_successful_report(self, failed_ids):
         return [
             EventPublicationReport(
-                status=PublicationStatus.COMPLETED,
-                reason="",
-                publication_id=publication.id,
+                status=PublicationStatus.COMPLETED, reason="", publication=publication,
             )
             for publication in self.publications
             if publication.id not in failed_ids
@@ -93,7 +94,7 @@ class PublisherCoordinator:
                 reports.append(
                     EventPublicationReport(
                         status=PublicationStatus.COMPLETED,
-                        publication_id=publication.id,
+                        publication=publication,
                         reason=None,
                     )
                 )
@@ -102,7 +103,7 @@ class PublisherCoordinator:
                     EventPublicationReport(
                         status=PublicationStatus.FAILED,
                         reason=str(e),
-                        publication_id=publication.id,
+                        publication=publication,
                     )
                 )
 
@@ -110,25 +111,37 @@ class PublisherCoordinator:
             publications=self.publications, reports=reports
         )
 
+    def _safe_run(self, reasons, f, *args, **kwargs):
+        try:
+            f(*args, **kwargs)
+            return reasons
+        except Exception as e:
+            logger.error(str(e))
+            return reasons + [str(e)]
+
     def _validate(self):
         errors = []
 
         for publication in self.publications:
+            reasons = []
+            reasons = self._safe_run(
+                reasons, publication.publisher.validate_credentials,
+            )
+            reasons = self._safe_run(
+                reasons, publication.formatter.validate_event, publication.event
+            )
+            reasons = self._safe_run(
+                reasons,
+                publication.formatter.validate_message,
+                publication.formatter.get_message_from_event(publication.event),
+            )
 
-            reason = []
-            if not publication.publisher.are_credentials_valid():
-                reason.append("Invalid credentials")
-            if not publication.formatter.is_event_valid(publication.event):
-                reason.append("Invalid event")
-            if not publication.formatter.is_message_valid(publication.event):
-                reason.append("Invalid message")
-
-            if len(reason) > 0:
+            if len(reasons) > 0:
                 errors.append(
                     EventPublicationReport(
                         status=PublicationStatus.FAILED,
-                        reason=", ".join(reason),
-                        publication_id=publication.id,
+                        reason=", ".join(reasons),
+                        publication=publication,
                     )
                 )
 
@@ -141,9 +154,12 @@ class AbstractCoordinator:
         self.platforms = platforms
 
     def send_to_all(self):
-        # TODO: failure to send should fail safely and write to a dedicated log
         for platform in self.platforms:
-            platform.send(self.message)
+            try:
+                platform.send(self.message)
+            except Exception as e:
+                logger.critical(f"Notifier failed to send message:\n{self.message}")
+                logger.exception(e)
 
 
 class AbstractNotifiersCoordinator(AbstractCoordinator):

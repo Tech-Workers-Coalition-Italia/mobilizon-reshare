@@ -34,3 +34,7 @@ class InvalidSettings(PublisherError):
 
 class ZulipError(PublisherError):
     """ Publisher receives an error response from Zulip"""
+
+
+class HTTPResponseError(PublisherError):
+    """ Publisher receives a HTTP error"""

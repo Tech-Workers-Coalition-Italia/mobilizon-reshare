@@ -14,7 +14,7 @@ from mobilizon_reshare.publishers.exceptions import (
     InvalidBot,
     InvalidEvent,
     InvalidResponse,
-    PublisherError,
+    InvalidMessage,
 )
 
 
@@ -71,7 +71,7 @@ class TelegramFormatter(AbstractEventFormatter):
 
     def validate_message(self, message: str) -> None:
         if len(message) >= 4096:
-            raise PublisherError("Message is too long")
+            raise InvalidMessage("Message is too long")
 
     def _preprocess_event(self, event: MobilizonEvent):
         event.description = html_to_markdown(event.description)
@@ -83,6 +83,8 @@ class TelegramPlatform(AbstractPlatform):
     """
     Telegram publisher class.
     """
+
+    name = "telegram"
 
     def _preprocess_message(self, message: str):
         return TelegramFormatter.escape_message(message)

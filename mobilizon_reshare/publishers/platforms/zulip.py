@@ -14,7 +14,7 @@ from mobilizon_reshare.publishers.exceptions import (
     InvalidEvent,
     InvalidResponse,
     ZulipError,
-    PublisherError,
+    InvalidMessage,
 )
 
 
@@ -40,7 +40,7 @@ class ZulipFormatter(AbstractEventFormatter):
 
     def validate_message(self, message) -> None:
         if len(message.encode("utf-8")) >= 10000:
-            raise PublisherError("Message is too long")
+            raise InvalidMessage("Message is too long")
 
     def _preprocess_event(self, event: MobilizonEvent):
         event.description = html_to_markdown(event.description)
@@ -56,6 +56,7 @@ class ZulipPlatform(AbstractPlatform):
     _conf = ("publisher", "zulip")
 
     api_uri = "https://zulip.twc-italia.org/api/v1/"
+    name = "zulip"
 
     def _send_private(self, message: str) -> Response:
         """
