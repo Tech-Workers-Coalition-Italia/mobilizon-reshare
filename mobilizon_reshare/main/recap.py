@@ -1,5 +1,4 @@
-import logging.config
-from typing import List
+from typing import Optional, List
 
 from arrow import now
 
@@ -9,14 +8,13 @@ from mobilizon_reshare.publishers.abstract import RecapPublication
 from mobilizon_reshare.publishers.coordinator import (
     RecapCoordinator,
     PublicationFailureNotifiersCoordinator,
+    BaseCoordinatorReport,
 )
 from mobilizon_reshare.publishers.platforms.platform_mapping import (
     get_publisher_class,
     get_formatter_class,
 )
 from mobilizon_reshare.storage.query import events_with_status
-
-logger = logging.getLogger(__name__)
 
 
 async def select_events_to_recap() -> List[MobilizonEvent]:
@@ -27,7 +25,7 @@ async def select_events_to_recap() -> List[MobilizonEvent]:
     )
 
 
-async def main():
+async def recap() -> Optional[BaseCoordinatorReport]:
     # I want to recap only the events that have been succesfully published and that haven't happened yet
     events_to_recap = await select_events_to_recap()
     if events_to_recap:
@@ -44,7 +42,4 @@ async def main():
         for report in reports.reports:
             if report.status == EventPublicationStatus.FAILED:
                 PublicationFailureNotifiersCoordinator(report).notify_failure()
-
-        return 0 if reports.successful else 1
-    else:
-        return 0
+        return reports

@@ -171,7 +171,7 @@ class AbstractNotifiersCoordinator(AbstractCoordinator):
 
 
 class PublicationFailureNotifiersCoordinator(AbstractNotifiersCoordinator):
-    def __init__(self, report: EventPublicationReport, platforms=None):
+    def __init__(self, report: BasePublicationReport, platforms=None):
         self.report = report
         super(PublicationFailureNotifiersCoordinator, self).__init__(
             message=report.get_failure_message(), notifiers=platforms
@@ -187,7 +187,7 @@ class RecapCoordinator:
     def __init__(self, recap_publications: List[RecapPublication]):
         self.recap_publications = recap_publications
 
-    def run(self):
+    def run(self) -> BaseCoordinatorReport:
         reports = []
         for recap_publication in self.recap_publications:
             try:

@@ -1,4 +1,4 @@
-import logging.config
+import logging
 from functools import partial
 
 from mobilizon_reshare.event.event_selection_strategies import select_event_to_publish
@@ -20,12 +20,7 @@ from mobilizon_reshare.storage.query import (
 logger = logging.getLogger(__name__)
 
 
-async def main():
-    """
-    STUB
-    :return:
-    """
-
+async def start():
     # TODO: the logic to get published and unpublished events is probably redundant.
     # We need a simpler way to bring together events from mobilizon, unpublished events from the db
     # and published events from the DB
@@ -62,7 +57,3 @@ async def main():
         await save_publication_report(reports, waiting_publications_models)
         for report in reports.reports:
             PublicationFailureNotifiersCoordinator(report).notify_failure()
-
-        return 0 if reports.successful else 1
-    else:
-        return 0
