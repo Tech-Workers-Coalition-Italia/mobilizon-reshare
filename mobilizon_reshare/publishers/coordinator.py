@@ -72,15 +72,6 @@ class PublisherCoordinator:
 
         return self._post()
 
-    def _make_successful_report(self, failed_ids):
-        return [
-            EventPublicationReport(
-                status=PublicationStatus.COMPLETED, reason="", publication=publication,
-            )
-            for publication in self.publications
-            if publication.id not in failed_ids
-        ]
-
     def _post(self):
         reports = []
 

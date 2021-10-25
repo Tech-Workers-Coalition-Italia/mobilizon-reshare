@@ -5,7 +5,12 @@ from arrow import Arrow
 
 from mobilizon_reshare.event.event import EventPublicationStatus
 from mobilizon_reshare.event.event import MobilizonEvent
-from mobilizon_reshare.storage.query import get_all_events
+from mobilizon_reshare.event.event_selection_strategies import select_unpublished_events
+from mobilizon_reshare.storage.query import (
+    get_all_events,
+    get_published_events,
+    events_without_publications,
+)
 from mobilizon_reshare.storage.query import events_with_status
 
 
@@ -28,15 +33,23 @@ def pretty(event: MobilizonEvent):
     )
 
 
+async def inspect_unpublished_events(frm: Arrow = None, to: Arrow = None):
+    return select_unpublished_events(
+        list(await get_published_events()),
+        list(await events_without_publications()),
+    )
+
+
 async def inspect_events(
     status: EventPublicationStatus = None, frm: Arrow = None, to: Arrow = None
 ):
-
-    events = (
-        await events_with_status([status], from_date=frm, to_date=to)
-        if status
-        else await get_all_events(from_date=frm, to_date=to)
-    )
+    if status:
+        if status == EventPublicationStatus.WAITING:
+            events = await inspect_unpublished_events(frm=frm, to=to)
+        else:
+            events = await events_with_status([status], from_date=frm, to_date=to)
+    else:
+        events = await get_all_events(from_date=frm, to_date=to)
 
     if events:
         show_events(events)

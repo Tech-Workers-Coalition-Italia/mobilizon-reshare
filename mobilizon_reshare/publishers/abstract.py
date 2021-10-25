@@ -2,7 +2,7 @@ import inspect
 import logging
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
-from typing import List
+from typing import List, Optional
 from uuid import UUID
 
 from dynaconf.utils.boxing import DynaBox
@@ -10,7 +10,9 @@ from jinja2 import Environment, FileSystemLoader, Template
 
 from mobilizon_reshare.config.config import get_settings
 from mobilizon_reshare.event.event import MobilizonEvent
-from mobilizon_reshare.models.publication import Publication as PublicationModel
+from mobilizon_reshare.models.publication import (
+    Publication as PublicationModel,
+)
 from .exceptions import PublisherError, InvalidAttribute
 
 JINJA_ENV = Environment(loader=FileSystemLoader("/"))
@@ -181,19 +183,32 @@ class BasePublication:
 @dataclass
 class EventPublication(BasePublication):
     event: MobilizonEvent
-    id: UUID
+    id: Optional[UUID] = None
 
     @classmethod
-    def from_orm(cls, model: PublicationModel, event: MobilizonEvent):
+    def get_publisher(cls, name: str):
         # imported here to avoid circular dependencies
         from mobilizon_reshare.publishers.platforms.platform_mapping import (
             get_publisher_class,
             get_formatter_class,
         )
 
-        publisher = get_publisher_class(model.publisher.name)()
-        formatter = get_formatter_class(model.publisher.name)()
-        return cls(publisher, formatter, event, model.id,)
+        return get_publisher_class(name)(), get_formatter_class(name)()
+
+    @classmethod
+    def make(cls, name: str, event: MobilizonEvent):
+        publisher, formatter = cls.get_publisher(name)
+        return cls(publisher, formatter, event, None)
+
+    @classmethod
+    def from_orm(cls, model: PublicationModel, event: MobilizonEvent):
+        publisher, formatter = cls.get_publisher(model.publisher.name)
+        return cls(
+            publisher,
+            formatter,
+            event,
+            model.id,
+        )
 
 
 @dataclass
