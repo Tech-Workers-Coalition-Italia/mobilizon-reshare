@@ -183,32 +183,19 @@ class BasePublication:
 @dataclass
 class EventPublication(BasePublication):
     event: MobilizonEvent
-    id: Optional[UUID] = None
+    id: UUID
 
     @classmethod
-    def get_publisher(cls, name: str):
+    def from_orm(cls, model: PublicationModel, event: MobilizonEvent):
         # imported here to avoid circular dependencies
         from mobilizon_reshare.publishers.platforms.platform_mapping import (
             get_publisher_class,
             get_formatter_class,
         )
 
-        return get_publisher_class(name)(), get_formatter_class(name)()
-
-    @classmethod
-    def make(cls, name: str, event: MobilizonEvent):
-        publisher, formatter = cls.get_publisher(name)
-        return cls(publisher, formatter, event, None)
-
-    @classmethod
-    def from_orm(cls, model: PublicationModel, event: MobilizonEvent):
-        publisher, formatter = cls.get_publisher(model.publisher.name)
-        return cls(
-            publisher,
-            formatter,
-            event,
-            model.id,
-        )
+        publisher = get_publisher_class(model.publisher.name)()
+        formatter = get_formatter_class(model.publisher.name)()
+        return cls(publisher, formatter, event, model.id,)
 
 
 @dataclass
