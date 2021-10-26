@@ -1,5 +1,5 @@
 (define-module (manifest)
-  #:use-module (mobilizon-reshare)
+  #:use-module (docker mobilizon-reshare)
   #:use-module (gnu packages)
   #:use-module (guix profiles))
 

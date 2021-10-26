@@ -1,4 +1,4 @@
-(define-module (mobilizon-reshare)
+(define-module (docker mobilizon-reshare)
   #:use-module (guix download)
   #:use-module (guix gexp)
   #:use-module (guix git-download)
@@ -12,6 +12,7 @@
   #:use-module (gnu packages django)
   #:use-module (gnu packages python)
   #:use-module (gnu packages python-build)
+  #:use-module (gnu packages python-check)
   #:use-module (gnu packages python-web)
   #:use-module (gnu packages python-xyz)
   #:use-module (gnu packages serialization)
@@ -232,30 +233,6 @@ development, testing, production]};
     (description "Convert HTML to markdown.")
     (license license:expat)))
 
-(define-public python-coveralls
-  (package
-    (name "python-coveralls")
-    (version "3.2.0")
-    (source
-     (origin
-       (method url-fetch)
-       (uri (pypi-uri "coveralls" version))
-       (sha256
-        (base32 "1vjnc7lmi0w86zvl6d3vfpxymdpz0rc8r541rm2gyzw7vzcqga8m"))))
-    (build-system python-build-system)
-    (native-inputs
-     `(("python-mock" ,python-mock)
-       ("python-pytest" ,python-pytest)
-       ("python-responses" ,python-responses)))
-    (propagated-inputs
-     `(("python-coverage" ,python-coverage)
-       ("python-docopt" ,python-docopt)
-       ("python-requests" ,python-requests)))
-    (home-page "http://github.com/TheKevJames/coveralls-python")
-    (synopsis "Show coverage stats online via coveralls.io")
-    (description "Show coverage stats online via coveralls.io")
-    (license license:expat)))
-
 (define-public python-ipaddress
   (package
     (name "python-ipaddress")
@@ -422,5 +399,3 @@ development, testing, production]};
        "This package provides a CLI application to publish your Mobilizon
 events to your social media.")
       (license coopyleft))))
-
-mobilizon-reshare.git
