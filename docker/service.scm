@@ -37,13 +37,13 @@
 
 (define (%mobilizon-reshare-activation config)
   "Return an activation gexp for Mobilizon Reshare."
-  #~(begin
-      (use-modules (ice-9 popen)
-                   (guix build utils)
+  (let ((datadir (mobilizon-reshare-datadir config)))
+    #~(begin
+        (use-modules (guix build utils))
         (let* ((user    (getpwnam "mobilizon-reshare"))
                (uid     (passwd:uid user))
                (gid     (passwd:gid user))
-               (datadir #$(mobilizon-reshare-datadir config)))
+               (datadir #$datadir))
           (mkdir-p datadir)
           (chown datadir uid gid)))))
 
