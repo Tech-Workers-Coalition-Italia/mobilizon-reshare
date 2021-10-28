@@ -1,17 +1,9 @@
 (define-module (docker service)
   #:use-module (gnu services)
-  ;; #:use-module (gnu services shepherd)
   #:use-module (gnu system shadow)
   #:use-module (gnu packages admin)
-  ;; #:use-module (gnu packages databases)
-  ;; #:use-module (guix build-system trivial)
-  ;; #:use-module (guix build union)
-  ;; #:use-module (guix deprecation)
-  ;; #:use-module (guix modules)
-  ;; #:use-module (guix packages)
   #:use-module (guix records)
   #:use-module (guix gexp)
-  ;; #:use-module (srfi srfi-1)
   #:use-module (docker mobilizon-reshare)
   #:export (mobilizon-reshare-service-type
             mobilizon-reshare-configuration

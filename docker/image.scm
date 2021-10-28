@@ -44,7 +44,8 @@
       findutils
       less
       grep
-      gawk))
+      gawk
+      sed))
 
     (services
      (list
