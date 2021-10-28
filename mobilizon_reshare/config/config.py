@@ -61,13 +61,16 @@ def build_settings(
     with importlib.resources.path(
         mobilizon_reshare, "settings.toml"
     ) as bundled_settings_path:
-        SETTINGS_FILE = [
-            bundled_settings_path,
-            Path(dirs.site_config_dir, "mobilizon_reshare.toml"),
-            Path(dirs.user_config_dir, "mobilizon_reshare.toml"),
-            os.environ.get("MOBILIZION_RESHARE_SETTINGS_FILE"),
+        for f in [
             settings_file,
-        ]
+            os.environ.get("MOBILIZION_RESHARE_SETTINGS_FILE"),
+            Path(dirs.user_config_dir, "mobilizon_reshare.toml"),
+            Path(dirs.site_config_dir, "mobilizon_reshare.toml"),
+            bundled_settings_path,
+        ]:
+            if f and Path(f).exists():
+                SETTINGS_FILE = f
+                break
 
     ENVVAR_PREFIX = "MOBILIZON_RESHARE"
     return Dynaconf(
