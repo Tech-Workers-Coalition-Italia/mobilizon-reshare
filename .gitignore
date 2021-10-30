@@ -179,3 +179,5 @@ fabric.properties
 .direnv/
 etc/
 var/
+docker-image.tar.gz
+.guix-root
