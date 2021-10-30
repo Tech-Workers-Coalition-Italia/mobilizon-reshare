@@ -2,7 +2,7 @@ import inspect
 import logging
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
-from typing import List
+from typing import List, Optional
 from uuid import UUID
 
 from dynaconf.utils.boxing import DynaBox
@@ -10,7 +10,9 @@ from jinja2 import Environment, FileSystemLoader, Template
 
 from mobilizon_reshare.config.config import get_settings
 from mobilizon_reshare.event.event import MobilizonEvent
-from mobilizon_reshare.models.publication import Publication as PublicationModel
+from mobilizon_reshare.models.publication import (
+    Publication as PublicationModel,
+)
 from .exceptions import PublisherError, InvalidAttribute
 
 JINJA_ENV = Environment(loader=FileSystemLoader("/"))

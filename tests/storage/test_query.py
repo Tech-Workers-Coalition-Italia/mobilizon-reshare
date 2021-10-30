@@ -7,15 +7,15 @@ import pytest
 from mobilizon_reshare.event.event import MobilizonEvent, EventPublicationStatus
 from mobilizon_reshare.models.event import Event
 from mobilizon_reshare.models.publication import PublicationStatus
-from mobilizon_reshare.storage.query import events_with_status
 from mobilizon_reshare.storage.query import (
     get_published_events,
-    get_unpublished_events,
+    events_without_publications,
     create_unpublished_events,
     get_mobilizon_event_publications,
     prefetch_event_relations,
     get_publishers,
     publications_with_status,
+    events_with_status,
 )
 from tests.storage import complete_specification
 from tests.storage import result_publication
@@ -45,38 +45,6 @@ async def test_get_published_events(generate_models):
     published_events = list(await get_published_events())
 
     assert len(published_events) == 3
-
-
-@pytest.mark.asyncio
-@pytest.mark.parametrize(
-    "specification,expected_result",
-    [
-        [
-            complete_specification,
-            [
-                MobilizonEvent(
-                    name="event_3",
-                    description="desc_3",
-                    mobilizon_id=UUID(int=3),
-                    mobilizon_link="moblink_3",
-                    thumbnail_link="thumblink_3",
-                    location="loc_3",
-                    status=EventPublicationStatus.WAITING,
-                    begin_datetime=arrow.get(today + timedelta(days=3)),
-                    end_datetime=arrow.get(
-                        today + timedelta(days=3) + timedelta(hours=2)
-                    ),
-                ),
-            ],
-        ]
-    ],
-)
-async def test_get_unpublished_events(specification, expected_result, generate_models):
-    await generate_models(specification)
-    unpublished_events = list(await get_unpublished_events())
-
-    assert len(unpublished_events) == len(expected_result)
-    assert unpublished_events == expected_result
 
 
 @pytest.mark.asyncio
@@ -136,9 +104,10 @@ async def test_create_unpublished_events(
     await create_unpublished_events(
         unpublished_mobilizon_events=events_from_internet,
     )
-    unpublished_events = list(await get_unpublished_events())
+    unpublished_events = list(await events_without_publications())
 
     assert len(unpublished_events) == 4
+    assert unpublished_events == expected_result
 
 
 @pytest.mark.asyncio
@@ -313,3 +282,126 @@ async def test_event_with_status_window(
     )
 
     assert len(result) == expected_events_count
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize(
+    "spec, expected_events",
+    [
+        (
+            {"event": 2, "publications": [], "publisher": ["zulip"]},
+            [
+                event_0,
+                MobilizonEvent(
+                    name="event_1",
+                    description="desc_1",
+                    mobilizon_id=UUID(int=1),
+                    mobilizon_link="moblink_1",
+                    thumbnail_link="thumblink_1",
+                    location="loc_1",
+                    status=EventPublicationStatus.WAITING,
+                    begin_datetime=arrow.get(today + timedelta(days=1)),
+                    end_datetime=arrow.get(
+                        today + timedelta(days=1) + timedelta(hours=2)
+                    ),
+                ),
+                MobilizonEvent(
+                    name="event_2",
+                    description="desc_2",
+                    mobilizon_id=UUID(int=2),
+                    mobilizon_link="moblink_2",
+                    thumbnail_link="thumblink_2",
+                    location="loc_2",
+                    status=EventPublicationStatus.WAITING,
+                    begin_datetime=arrow.get(today + timedelta(days=2)),
+                    end_datetime=arrow.get(
+                        today + timedelta(days=2) + timedelta(hours=2)
+                    ),
+                ),
+            ],
+        ),
+        (
+            {
+                "event": 3,
+                "publications": [
+                    {
+                        "event_idx": 0,
+                        "publisher_idx": 0,
+                        "status": PublicationStatus.COMPLETED,
+                    },
+                    {
+                        "event_idx": 1,
+                        "publisher_idx": 0,
+                        "status": PublicationStatus.WAITING,
+                    },
+                ],
+                "publisher": ["mastodon"],
+            },
+            [
+                MobilizonEvent(
+                    name="event_2",
+                    description="desc_2",
+                    mobilizon_id=UUID(int=2),
+                    mobilizon_link="moblink_2",
+                    thumbnail_link="thumblink_2",
+                    location="loc_2",
+                    status=EventPublicationStatus.WAITING,
+                    begin_datetime=arrow.get(today + timedelta(days=2)),
+                    end_datetime=arrow.get(
+                        today + timedelta(days=2) + timedelta(hours=2)
+                    ),
+                )
+            ],
+        ),
+        (
+            {
+                "event": 3,
+                "publications": [
+                    {
+                        "event_idx": 0,
+                        "publisher_idx": 0,
+                        "status": PublicationStatus.COMPLETED,
+                    },
+                    {
+                        "event_idx": 1,
+                        "publisher_idx": 0,
+                        "status": PublicationStatus.WAITING,
+                    },
+                    {
+                        "event_idx": 2,
+                        "publisher_idx": 0,
+                        "status": PublicationStatus.FAILED,
+                    },
+                ],
+                "publisher": ["facebook"],
+            },
+            [],
+        ),
+        (
+            complete_specification,
+            [
+                MobilizonEvent(
+                    name="event_3",
+                    description="desc_3",
+                    mobilizon_id=UUID(int=3),
+                    mobilizon_link="moblink_3",
+                    thumbnail_link="thumblink_3",
+                    location="loc_3",
+                    status=EventPublicationStatus.WAITING,
+                    begin_datetime=arrow.get(today + timedelta(days=3)),
+                    end_datetime=arrow.get(
+                        today + timedelta(days=3) + timedelta(hours=2)
+                    ),
+                ),
+            ],
+        )
+    ],
+)
+async def test_events_without_publications(
+    spec, expected_events, generate_models
+):
+    await generate_models(spec)
+    unpublished_events = list(await events_without_publications())
+
+    assert len(unpublished_events) == len(expected_events)
+    assert unpublished_events == expected_events
