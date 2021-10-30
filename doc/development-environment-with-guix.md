@@ -22,7 +22,7 @@ Hurray 🎉 ! Now you can hack on `mobilizon-reshare` without worrying about dep
 
 *Caveat:* Guix currently runs only on Linux, if you run a different OS you're probably better off with something like [poetry](https://python-poetry.org/). Just beware that you may end up with slightly different behavior, since `poetry` only locks Python dependencies.
 
-### Debian Bullseye/Ubuntu/Linux Mint
+### Debian Bullseye
 
 If you run Debian Bullseye (or one of its derivatives) installing Guix is achieved with:
 
@@ -36,13 +36,13 @@ If you want to find out if your distribution is a derivative of Debian Bullseye 
 $ sudo cat /etc/debian_release
 ```
 
-### Fedora
-
 ### Arch Linux
+
+The Arch Wiki has a very good [article](https://wiki.archlinux.org/title/Guix).
 
 ### Other distributions
 
-For all other distributions you can install Guix with the installer script. It will guide you through the process of installing Guix.
+For every other distributions you can install Guix with the installer script. It will guide you through the process of installing Guix.
 
 ```shell
 $ curl https://git.savannah.gnu.org/cgit/guix.git/plain/etc/guix-install.sh | sudo bash
@@ -92,7 +92,27 @@ then you should [hook it](https://direnv.net/docs/hook.html) into your shell.
 Guix sometimes prints somewhat scary messages like:
 
 ```shell
+$ guix install hello
+The following package will be installed:
+   hello 2.10
 
+The following derivation will be built:
+   /gnu/store/15s9gs89i6bf16skwb1c03bm4wj9h30a-profile.drv
+
+building CA certificate bundle...
+listing Emacs sub-directories...
+building fonts directory...
+building directory of Info manuals...
+building database for manual pages...
+building profile with 1 package...
+hint: Consider setting the necessary environment variables by running:
+
+     GUIX_PROFILE="~/.guix-profile/hello-profile"
+     . "$GUIX_PROFILE/etc/profile"
+
+Alternately, see `guix package --search-paths'.
+
+$
 ```
 
 when you see a message like that you can either run it to make the current shell work with the new packages installed by Guix or just close the current shell and spawn another, this way it'll put Guix packages in the right plache in your `PATH`.
