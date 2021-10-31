@@ -96,6 +96,9 @@ async def setup_db(event_model_generator, publication_model_generator):
     settings["publisher"]["zulip"][
         "bot_email"
     ] = "giacomotest2-bot@zulip.twc-italia.org"
+    settings["publisher"]["zulip"][
+        "instance"
+    ] = "https://zulip.twc-italia.org"
 
     await update_publishers(["zulip"])
     publisher = await get_publishers(name="zulip")
