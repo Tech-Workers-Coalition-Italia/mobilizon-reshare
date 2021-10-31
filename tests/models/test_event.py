@@ -5,10 +5,10 @@ import arrow
 import pytest
 import tortoise.timezone
 
+from mobilizon_reshare.event.event import EventPublicationStatus
 from mobilizon_reshare.event.event import MobilizonEvent
 from mobilizon_reshare.models.event import Event
 from mobilizon_reshare.models.publication import PublicationStatus
-from mobilizon_reshare.event.event import EventPublicationStatus
 
 
 @pytest.mark.asyncio
@@ -119,7 +119,7 @@ async def test_mobilizon_event_from_model(
     await publisher_model_2.save()
 
     publication = publication_model_generator(
-        status=PublicationStatus.WAITING,
+        status=PublicationStatus.FAILED,
         event_id=event_model.id,
         publisher_id=publisher_model.id,
     )
@@ -153,94 +153,43 @@ async def test_mobilizon_event_from_model(
     assert event.status == EventPublicationStatus.PARTIAL
 
 
-@pytest.mark.asyncio
-async def test_mobilizon_event_compute_status_failed(
-    event_model_generator, publication_model_generator, publisher_model_generator
-):
-    event_model = event_model_generator()
-    await event_model.save()
-
-    publisher_model = publisher_model_generator()
-    await publisher_model.save()
-    publisher_model_2 = publisher_model_generator(idx=2)
-    await publisher_model_2.save()
-
-    publication = publication_model_generator(
-        status=PublicationStatus.FAILED,
-        event_id=event_model.id,
-        publisher_id=publisher_model.id,
-    )
-    await publication.save()
-    publication_2 = publication_model_generator(
-        status=PublicationStatus.COMPLETED,
-        event_id=event_model.id,
-        publisher_id=publisher_model_2.id,
-    )
-    await publication_2.save()
-
-    assert (
-        MobilizonEvent.compute_status([publication, publication_2])
-        == PublicationStatus.FAILED
-    )
-
-
+@pytest.mark.parametrize(
+    "statuses, expected_result",
+    [
+        (
+            [PublicationStatus.FAILED, PublicationStatus.COMPLETED],
+            EventPublicationStatus.PARTIAL,
+        ),
+        (
+            [PublicationStatus.FAILED, PublicationStatus.FAILED],
+            EventPublicationStatus.FAILED,
+        ),
+        (
+            [PublicationStatus.COMPLETED, PublicationStatus.COMPLETED],
+            EventPublicationStatus.COMPLETED,
+        ),
+        ([PublicationStatus.FAILED], EventPublicationStatus.FAILED),
+        ([], EventPublicationStatus.WAITING),
+    ],
+)
 @pytest.mark.asyncio
 async def test_mobilizon_event_compute_status_partial(
-    event_model_generator, publication_model_generator, publisher_model_generator
+    event_model_generator,
+    publication_model_generator,
+    publisher_model_generator,
+    statuses,
+    expected_result,
 ):
     event_model = event_model_generator()
     await event_model.save()
+    publications = []
+    for status in statuses:
+        publisher_model = publisher_model_generator()
+        await publisher_model.save()
 
-    publisher_model = publisher_model_generator()
-    await publisher_model.save()
-    publisher_model_2 = publisher_model_generator(idx=2)
-    await publisher_model_2.save()
-
-    publication = publication_model_generator(
-        status=PublicationStatus.WAITING,
-        event_id=event_model.id,
-        publisher_id=publisher_model.id,
-    )
-    await publication.save()
-    publication_2 = publication_model_generator(
-        status=PublicationStatus.COMPLETED,
-        event_id=event_model.id,
-        publisher_id=publisher_model_2.id,
-    )
-    await publication_2.save()
-
-    assert (
-        MobilizonEvent.compute_status([publication, publication_2])
-        == EventPublicationStatus.PARTIAL
-    )
-
-
-@pytest.mark.asyncio
-async def test_mobilizon_event_compute_status_waiting(
-    event_model_generator, publication_model_generator, publisher_model_generator
-):
-    event_model = event_model_generator()
-    await event_model.save()
-
-    publisher_model = publisher_model_generator()
-    await publisher_model.save()
-    publisher_model_2 = publisher_model_generator(idx=2)
-    await publisher_model_2.save()
-
-    publication = publication_model_generator(
-        status=PublicationStatus.WAITING,
-        event_id=event_model.id,
-        publisher_id=publisher_model.id,
-    )
-    await publication.save()
-    publication_2 = publication_model_generator(
-        status=PublicationStatus.WAITING,
-        event_id=event_model.id,
-        publisher_id=publisher_model_2.id,
-    )
-    await publication_2.save()
-
-    assert (
-        MobilizonEvent.compute_status([publication, publication_2])
-        == EventPublicationStatus.WAITING
-    )
+        publication = publication_model_generator(
+            status=status, event_id=event_model.id, publisher_id=publisher_model.id,
+        )
+        await publication.save()
+        publications.append(publication)
+    assert MobilizonEvent.compute_status(publications) == expected_result

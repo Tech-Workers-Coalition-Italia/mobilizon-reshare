@@ -12,12 +12,11 @@ from mobilizon_reshare.publishers.coordinator import (
     PublisherCoordinatorReport,
     EventPublicationReport,
 )
+from mobilizon_reshare.storage.query import publications_with_status
 from mobilizon_reshare.storage.query import (
-    get_publishers,
     update_publishers,
     save_publication_report,
 )
-from mobilizon_reshare.storage.query import publications_with_status
 from tests.storage import complete_specification
 from tests.storage import today
 
@@ -54,9 +53,9 @@ async def test_update_publishers(
     await generate_models(specification)
     await update_publishers(names)
     if type(list(expected_result)[0]) == Publisher:
-        publishers = set(await get_publishers())
+        publishers = set(await Publisher.all())
     else:
-        publishers = set(p.name for p in await get_publishers())
+        publishers = set(p.name for p in await Publisher.all())
 
     assert len(publishers) == len(expected_result)
     assert publishers == expected_result
@@ -71,13 +70,6 @@ async def test_update_publishers(
             PublisherCoordinatorReport(
                 publications=[],
                 reports=[
-                    EventPublicationReport(
-                        status=PublicationStatus.FAILED,
-                        reason="Invalid credentials",
-                        publication=EventPublication(
-                            id=UUID(int=3), formatter=None, event=None, publisher=None
-                        ),
-                    ),
                     EventPublicationReport(
                         status=PublicationStatus.COMPLETED,
                         reason="",
@@ -99,11 +91,6 @@ async def test_update_publishers(
                 end_datetime=arrow.get(today + timedelta(days=1) + timedelta(hours=2)),
             ),
             {
-                UUID(int=3): Publication(
-                    id=UUID(int=3),
-                    status=PublicationStatus.FAILED,
-                    reason="Invalid credentials",
-                ),
                 UUID(int=4): Publication(
                     id=UUID(int=4), status=PublicationStatus.COMPLETED, reason=""
                 ),
@@ -117,9 +104,9 @@ async def test_save_publication_report(
     await generate_models(specification)
 
     publications = await publications_with_status(
-        status=PublicationStatus.WAITING, event_mobilizon_id=event.mobilizon_id,
+        status=PublicationStatus.COMPLETED, event_mobilizon_id=event.mobilizon_id,
     )
-    await save_publication_report(report, publications)
+    await save_publication_report(report, list(publications.values()))
     publication_ids = set(publications.keys())
     publications = {
         p_id: await Publication.filter(id=p_id).first() for p_id in publication_ids

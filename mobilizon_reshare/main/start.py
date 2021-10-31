@@ -13,7 +13,7 @@ from mobilizon_reshare.storage.query import (
     get_published_events,
     create_unpublished_events,
     save_publication_report,
-    create_publications_for_publishers,
+    create_event_publication_models,
 )
 
 logger = logging.getLogger(__name__)
@@ -26,12 +26,11 @@ def filter_publications_with_inactive_publishers(
     return [p for p in publications if p.publisher.name in active_publishers]
 
 
-async def main():
+async def start():
     """
     STUB
     :return:
     """
-    active_publishers = get_active_publishers()
 
     # TODO: the logic to get published and unpublished events is probably redundant.
     # We need a simpler way to bring together events from mobilizon, unpublished events from the db
@@ -54,9 +53,8 @@ async def main():
     if event:
         logger.debug(f"Event to publish found: {event.name}")
 
-        publications, models = await create_publications_for_publishers(
-            event, active_publishers
-        )
+        models = await create_event_publication_models(event)
+        publications = list(EventPublication.from_orm(m, event) for m in models)
         reports = PublisherCoordinator(publications).run()
 
         await save_publication_report(reports, models)

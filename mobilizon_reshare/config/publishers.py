@@ -57,9 +57,11 @@ publisher_names = publisher_name_to_validators.keys()
 
 
 def get_active_publishers(settings):
-    return filter(
-        lambda publisher_name: settings["publisher"][publisher_name]["active"],
-        publisher_names,
+    return list(
+        filter(
+            lambda publisher_name: settings["publisher"][publisher_name]["active"],
+            publisher_names,
+        )
     )
 
 

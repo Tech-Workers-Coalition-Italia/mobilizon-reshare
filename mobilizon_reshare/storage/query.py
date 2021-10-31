@@ -1,9 +1,9 @@
 import logging
-from typing import Iterable, Optional, Union, Dict, List
+import sys
+from typing import Iterable, Optional, Dict, List
 from uuid import UUID
 
 import arrow
-import sys
 from arrow import Arrow
 from tortoise.queryset import QuerySet
 from tortoise.transactions import atomic
@@ -12,7 +12,7 @@ from mobilizon_reshare.event.event import MobilizonEvent, EventPublicationStatus
 from mobilizon_reshare.models.event import Event
 from mobilizon_reshare.models.publication import Publication, PublicationStatus
 from mobilizon_reshare.models.publisher import Publisher
-from mobilizon_reshare.publishers.abstract import EventPublication
+from mobilizon_reshare.publishers import get_active_publishers
 from mobilizon_reshare.publishers.coordinator import PublisherCoordinatorReport
 
 logger = logging.getLogger(__name__)
@@ -69,8 +69,7 @@ async def publications_with_status(
 
 
 async def events_without_publications(
-    from_date: Optional[Arrow] = None,
-    to_date: Optional[Arrow] = None,
+    from_date: Optional[Arrow] = None, to_date: Optional[Arrow] = None,
 ) -> Iterable[MobilizonEvent]:
     query = Event.filter(publications__id=None)
 
@@ -107,8 +106,7 @@ async def events_with_status(
 
 
 async def get_all_events(
-    from_date: Optional[Arrow] = None,
-    to_date: Optional[Arrow] = None,
+    from_date: Optional[Arrow] = None, to_date: Optional[Arrow] = None,
 ) -> Iterable[MobilizonEvent]:
     return map(
         MobilizonEvent.from_model,
@@ -145,13 +143,8 @@ async def get_mobilizon_event_publications(
     return models[0].publications
 
 
-async def get_publishers(
-    name: Optional[str] = None,
-) -> Union[Publisher, Iterable[Publisher]]:
-    if name:
-        return await Publisher.filter(name=name).first()
-    else:
-        return await Publisher.all()
+async def get_publisher_by_name(name: str) -> Publisher:
+    return await Publisher.filter(name=name).first()
 
 
 async def save_event(event: MobilizonEvent) -> Event:
@@ -165,11 +158,9 @@ async def create_publisher(name: str, account_ref: Optional[str] = None) -> None
 
 
 @atomic(CONNECTION_NAME)
-async def update_publishers(
-    names: Iterable[str],
-) -> None:
+async def update_publishers(names: Iterable[str],) -> None:
     names = set(names)
-    known_publisher_names = set(p.name for p in await get_publishers())
+    known_publisher_names = set(p.name for p in await Publisher.all())
     for name in names.difference(known_publisher_names):
         logging.info(f"Creating {name} publisher")
         await create_publisher(name)
@@ -178,11 +169,12 @@ async def update_publishers(
 async def publication_with_publisher_name(
     publisher_name: str, event_model: Event, status: PublicationStatus
 ) -> Publication:
-    publisher = await get_publishers(publisher_name)
+    publisher = await get_publisher_by_name(publisher_name)
     return Publication(
         status=status,
         event_id=event_model.id,
         publisher_id=publisher.id,
+        publisher=publisher,
     )
 
 
@@ -198,20 +190,19 @@ async def save_publication(
 
 
 @atomic(CONNECTION_NAME)
-async def create_publications_for_publishers(
-    event: MobilizonEvent, publishers: list[str]
-) -> tuple[list[EventPublication], dict[UUID, Publication]]:
-    event_model = await prefetch_event_relations(
-        Event.filter(mobilizon_id=event.mobilizon_id)
+async def create_event_publication_models(event: MobilizonEvent) -> list[Publication]:
+    publishers = get_active_publishers()
+    event_model = (
+        await prefetch_event_relations(Event.filter(mobilizon_id=event.mobilizon_id))
     )[0]
-    models = list(
-        await publication_with_publisher_name(publisher, event_model, PublicationStatus.WAITING)
-        for publisher in publishers
-    )
-    return (
-        list(EventPublication.from_orm(m, event) for m in models),
-        {m.id: m for m in models},
-    )
+    result = []
+    for publisher in publishers:
+        result.append(
+            await publication_with_publisher_name(
+                publisher, event_model, PublicationStatus.UNSAVED
+            )
+        )
+    return result
 
 
 @atomic(CONNECTION_NAME)
@@ -237,9 +228,9 @@ async def create_unpublished_events(
 
 @atomic(CONNECTION_NAME)
 async def save_publication_report(
-    coordinator_report: PublisherCoordinatorReport,
-    publications: Dict[UUID, Publication],
+    coordinator_report: PublisherCoordinatorReport, publications: List[Publication],
 ) -> None:
+    publications = {m.id: m for m in publications}
     for publication_report in coordinator_report.reports:
         publication_id = publication_report.publication.id
         publications[publication_id].status = publication_report.status

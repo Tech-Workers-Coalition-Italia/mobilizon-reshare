@@ -145,9 +145,7 @@ def event_model_generator():
 
 @pytest.fixture()
 def publisher_model_generator():
-    def _publisher_model_generator(
-        idx=1,
-    ):
+    def _publisher_model_generator(idx=1,):
         return Publisher(name=f"publisher_{idx}", account_ref=f"account_ref_{idx}")
 
     return _publisher_model_generator
@@ -156,7 +154,7 @@ def publisher_model_generator():
 @pytest.fixture()
 def publication_model_generator():
     def _publication_model_generator(
-        status=PublicationStatus.WAITING,
+        status=PublicationStatus.COMPLETED,
         publication_time=datetime(year=2021, month=1, day=1, hour=11, minute=30),
         event_id=None,
         publisher_id=None,
