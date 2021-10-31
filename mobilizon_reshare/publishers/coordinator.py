@@ -20,6 +20,10 @@ class BasePublicationReport:
     status: PublicationStatus
     reason: Optional[str]
 
+    @property
+    def succesful(self):
+        return self.status == PublicationStatus.COMPLETED
+
     def get_failure_message(self):
 
         return (

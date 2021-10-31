@@ -6,7 +6,7 @@ from pathlib import Path
 from tortoise import Tortoise
 
 from mobilizon_reshare.config.publishers import publisher_names
-from mobilizon_reshare.storage.query import update_publishers
+from mobilizon_reshare.storage.query.save_query import update_publishers
 
 logger = logging.getLogger(__name__)
 

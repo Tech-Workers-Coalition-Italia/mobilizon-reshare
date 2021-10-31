@@ -6,6 +6,7 @@ import responses
 
 from mobilizon_reshare.config.config import get_settings
 from mobilizon_reshare.models.publication import PublicationStatus
+from mobilizon_reshare.models.publisher import Publisher
 from mobilizon_reshare.publishers import get_active_publishers
 from mobilizon_reshare.publishers.abstract import EventPublication
 from mobilizon_reshare.publishers.coordinator import PublisherCoordinator
@@ -16,10 +17,9 @@ from mobilizon_reshare.publishers.exceptions import (
     InvalidMessage,
 )
 from mobilizon_reshare.publishers.platforms.zulip import ZulipFormatter, ZulipPublisher
-from mobilizon_reshare.storage.query import (
-    update_publishers,
+from mobilizon_reshare.storage.query.save_query import update_publishers
+from mobilizon_reshare.storage.query.model_creation import (
     create_event_publication_models,
-    get_publisher_by_name,
 )
 
 api_uri = "https://zulip.twc-italia.org/api/v1/"
@@ -98,7 +98,7 @@ async def setup_db(event_model_generator, publication_model_generator):
     ] = "giacomotest2-bot@zulip.twc-italia.org"
 
     await update_publishers(["zulip"])
-    publisher = await get_publisher_by_name(name="zulip")
+    publisher = await Publisher.filter(name="zulip").first()
     event = event_model_generator()
     await event.save()
     publication = publication_model_generator(

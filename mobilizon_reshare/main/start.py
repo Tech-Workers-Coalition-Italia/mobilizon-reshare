@@ -9,11 +9,13 @@ from mobilizon_reshare.publishers.coordinator import (
     PublicationFailureNotifiersCoordinator,
 )
 from mobilizon_reshare.publishers.coordinator import PublisherCoordinator
-from mobilizon_reshare.storage.query import (
-    get_published_events,
+from mobilizon_reshare.storage.query.read_query import get_published_events
+from mobilizon_reshare.storage.query.model_creation import (
+    create_event_publication_models,
+)
+from mobilizon_reshare.storage.query.save_query import (
     create_unpublished_events,
     save_publication_report,
-    create_event_publication_models,
 )
 
 logger = logging.getLogger(__name__)
@@ -59,4 +61,5 @@ async def start():
 
         await save_publication_report(reports, models)
         for report in reports.reports:
-            PublicationFailureNotifiersCoordinator(report).notify_failure()
+            if not report.succesful:
+                PublicationFailureNotifiersCoordinator(report).notify_failure()

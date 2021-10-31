@@ -12,10 +12,10 @@ from mobilizon_reshare.publishers.coordinator import (
     PublisherCoordinatorReport,
     EventPublicationReport,
 )
-from mobilizon_reshare.storage.query import publications_with_status
-from mobilizon_reshare.storage.query import (
-    update_publishers,
+from mobilizon_reshare.storage.query.read_query import publications_with_status
+from mobilizon_reshare.storage.query.save_query import (
     save_publication_report,
+    update_publishers,
 )
 from tests.storage import complete_specification
 from tests.storage import today
