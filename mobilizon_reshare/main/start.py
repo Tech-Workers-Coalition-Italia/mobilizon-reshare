@@ -9,10 +9,10 @@ from mobilizon_reshare.publishers.coordinator import (
     PublicationFailureNotifiersCoordinator,
 )
 from mobilizon_reshare.publishers.coordinator import PublisherCoordinator
-from mobilizon_reshare.storage.query.read_query import get_published_events
 from mobilizon_reshare.storage.query.model_creation import (
     create_event_publication_models,
 )
+from mobilizon_reshare.storage.query.read_query import get_published_events
 from mobilizon_reshare.storage.query.save_query import (
     create_unpublished_events,
     save_publication_report,
@@ -63,3 +63,5 @@ async def start():
         for report in reports.reports:
             if not report.succesful:
                 PublicationFailureNotifiersCoordinator(report).notify_failure()
+    else:
+        logger.debug("No event to publish found")

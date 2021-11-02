@@ -36,7 +36,7 @@ class MoReDB:
         if not self.is_init:
             await Tortoise.generate_schemas()
             self.is_init = True
-            logger.info(f"Succesfully initialized database at {self.path}")
+            logger.info(f"Successfully initialized database at {self.path}")
 
         await update_publishers(publisher_names)
 

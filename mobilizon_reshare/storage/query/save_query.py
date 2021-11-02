@@ -5,8 +5,7 @@ import arrow
 from tortoise.transactions import atomic
 
 from mobilizon_reshare.event.event import MobilizonEvent
-from mobilizon_reshare.models.event import Event
-from mobilizon_reshare.models.publication import Publication, PublicationStatus
+from mobilizon_reshare.models.publication import Publication
 from mobilizon_reshare.models.publisher import Publisher
 from mobilizon_reshare.publishers.coordinator import PublisherCoordinatorReport
 from mobilizon_reshare.storage.query import CONNECTION_NAME
@@ -36,20 +35,9 @@ async def create_unpublished_events(
 
     unpublished_events = await get_unpublished_events(unpublished_mobilizon_events)
     for event in unpublished_events:
-        await save_event(event)
+        await event.to_model().save()
 
     return unpublished_events
-
-
-@atomic(CONNECTION_NAME)
-async def save_publication(
-    publisher_name: str, event_model: Event, status: PublicationStatus
-) -> Publication:
-    publication = await event_model.build_publication_by_publisher_name(
-        publisher_name, status
-    )
-    await publication.save()
-    return publication
 
 
 async def create_publisher(name: str, account_ref: Optional[str] = None) -> None:
@@ -63,9 +51,3 @@ async def update_publishers(names: Iterable[str],) -> None:
     for name in names.difference(known_publisher_names):
         logging.info(f"Creating {name} publisher")
         await create_publisher(name)
-
-
-async def save_event(event: MobilizonEvent) -> Event:
-    event_model = event.to_model()
-    await event_model.save()
-    return event_model

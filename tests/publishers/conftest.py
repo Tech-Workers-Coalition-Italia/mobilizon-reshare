@@ -1,4 +1,3 @@
-from collections import UserList
 from datetime import timedelta
 from uuid import UUID
 
@@ -29,39 +28,6 @@ def test_event():
 
 
 @pytest.fixture
-def mock_formatter_valid():
-    class MockFormatter(AbstractEventFormatter):
-        def validate_event(self, event) -> None:
-            pass
-
-        def get_message_from_event(self, event) -> str:
-            return event.description
-
-        def validate_message(self, event) -> None:
-            pass
-
-        def _send(self, message):
-            pass
-
-        def get_recap_fragment(self, event):
-            return event.name
-
-        def get_recap_header(self):
-            return "Upcoming"
-
-    return MockFormatter()
-
-
-@pytest.fixture()
-def message_collector():
-    class MessageCollector(UserList):
-        def collect_message(self, message):
-            self.append(message)
-
-    return MessageCollector()
-
-
-@pytest.fixture
 def mock_formatter_invalid():
     class MockFormatter(AbstractEventFormatter):
         def validate_event(self, event) -> None:
@@ -74,23 +40,6 @@ def mock_formatter_invalid():
             raise PublisherError("Invalid message error")
 
     return MockFormatter()
-
-
-@pytest.fixture
-def mock_publisher_valid(message_collector):
-    class MockPublisher(AbstractPlatform):
-        name = "mock"
-
-        def _send(self, message):
-            message_collector.append(message)
-
-        def _validate_response(self, response):
-            pass
-
-        def validate_credentials(self) -> None:
-            pass
-
-    return MockPublisher()
 
 
 @pytest.fixture
