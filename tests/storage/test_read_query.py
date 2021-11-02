@@ -1,3 +1,5 @@
+from uuid import UUID
+
 import pytest
 
 from mobilizon_reshare.storage.query.read_query import get_unpublished_events
@@ -26,3 +28,33 @@ async def test_get_unpublished_events_db_only(
     await generate_models(spec)
     unpublished_events = await get_unpublished_events([])
     assert len(unpublished_events) == expected_output_len
+
+
+@pytest.mark.parametrize("num_mobilizon_events", [0, 2])
+@pytest.mark.asyncio
+async def test_get_unpublished_events_mobilizon_only_no_publications(
+    event_generator, num_mobilizon_events
+):
+    """Testing that when there are no events present in the DB, all the mobilizon events are returned"""
+    mobilizon_events = [
+        event_generator(mobilizon_id=UUID(int=i), published=False)
+        for i in range(num_mobilizon_events)
+    ]
+    unpublished_events = await get_unpublished_events(mobilizon_events)
+    assert unpublished_events == mobilizon_events
+
+
+@pytest.mark.asyncio
+async def test_get_unpublished_events_no_overlap(event_generator):
+    all_events = [
+        event_generator(mobilizon_id=UUID(int=i), published=False) for i in range(4)
+    ]
+    db_events = all_events[:1]
+    mobilizon_events = all_events[1:]
+    for e in db_events:
+        await e.to_model().save()
+
+    unpublished_events = await get_unpublished_events(mobilizon_events)
+    assert sorted(all_events, key=lambda x: x.mobilizon_id) == sorted(
+        unpublished_events, key=lambda x: x.mobilizon_id
+    )

@@ -36,6 +36,8 @@ class MobilizonEvent:
     def __post_init__(self):
         assert self.begin_datetime.tzinfo == self.end_datetime.tzinfo
         assert self.begin_datetime < self.end_datetime
+        if self.publication_time is None:
+            self.publication_time = {}
         if self.publication_time:
             assert self.status in [
                 EventPublicationStatus.COMPLETED,
