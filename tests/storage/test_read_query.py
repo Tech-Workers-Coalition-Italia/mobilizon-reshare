@@ -2,7 +2,10 @@ from uuid import UUID
 
 import pytest
 
-from mobilizon_reshare.storage.query.read_query import get_unpublished_events
+from mobilizon_reshare.storage.query.read_query import (
+    get_unpublished_events,
+    get_all_events,
+)
 
 
 @pytest.mark.parametrize(
@@ -46,6 +49,7 @@ async def test_get_unpublished_events_mobilizon_only_no_publications(
 
 @pytest.mark.asyncio
 async def test_get_unpublished_events_no_overlap(event_generator):
+    "Testing that all the events are returned when there's no overlap"
     all_events = [
         event_generator(mobilizon_id=UUID(int=i), published=False) for i in range(4)
     ]
@@ -58,3 +62,31 @@ async def test_get_unpublished_events_no_overlap(event_generator):
     assert sorted(all_events, key=lambda x: x.mobilizon_id) == sorted(
         unpublished_events, key=lambda x: x.mobilizon_id
     )
+
+
+@pytest.mark.asyncio
+async def test_get_unpublished_events_overlap(event_generator):
+    """Testing that there are no duplicates when an event from mobilizon is already present in the db
+    and that no event is lost"""
+
+    all_events = [
+        event_generator(mobilizon_id=UUID(int=i), published=False) for i in range(4)
+    ]
+    db_events = all_events[:2]
+    mobilizon_events = all_events[1:]
+    for e in db_events:
+        await e.to_model().save()
+
+    unpublished_events = await get_unpublished_events(mobilizon_events)
+    assert len(unpublished_events) == 4
+
+
+@pytest.mark.asyncio
+async def test_get_all_events(event_generator):
+    all_events = [
+        event_generator(mobilizon_id=UUID(int=i), published=False) for i in range(4)
+    ]
+    for e in all_events:
+        await e.to_model().save()
+
+    assert list(await get_all_events()) == all_events
