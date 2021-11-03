@@ -13,7 +13,6 @@ from mobilizon_reshare.models.publisher import Publisher
 
 
 def simple_event_element():
-
     return {
         "beginsOn": "2021-05-23T12:15:00Z",
         "description": "Some description",
@@ -73,7 +72,6 @@ async def mock_publisher_config(
 async def test_start_no_event(
     mock_mobilizon_success_answer, mobilizon_answer, caplog, elements
 ):
-
     with caplog.at_level(DEBUG):
         assert await start() is None
         assert "No event to publish found" in caplog.text
@@ -93,7 +91,6 @@ async def test_start_new_event(
     mock_publication_window,
     message_collector,
 ):
-
     with caplog.at_level(DEBUG):
         # calling the start command
         assert await start() is None
@@ -132,5 +129,50 @@ async def test_start_new_event(
         # the derived status for the event should be COMPLETED
         assert (
             MobilizonEvent.from_model(all_events[0]).status
+            == EventPublicationStatus.COMPLETED
+        )
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize(
+    "elements", [[]],
+)
+@pytest.mark.parametrize("publication_window", [(0, 24)])
+async def test_start_event_from_db(
+    mock_mobilizon_success_answer,
+    mobilizon_answer,
+    caplog,
+    mock_publisher_config,
+    mock_publication_window,
+    message_collector,
+    event_generator,
+):
+    event = event_generator()
+    event_model = event.to_model()
+    await event_model.save()
+
+    with caplog.at_level(DEBUG):
+        # calling the start command
+        assert await start() is None
+
+        # since the db contains at least one event, this has to be picked and published
+        assert "Event to publish found" in caplog.text
+        assert message_collector == [
+            "test event|description of the event",
+            "test event|description of the event",
+        ]
+
+        await event_model.fetch_related("publications", "publications__publisher")
+        # it should create a publication for each publisher
+        publications = event_model.publications
+        assert len(publications) == 2, publications
+
+        # all the publications for the first event should be saved as COMPLETED
+        for p in publications[1:]:
+            assert p.status == PublicationStatus.COMPLETED
+
+        # the derived status for the event should be COMPLETED
+        assert (
+            MobilizonEvent.from_model(event_model).status
             == EventPublicationStatus.COMPLETED
         )
