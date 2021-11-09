@@ -6,6 +6,7 @@ import mobilizon_reshare.publishers
 from mobilizon_reshare.models import event
 from mobilizon_reshare.models.publisher import Publisher
 import mobilizon_reshare.main.recap
+from mobilizon_reshare.publishers import coordinator
 
 
 def simple_event_element():
@@ -29,9 +30,7 @@ def mobilizon_answer(elements):
 
 
 @pytest.fixture
-async def mock_publisher_config(
-    monkeypatch, mock_publisher_class, mock_formatter_class
-):
+async def mock_publisher_config(monkeypatch, publisher_class, mock_formatter_class):
     p = Publisher(name="test")
     await p.save()
 
@@ -42,7 +41,7 @@ async def mock_publisher_config(
         return ["test", "test2"]
 
     def _mock_pub_class(name):
-        return mock_publisher_class
+        return publisher_class
 
     def _mock_format_class(name):
         return mock_formatter_class
@@ -69,3 +68,26 @@ async def mock_publisher_config(
         mobilizon_reshare.main.recap, "get_formatter_class", _mock_format_class,
     )
     return p
+
+
+@pytest.fixture
+async def mock_notifier_config(monkeypatch, publisher_class, mock_formatter_class):
+    def _mock_active_notifier():
+        return ["test", "test2"]
+
+    def _mock_notifier_class(name):
+        return publisher_class
+
+    def _mock_format_class(name):
+        return mock_formatter_class
+
+    monkeypatch.setattr(
+        coordinator, "get_notifier_class", _mock_notifier_class,
+    )
+    monkeypatch.setattr(
+        mobilizon_reshare.publishers.platforms.platform_mapping,
+        "get_formatter_class",
+        _mock_format_class,
+    )
+
+    monkeypatch.setattr(coordinator, "get_active_notifiers", _mock_active_notifier)

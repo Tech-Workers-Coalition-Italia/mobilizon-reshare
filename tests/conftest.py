@@ -20,6 +20,7 @@ from mobilizon_reshare.publishers.abstract import (
     AbstractPlatform,
     AbstractEventFormatter,
 )
+from mobilizon_reshare.publishers.exceptions import PublisherError, InvalidResponse
 
 
 def generate_publication_status(published):
@@ -272,3 +273,27 @@ def mock_formatter_class():
 def mock_formatter_valid(mock_formatter_class):
 
     return mock_formatter_class()
+
+
+@pytest.fixture
+def mock_publisher_invalid_class(message_collector):
+    class MockPublisher(AbstractPlatform):
+
+        name = "mock"
+
+        def _send(self, message):
+            message_collector.append(message)
+
+        def _validate_response(self, response):
+            return InvalidResponse("response error")
+
+        def validate_credentials(self) -> None:
+            raise PublisherError("credentials error")
+
+    return MockPublisher
+
+
+@pytest.fixture
+def mock_publisher_invalid(mock_publisher_invalid_class):
+
+    return mock_publisher_invalid_class()

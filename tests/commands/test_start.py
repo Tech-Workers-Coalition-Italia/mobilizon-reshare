@@ -2,7 +2,7 @@ from logging import DEBUG
 
 import pytest
 
-from commands.conftest import simple_event_element
+from tests.commands.conftest import simple_event_element
 from mobilizon_reshare.event.event import MobilizonEvent, EventPublicationStatus
 from mobilizon_reshare.main.start import start
 from mobilizon_reshare.models.event import Event
@@ -21,6 +21,9 @@ async def test_start_no_event(
         assert "No event to publish found" in caplog.text
 
 
+@pytest.mark.parametrize(
+    "publisher_class", [pytest.lazy_fixture("mock_publisher_class")]
+)
 @pytest.mark.asyncio
 @pytest.mark.parametrize(
     "elements",
@@ -79,6 +82,9 @@ async def test_start_new_event(
 
 @pytest.mark.asyncio
 @pytest.mark.parametrize(
+    "publisher_class", [pytest.lazy_fixture("mock_publisher_class")]
+)
+@pytest.mark.parametrize(
     "elements", [[]],
 )
 @pytest.mark.parametrize("publication_window", [(0, 24)])
@@ -119,4 +125,56 @@ async def test_start_event_from_db(
         assert (
             MobilizonEvent.from_model(event_model).status
             == EventPublicationStatus.COMPLETED
+        )
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize(
+    "publisher_class", [pytest.lazy_fixture("mock_publisher_invalid_class")]
+)
+@pytest.mark.parametrize(
+    "elements", [[]],
+)
+@pytest.mark.parametrize("publication_window", [(0, 24)])
+async def test_start_publisher_failure(
+    mock_mobilizon_success_answer,
+    mobilizon_answer,
+    caplog,
+    mock_publisher_config,
+    mock_publication_window,
+    message_collector,
+    event_generator,
+    mock_notifier_config,
+):
+    event = event_generator()
+    event_model = event.to_model()
+    await event_model.save()
+
+    with caplog.at_level(DEBUG):
+        # calling the start command
+        assert await start() is None
+
+        # since the db contains at least one event, this has to be picked and published
+
+        await event_model.fetch_related("publications", "publications__publisher")
+        # it should create a publication for each publisher
+        publications = event_model.publications
+        assert len(publications) == 2, publications
+
+        # all the publications for event should be saved as FAILED
+        for p in publications:
+            assert p.status == PublicationStatus.FAILED
+            assert p.reason == "credentials error"
+
+        assert "Event to publish found" in caplog.text
+        assert message_collector == [
+            f"Publication {p.id} failed with status: 1."
+            f"\nReason: credentials error\nPublisher: mock"
+            for p in publications
+            for _ in range(2)
+        ]  # 2 publications failed * 2 notifiers
+        # the derived status for the event should be FAILED
+        assert (
+            MobilizonEvent.from_model(event_model).status
+            == EventPublicationStatus.FAILED
         )

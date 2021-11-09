@@ -11,6 +11,9 @@ from mobilizon_reshare.storage.query.model_creation import (
 )
 
 
+@pytest.mark.parametrize(
+    "publisher_class", [pytest.lazy_fixture("mock_publisher_invalid_class")]
+)
 @pytest.mark.asyncio
 async def test_start_event_from_db(
     caplog, mock_publisher_config, message_collector, event_generator,
