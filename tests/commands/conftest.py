@@ -1,6 +1,7 @@
 import uuid
 
 import pytest
+from click.testing import CliRunner
 
 import mobilizon_reshare.publishers
 from mobilizon_reshare.models import event
@@ -91,3 +92,8 @@ async def mock_notifier_config(monkeypatch, publisher_class, mock_formatter_clas
     )
 
     monkeypatch.setattr(coordinator, "get_active_notifiers", _mock_active_notifier)
+
+
+@pytest.fixture
+def runner():
+    return CliRunner()
