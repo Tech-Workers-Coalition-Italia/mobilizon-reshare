@@ -5,9 +5,13 @@ from arrow import Arrow
 
 from mobilizon_reshare.event.event import EventPublicationStatus
 from mobilizon_reshare.event.event import MobilizonEvent
-from mobilizon_reshare.storage.query import get_all_events
-from mobilizon_reshare.storage.query import events_with_status
-
+from mobilizon_reshare.event.event_selection_strategies import select_unpublished_events
+from mobilizon_reshare.storage.query.read_query import (
+    get_published_events,
+    events_with_status,
+    get_all_events,
+    events_without_publications,
+)
 
 status_to_color = {
     EventPublicationStatus.COMPLETED: "green",
@@ -28,15 +32,22 @@ def pretty(event: MobilizonEvent):
     )
 
 
+async def inspect_unpublished_events(frm: Arrow = None, to: Arrow = None):
+    return select_unpublished_events(
+        list(await get_published_events(from_date=frm, to_date=to)),
+        list(await events_without_publications(from_date=frm, to_date=to)),
+    )
+
+
 async def inspect_events(
     status: EventPublicationStatus = None, frm: Arrow = None, to: Arrow = None
 ):
-
-    events = (
-        await events_with_status([status], from_date=frm, to_date=to)
-        if status
-        else await get_all_events(from_date=frm, to_date=to)
-    )
+    if status is None:
+        events = await get_all_events(from_date=frm, to_date=to)
+    elif status == EventPublicationStatus.WAITING:
+        events = await inspect_unpublished_events(frm=frm, to=to)
+    else:
+        events = await events_with_status([status], from_date=frm, to_date=to)
 
     if events:
         show_events(events)

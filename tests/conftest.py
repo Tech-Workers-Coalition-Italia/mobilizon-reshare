@@ -1,18 +1,25 @@
 import importlib.resources
 import os
+from collections import UserList
 from datetime import datetime, timedelta, timezone
 from uuid import UUID
 
 import arrow
 import pytest
+import responses
 from tortoise.contrib.test import finalizer, initializer
 
 import mobilizon_reshare
+from mobilizon_reshare.config.config import get_settings
 from mobilizon_reshare.event.event import MobilizonEvent, EventPublicationStatus
 from mobilizon_reshare.models.event import Event
 from mobilizon_reshare.models.notification import Notification, NotificationStatus
 from mobilizon_reshare.models.publication import Publication, PublicationStatus
 from mobilizon_reshare.models.publisher import Publisher
+from mobilizon_reshare.publishers.abstract import (
+    AbstractPlatform,
+    AbstractEventFormatter,
+)
 
 
 def generate_publication_status(published):
@@ -145,9 +152,7 @@ def event_model_generator():
 
 @pytest.fixture()
 def publisher_model_generator():
-    def _publisher_model_generator(
-        idx=1,
-    ):
+    def _publisher_model_generator(idx=1,):
         return Publisher(name=f"publisher_{idx}", account_ref=f"account_ref_{idx}")
 
     return _publisher_model_generator
@@ -156,7 +161,7 @@ def publisher_model_generator():
 @pytest.fixture()
 def publication_model_generator():
     def _publication_model_generator(
-        status=PublicationStatus.WAITING,
+        status=PublicationStatus.COMPLETED,
         publication_time=datetime(year=2021, month=1, day=1, hour=11, minute=30),
         event_id=None,
         publisher_id=None,
@@ -184,3 +189,86 @@ def notification_model_generator():
         )
 
     return _notification_model_generator
+
+
+@pytest.fixture()
+def message_collector():
+    class MessageCollector(UserList):
+        def collect_message(self, message):
+            self.append(message)
+
+    return MessageCollector()
+
+
+@pytest.fixture
+def mock_publisher_class(message_collector):
+    class MockPublisher(AbstractPlatform):
+        name = "mock"
+
+        def _send(self, message):
+            message_collector.append(message)
+
+        def _validate_response(self, response):
+            pass
+
+        def validate_credentials(self) -> None:
+            pass
+
+    return MockPublisher
+
+
+@pytest.fixture
+def mock_publisher_valid(message_collector, mock_publisher_class):
+
+    return mock_publisher_class()
+
+
+@pytest.fixture
+def mobilizon_url():
+    return get_settings()["source"]["mobilizon"]["url"]
+
+
+@responses.activate
+@pytest.fixture
+def mock_mobilizon_success_answer(mobilizon_answer, mobilizon_url):
+    with responses.RequestsMock() as rsps:
+
+        rsps.add(
+            responses.POST, mobilizon_url, json=mobilizon_answer, status=200,
+        )
+        yield
+
+
+@pytest.fixture
+def mock_publication_window(publication_window):
+    begin, end = publication_window
+    get_settings().update(
+        {"publishing.window.begin": begin, "publishing.window.end": end}
+    )
+
+
+@pytest.fixture
+def mock_formatter_class():
+    class MockFormatter(AbstractEventFormatter):
+        def validate_event(self, event) -> None:
+            pass
+
+        def get_message_from_event(self, event) -> str:
+            return f"{event.name}|{event.description}"
+
+        def validate_message(self, event) -> None:
+            pass
+
+        def get_recap_fragment(self, event):
+            return event.name
+
+        def get_recap_header(self):
+            return "Upcoming"
+
+    return MockFormatter
+
+
+@pytest.fixture
+def mock_formatter_valid(mock_formatter_class):
+
+    return mock_formatter_class()

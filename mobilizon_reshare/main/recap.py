@@ -14,7 +14,7 @@ from mobilizon_reshare.publishers.platforms.platform_mapping import (
     get_publisher_class,
     get_formatter_class,
 )
-from mobilizon_reshare.storage.query import events_with_status
+from mobilizon_reshare.storage.query.read_query import events_with_status
 
 
 async def select_events_to_recap() -> List[MobilizonEvent]:

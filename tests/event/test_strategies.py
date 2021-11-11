@@ -26,14 +26,6 @@ def set_strategy(strategy_name):
     get_settings().update({"selection.strategy": strategy_name})
 
 
-@pytest.fixture
-def mock_publication_window(publication_window):
-    begin, end = publication_window
-    get_settings().update(
-        {"publishing.window.begin": begin, "publishing.window.end": end}
-    )
-
-
 @pytest.mark.parametrize("current_hour", [15])
 def test_window_no_event(mock_arrow_now):
     selected_event = SelectNextEventStrategy().select([], [])
@@ -109,9 +101,7 @@ def test_window_simple_event_found(
 @pytest.mark.parametrize("current_hour", [15])
 @pytest.mark.parametrize("strategy_name", ["next_event"])
 def test_window_simple_no_published_events(
-    event_generator,
-    set_strategy,
-    mock_arrow_now,
+    event_generator, set_strategy, mock_arrow_now,
 ):
     "Testing that if no event is published, the function takes the first available unpublished event"
     unpublished_events = [
@@ -132,9 +122,7 @@ def test_window_simple_no_published_events(
 @pytest.mark.parametrize("current_hour", [15])
 @pytest.mark.parametrize("strategy_name", ["next_event"])
 def test_window_simple_event_too_recent(
-    event_generator,
-    set_strategy,
-    mock_arrow_now,
+    event_generator, set_strategy, mock_arrow_now,
 ):
     "Testing that if an event has been published too recently, no event is selected for publication"
     unpublished_events = [

@@ -18,8 +18,13 @@ class EventSelectionStrategy(ABC):
     ) -> Optional[MobilizonEvent]:
 
         if not self.is_in_publishing_window():
+            logger.info("Outside of publishing window, no event will be published.")
             return None
-        return self._select(published_events, unpublished_events)
+        selected = self._select(published_events, unpublished_events)
+        if selected:
+            return selected[0]
+        else:
+            return None
 
     def is_in_publishing_window(self) -> bool:
         settings = get_settings()
@@ -36,7 +41,7 @@ class EventSelectionStrategy(ABC):
         self,
         published_events: List[MobilizonEvent],
         unpublished_events: List[MobilizonEvent],
-    ) -> Optional[MobilizonEvent]:
+    ) -> Optional[List[MobilizonEvent]]:
         pass
 
 
@@ -45,21 +50,19 @@ class SelectNextEventStrategy(EventSelectionStrategy):
         self,
         published_events: List[MobilizonEvent],
         unpublished_events: List[MobilizonEvent],
-    ) -> Optional[MobilizonEvent]:
+    ) -> Optional[List[MobilizonEvent]]:
 
         # if there are no unpublished events, there's nothing I can do
         if not unpublished_events:
             logger.debug("No event to publish.")
-            return None
-
-        first_unpublished_event = unpublished_events[0]
+            return []
 
         # if there's no published event (first execution) I return the next in queue
         if not published_events:
             logger.debug(
                 "First Execution with an available event. Picking next event in the queue."
             )
-            return first_unpublished_event
+            return unpublished_events
 
         last_published_event = published_events[-1]
         now = arrow.now()
@@ -84,12 +87,24 @@ class SelectNextEventStrategy(EventSelectionStrategy):
             logger.debug(
                 "Last event was published recently. No event is going to be published."
             )
-            return None
+            return []
 
-        return first_unpublished_event
+        return unpublished_events
 
 
 STRATEGY_NAME_TO_STRATEGY_CLASS = {"next_event": SelectNextEventStrategy}
+
+
+def select_unpublished_events(
+    published_events: List[MobilizonEvent],
+    unpublished_events: List[MobilizonEvent],
+):
+
+    strategy = STRATEGY_NAME_TO_STRATEGY_CLASS[
+        get_settings()["selection"]["strategy"]
+    ]()
+
+    return strategy._select(published_events, unpublished_events)
 
 
 def select_event_to_publish(

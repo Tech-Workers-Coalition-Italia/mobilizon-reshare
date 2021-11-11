@@ -20,6 +20,10 @@ class BasePublicationReport:
     status: PublicationStatus
     reason: Optional[str]
 
+    @property
+    def succesful(self):
+        return self.status == PublicationStatus.COMPLETED
+
     def get_failure_message(self):
 
         return (
@@ -71,15 +75,6 @@ class PublisherCoordinator:
             )
 
         return self._post()
-
-    def _make_successful_report(self, failed_ids):
-        return [
-            EventPublicationReport(
-                status=PublicationStatus.COMPLETED, reason="", publication=publication,
-            )
-            for publication in self.publications
-            if publication.id not in failed_ids
-        ]
 
     def _post(self):
         reports = []

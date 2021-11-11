@@ -35,7 +35,6 @@ def failure_report(mock_publisher_invalid):
     "statuses, successful",
     [
         [[PublicationStatus.COMPLETED, PublicationStatus.COMPLETED], True],
-        [[PublicationStatus.WAITING, PublicationStatus.COMPLETED], False],
         [[PublicationStatus.COMPLETED, PublicationStatus.FAILED], False],
         [[], True],
         [[PublicationStatus.COMPLETED], True],
@@ -90,7 +89,7 @@ async def mock_publications(
         await publisher.save()
         publication = PublicationModel(
             id=UUID(int=i + 1),
-            status=PublicationStatus.WAITING,
+            status=PublicationStatus.UNSAVED,
             event=event,
             publisher=publisher,
             timestamp=None,

@@ -5,9 +5,9 @@ from tortoise.models import Model
 
 
 class PublicationStatus(IntEnum):
-    WAITING = 1
-    FAILED = 2
-    COMPLETED = 3
+    UNSAVED = 0
+    FAILED = 1
+    COMPLETED = 2
 
 
 class Publication(Model):

@@ -36,6 +36,8 @@ class MobilizonEvent:
     def __post_init__(self):
         assert self.begin_datetime.tzinfo == self.end_datetime.tzinfo
         assert self.begin_datetime < self.end_datetime
+        if self.publication_time is None:
+            self.publication_time = {}
         if self.publication_time:
             assert self.status in [
                 EventPublicationStatus.COMPLETED,
@@ -63,15 +65,16 @@ class MobilizonEvent:
 
     @staticmethod
     def compute_status(publications: list[Publication]) -> EventPublicationStatus:
+        if not publications:
+            return EventPublicationStatus.WAITING
+
         unique_statuses: Set[PublicationStatus] = set(
             pub.status for pub in publications
         )
 
-        if PublicationStatus.FAILED in unique_statuses:
-            return EventPublicationStatus.FAILED
-        elif unique_statuses == {
+        if unique_statuses == {
             PublicationStatus.COMPLETED,
-            PublicationStatus.WAITING,
+            PublicationStatus.FAILED,
         }:
             return EventPublicationStatus.PARTIAL
         elif len(unique_statuses) == 1:
@@ -100,8 +103,7 @@ class MobilizonEvent:
                     tortoise.timezone.localtime(value=pub.timestamp, timezone=tz)
                 ).to("local")
                 for pub in event.publications
-            }
-            if publication_status != PublicationStatus.WAITING
-            else None,
+                if publication_status != EventPublicationStatus.WAITING
+            },
             status=publication_status,
         )
