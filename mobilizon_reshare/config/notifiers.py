@@ -14,6 +14,7 @@ zulip_validators = [
     Validator("notifier.zulip.bot_email", must_exist=True),
 ]
 mastodon_validators = [
+    Validator("publisher.zulip.instance", must_exist=True),
     Validator("notifier.mastodon.instance", must_exist=True),
     Validator("notifier.mastodon.token", must_exist=True),
     Validator("notifier.mastodon.name", must_exist=True),

@@ -12,6 +12,7 @@ telegram_validators = [
     Validator("publisher.telegram.username", must_exist=True),
 ]
 zulip_validators = [
+    Validator("publisher.zulip.instance", must_exist=True),
     Validator("publisher.zulip.chat_id", must_exist=True),
     Validator("publisher.zulip.subject", must_exist=True),
     Validator("publisher.zulip.msg_template_path", must_exist=True, default=None),

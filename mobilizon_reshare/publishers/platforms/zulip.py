@@ -1,3 +1,5 @@
+from urllib.parse import urljoin
+
 import pkg_resources
 import requests
 from requests import Response
@@ -54,8 +56,7 @@ class ZulipPlatform(AbstractPlatform):
     """
 
     _conf = ("publisher", "zulip")
-
-    api_uri = "https://zulip.twc-italia.org/api/v1/"
+    api_uri = "api/v1/"
     name = "zulip"
 
     def _send_private(self, message: str) -> Response:
@@ -63,7 +64,7 @@ class ZulipPlatform(AbstractPlatform):
         Send private messages
         """
         return requests.post(
-            url=self.api_uri + "messages",
+            url=urljoin(self.conf.instance, self.api_uri) + "messages",
             auth=HTTPBasicAuth(self.conf.bot_email, self.conf.bot_token),
             data={"type": "private", "to": f"[{self.user_id}]", "content": message},
         )
@@ -73,7 +74,7 @@ class ZulipPlatform(AbstractPlatform):
         Send stream messages
         """
         return requests.post(
-            url=self.api_uri + "messages",
+            url=urljoin(self.conf.instance, self.api_uri) + "messages",
             auth=HTTPBasicAuth(self.conf.bot_email, self.conf.bot_token),
             data={
                 "type": "stream",
@@ -88,7 +89,7 @@ class ZulipPlatform(AbstractPlatform):
 
         res = requests.get(
             auth=HTTPBasicAuth(self.conf.bot_email, self.conf.bot_token),
-            url=self.api_uri + "users/me",
+            url=urljoin(self.conf.instance, self.api_uri) + "users/me",
         )
         data = self._validate_response(res)
 
