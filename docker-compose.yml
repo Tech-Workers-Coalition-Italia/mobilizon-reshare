@@ -6,5 +6,6 @@ services:
       SECRETS_FOR_DYNACONF: /etc/xdg/mobilizon-reshare/0.1.0/.secrets.toml
       ENV_FOR_DYNACONF: production
     volumes:
-      - ./etc:/etc/xdg/mobilizon-reshare/0.1.0
+      - ./.secrets.toml:/etc/xdg/mobilizon-reshare/0.1.0/.secrets.toml:ro
+      - ./mobilizon_reshare.toml:/etc/xdg/mobilizon-reshare/0.1.0/mobilizon_reshare.toml:ro
       - ./var:/var/lib/mobilizon-reshare

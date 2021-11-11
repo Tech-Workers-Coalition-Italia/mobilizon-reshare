@@ -23,6 +23,7 @@
                 (name "mobilizon-reshare")
                 (comment "Mobilizon Reshare's Service Account")
                 (group "mobilizon-reshare")
+                (supplementary-groups '("tty"))
                 (system? #t)
                 (home-directory "/var/empty")
                 (shell (file-append shadow "/sbin/nologin")))))
