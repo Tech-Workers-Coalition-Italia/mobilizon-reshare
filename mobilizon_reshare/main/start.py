@@ -53,6 +53,6 @@ async def start():
         await save_publication_report(reports, models)
         for report in reports.reports:
             if not report.succesful:
-                PublicationFailureNotifiersCoordinator(report).notify_failure()
+                PublicationFailureNotifiersCoordinator(report,).notify_failure()
     else:
         logger.debug("No event to publish found")
