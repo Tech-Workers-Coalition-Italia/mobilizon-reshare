@@ -85,7 +85,7 @@ class PublisherCoordinator:
                 message = publication.formatter.get_message_from_event(
                     publication.event
                 )
-                publication.publisher.send(message)
+                publication.publisher.send(message, publication.event)
                 reports.append(
                     EventPublicationReport(
                         status=PublicationStatus.COMPLETED,

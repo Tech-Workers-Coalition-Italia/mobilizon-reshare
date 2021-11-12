@@ -45,7 +45,14 @@ twitter_validators = [
     Validator("publisher.twitter.access_token", must_exist=True),
     Validator("publisher.twitter.access_secret", must_exist=True),
 ]
-facebook_validators = []
+facebook_validators = [
+    Validator("publisher.facebook.msg_template_path", must_exist=True, default=None),
+    Validator("publisher.facebook.recap_template_path", must_exist=True, default=None),
+    Validator(
+        "publisher.facebook.recap_header_template_path", must_exist=True, default=None
+    ),
+    Validator("publisher.facebook.page_access_token", must_exist=True),
+]
 
 publisher_name_to_validators = {
     "telegram": telegram_validators,

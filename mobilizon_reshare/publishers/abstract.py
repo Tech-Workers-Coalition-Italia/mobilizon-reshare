@@ -10,9 +10,7 @@ from jinja2 import Environment, FileSystemLoader, Template
 
 from mobilizon_reshare.config.config import get_settings
 from mobilizon_reshare.event.event import MobilizonEvent
-from mobilizon_reshare.models.publication import (
-    Publication as PublicationModel,
-)
+from mobilizon_reshare.models.publication import Publication as PublicationModel
 from .exceptions import PublisherError, InvalidAttribute
 
 JINJA_ENV = Environment(loader=FileSystemLoader("/"))
@@ -86,15 +84,15 @@ class AbstractPlatform(ABC, LoggerMixin, ConfLoaderMixin):
         pass
 
     @abstractmethod
-    def _send(self, message: str):
+    def _send(self, message: str, event: Optional[MobilizonEvent] = None):
         raise NotImplementedError  # pragma: no cover
 
-    def send(self, message: str):
+    def send(self, message: str, event: Optional[MobilizonEvent] = None):
         """
         Sends a message to the target channel
         """
         message = self._preprocess_message(message)
-        response = self._send(message)
+        response = self._send(message, event)
         self._validate_response(response)
 
     def _preprocess_message(self, message: str):

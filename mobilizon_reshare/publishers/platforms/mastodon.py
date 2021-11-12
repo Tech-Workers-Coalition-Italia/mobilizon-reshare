@@ -1,3 +1,4 @@
+from typing import Optional
 from urllib.parse import urljoin
 
 import pkg_resources
@@ -52,7 +53,7 @@ class MastodonPlatform(AbstractPlatform):
     api_uri = "api/v1/"
     name = "mastodon"
 
-    def _send(self, message: str) -> Response:
+    def _send(self, message: str, event: Optional[MobilizonEvent] = None) -> Response:
         """
         Send messages
         """
