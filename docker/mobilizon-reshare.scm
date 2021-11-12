@@ -369,8 +369,9 @@ development, testing, production]};
                (when tests?
                  (invoke "python" "-m" "pytest"
                          ;; This test fails because of the unvendoring
-                         ;; of toml from dynaconf.
-                         "-k" "not test_get_settings_failure_invalid_toml")))))))
+                         ;; of toml from dynaconf and
+                         ;; because they depend on system timezone.
+                         "-k" "not test_get_settings_failure_invalid_toml and not test_format_event")))))))
       (native-inputs
        `(("python-asynctest" ,python-asynctest)
          ("python-iniconfig" ,python-iniconfig)
