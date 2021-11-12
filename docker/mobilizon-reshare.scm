@@ -335,6 +335,27 @@ development, testing, production]};
     (description "Twitter library for Python")
     (license license:expat)))
 
+(define-public python-facebook-sdk
+  (package
+    (name "python-facebook-sdk")
+    (version "3.1.0")
+    (source
+      (origin
+        (method url-fetch)
+        (uri (pypi-uri "facebook-sdk" version))
+        (sha256
+          (base32 "138grz0n6plzdqgi4h6hhszf58bsvx9v76cwj51g1nd3kvkd5g6a"))))
+    (build-system python-build-system)
+    (propagated-inputs `(("python-requests" ,python-requests)))
+    (home-page "https://facebook-sdk.readthedocs.io")
+    (synopsis
+      "Facebook Graph API client in Python")
+    (description
+      "This client library is designed to support the Facebook Graph API and
+the official Facebook JavaScript SDK, which is the canonical way to implement
+Facebook authentication.")
+    (license license:asl2.0)))
+
 (define-public mobilizon-reshare.git
   (let ((source-version (with-input-from-file
                             (string-append %source-dir
@@ -389,6 +410,7 @@ development, testing, production]};
          ("python-beautifulsoup4" ,python-beautifulsoup4)
          ("python-click" ,python-click)
          ("python-dynaconf" ,python-dynaconf)
+         ("python-facebook-sdk" ,python-facebook-sdk)
          ("python-jinja2" ,python-jinja2)
          ("python-markdownify" ,python-markdownify)
          ("python-requests" ,python-requests)
