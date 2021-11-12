@@ -377,6 +377,8 @@ development, testing, production]};
          ("poetry" ,poetry)
          ("python-pytest" ,python-pytest-6)
          ("python-pytest-asyncio" ,python-pytest-asyncio-0.15)
+         ("python-pytest-lazy-fixture"
+          ,python-pytest-lazy-fixture)
          ("python-responses" ,python-responses)
          ("python-wrapper" ,python-3.9-wrapper)))
       (propagated-inputs
@@ -396,6 +398,6 @@ development, testing, production]};
       (synopsis
        "Publish Mobilizon events to your social networks")
       (description
-       "This package provides a CLI application to publish your Mobilizon
+       "This package provides a CLI application to publish Mobilizon
 events to your social media.")
       (license coopyleft))))
