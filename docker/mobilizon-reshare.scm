@@ -356,6 +356,28 @@ the official Facebook JavaScript SDK, which is the canonical way to implement
 Facebook authentication.")
     (license license:asl2.0)))
 
+(define-public python-facebook-sdk.git
+  (let ((version (package-version python-facebook-sdk))
+        (revision "0")
+        (commit "3fa89fec6a20dd070ccf57968c6f89256f237f54"))
+      (package (inherit python-facebook-sdk)
+        (name "python-facebook-sdk.git")
+        (version (git-version version revision commit))
+        (source
+         (origin
+           (method git-fetch)
+           (uri
+            (git-reference
+             (url "https://github.com/mobolic/facebook-sdk")
+             (commit commit)))
+           (file-name (git-file-name name version))
+           (sha256
+            (base32
+             "0vayxkg6p8wdj63qvzr24dj3q7rkyhr925b31z2qv2mnbas01dmg"))))
+        (arguments
+         ;; Tests depend on network access.
+         `(#:tests? #false)))))
+
 (define-public mobilizon-reshare.git
   (let ((source-version (with-input-from-file
                             (string-append %source-dir
@@ -410,7 +432,7 @@ Facebook authentication.")
          ("python-beautifulsoup4" ,python-beautifulsoup4)
          ("python-click" ,python-click)
          ("python-dynaconf" ,python-dynaconf)
-         ("python-facebook-sdk" ,python-facebook-sdk)
+         ("python-facebook-sdk" ,python-facebook-sdk.git)
          ("python-jinja2" ,python-jinja2)
          ("python-markdownify" ,python-markdownify)
          ("python-requests" ,python-requests)
