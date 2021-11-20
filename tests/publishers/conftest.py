@@ -1,4 +1,5 @@
 from datetime import timedelta
+from typing import Optional
 from uuid import UUID
 
 import arrow
@@ -48,7 +49,7 @@ def mock_publisher_invalid(message_collector):
 
         name = "mock"
 
-        def _send(self, message):
+        def _send(self, message: str, event: Optional[MobilizonEvent] = None):
             message_collector.append(message)
 
         def _validate_response(self, response):
@@ -66,7 +67,7 @@ def mock_publisher_invalid_response(message_collector):
 
         name = "mock"
 
-        def _send(self, message):
+        def _send(self, message, event):
             message_collector.append(message)
 
         def _validate_response(self, response):

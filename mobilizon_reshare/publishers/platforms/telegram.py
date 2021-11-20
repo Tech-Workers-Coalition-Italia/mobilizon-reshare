@@ -1,4 +1,5 @@
 import re
+from typing import Optional
 
 import pkg_resources
 import requests
@@ -98,7 +99,7 @@ class TelegramPlatform(AbstractPlatform):
                 "Found a different bot than the expected one", raise_error=InvalidBot,
             )
 
-    def _send(self, message) -> Response:
+    def _send(self, message: str, event: Optional[MobilizonEvent] = None) -> Response:
         return requests.post(
             url=f"https://api.telegram.org/bot{self.conf.token}/sendMessage",
             json={

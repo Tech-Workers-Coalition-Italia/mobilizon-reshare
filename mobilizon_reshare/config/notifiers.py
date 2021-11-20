@@ -26,7 +26,11 @@ twitter_validators = [
     Validator("publisher.twitter.access_secret", must_exist=True),
 ]
 
+facebook_validators = [
+    Validator("publisher.facebook.page_access_token", must_exist=True),
+]
 notifier_name_to_validators = {
+    "facebook": facebook_validators,
     "telegram": telegram_validators,
     "twitter": twitter_validators,
     "mastodon": mastodon_validators,

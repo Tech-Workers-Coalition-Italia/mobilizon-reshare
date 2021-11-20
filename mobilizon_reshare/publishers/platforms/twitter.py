@@ -1,3 +1,5 @@
+from typing import Optional
+
 import pkg_resources
 from tweepy import OAuthHandler, API, TweepyException
 from tweepy.models import Status
@@ -59,7 +61,7 @@ class TwitterPlatform(AbstractPlatform):
         auth.set_access_token(access_token, access_secret)
         return API(auth)
 
-    def _send(self, message: str) -> Status:
+    def _send(self, message: str, event: Optional[MobilizonEvent] = None) -> Status:
         try:
             return self._get_api().update_status(message)
         except TweepyException as e:

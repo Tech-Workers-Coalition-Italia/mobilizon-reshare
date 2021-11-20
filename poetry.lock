@@ -129,6 +129,24 @@ vault = ["hvac"]
 yaml = ["ruamel.yaml"]
 
 [[package]]
+name = "facebook-sdk"
+version = "4.0.0rc0"
+description = "This client library is designed to support the Facebook Graph API and the official Facebook JavaScript SDK, which is the canonical way to implement Facebook authentication."
+category = "main"
+optional = false
+python-versions = "*"
+develop = false
+
+[package.dependencies]
+requests = "*"
+
+[package.source]
+type = "git"
+url = "https://github.com/mobolic/facebook-sdk.git"
+reference = "master"
+resolved_reference = "3fa89fec6a20dd070ccf57968c6f89256f237f54"
+
+[[package]]
 name = "idna"
 version = "3.2"
 description = "Internationalized Domain Names in Applications (IDNA)"
@@ -446,7 +464,7 @@ socks = ["PySocks (>=1.5.6,!=1.5.7,<2.0)"]
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.9"
-content-hash = "763106b0d68a1b95c690e2ad828a4e847ad2532a3b13354c227f35b70f1c8ad7"
+content-hash = "eb95c081f2b389a4702ee0a144a29d3bb0a9d7e26174c2c650acaa14b0f980a7"
 
 [metadata.files]
 aiosqlite = [
@@ -498,6 +516,7 @@ dynaconf = [
     {file = "dynaconf-3.1.5-py2.py3-none-any.whl", hash = "sha256:98f0e5d861e945c1b06ed33844b9341e6412bc121c1a9ea88668df7891d8f308"},
     {file = "dynaconf-3.1.5.tar.gz", hash = "sha256:40979cc454d8533fada490dc0945a1dbf5ea96f95dc9113f8a3b3053670fd569"},
 ]
+facebook-sdk = []
 idna = [
     {file = "idna-3.2-py3-none-any.whl", hash = "sha256:14475042e284991034cb48e06f6851428fb14c4dc953acd9be9a5e95c7b6dd7a"},
     {file = "idna-3.2.tar.gz", hash = "sha256:467fbad99067910785144ce333826c71fb0e63a425657295239737f7ecd125f3"},

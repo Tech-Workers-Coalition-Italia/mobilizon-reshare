@@ -1,3 +1,4 @@
+from typing import Optional
 from urllib.parse import urljoin
 
 import pkg_resources
@@ -59,7 +60,9 @@ class ZulipPlatform(AbstractPlatform):
     api_uri = "api/v1/"
     name = "zulip"
 
-    def _send_private(self, message: str) -> Response:
+    def _send_private(
+        self, message: str, event: Optional[MobilizonEvent] = None
+    ) -> Response:
         """
         Send private messages
         """
@@ -69,7 +72,7 @@ class ZulipPlatform(AbstractPlatform):
             data={"type": "private", "to": f"[{self.user_id}]", "content": message},
         )
 
-    def _send(self, message: str) -> Response:
+    def _send(self, message: str, event: Optional[MobilizonEvent] = None) -> Response:
         """
         Send stream messages
         """

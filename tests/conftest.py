@@ -206,7 +206,7 @@ def mock_publisher_class(message_collector):
     class MockPublisher(AbstractPlatform):
         name = "mock"
 
-        def _send(self, message):
+        def _send(self, message, event):
             message_collector.append(message)
 
         def _validate_response(self, response):
@@ -281,7 +281,7 @@ def mock_publisher_invalid_class(message_collector):
 
         name = "mock"
 
-        def _send(self, message):
+        def _send(self, message, event):
             message_collector.append(message)
 
         def _validate_response(self, response):
