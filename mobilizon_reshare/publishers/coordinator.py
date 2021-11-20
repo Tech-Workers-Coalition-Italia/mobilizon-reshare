@@ -82,6 +82,7 @@ class PublisherCoordinator:
         for publication in self.publications:
 
             try:
+                logger.info(f"Publishing to {publication.publisher.name}")
                 message = publication.formatter.get_message_from_event(
                     publication.event
                 )
@@ -94,6 +95,7 @@ class PublisherCoordinator:
                     )
                 )
             except PublisherError as e:
+                logger.error(str(e))
                 reports.append(
                     EventPublicationReport(
                         status=PublicationStatus.FAILED,

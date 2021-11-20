@@ -44,7 +44,7 @@ async def start():
     )
 
     if event:
-        logger.debug(f"Event to publish found: {event.name}")
+        logger.info(f"Event to publish found: {event.name}")
 
         models = await create_event_publication_models(event)
         publications = list(EventPublication.from_orm(m, event) for m in models)
@@ -55,4 +55,4 @@ async def start():
             if not report.succesful:
                 PublicationFailureNotifiersCoordinator(report,).notify_failure()
     else:
-        logger.debug("No event to publish found")
+        logger.info("No event to publish found")
