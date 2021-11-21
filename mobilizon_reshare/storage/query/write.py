@@ -9,7 +9,7 @@ from mobilizon_reshare.models.publication import Publication
 from mobilizon_reshare.models.publisher import Publisher
 from mobilizon_reshare.publishers.coordinator import PublisherCoordinatorReport
 from mobilizon_reshare.storage.query import CONNECTION_NAME
-from mobilizon_reshare.storage.query.read_query import get_unpublished_events
+from mobilizon_reshare.storage.query.read import events_without_publications
 
 
 @atomic(CONNECTION_NAME)
@@ -29,15 +29,23 @@ async def save_publication_report(
 
 @atomic(CONNECTION_NAME)
 async def create_unpublished_events(
-    unpublished_mobilizon_events: Iterable[MobilizonEvent],
-) -> List[MobilizonEvent]:
+    events_from_mobilizon: Iterable[MobilizonEvent],
+) -> list[MobilizonEvent]:
     # We store only new events, i.e. events whose mobilizon_id wasn't found in the DB.
+    unknown_event_mobilizon_ids = set(
+        map(lambda event: event.mobilizon_id, await events_without_publications())
+    )
+    new_unpublished_events = list(
+        filter(
+            lambda event: event.mobilizon_id not in unknown_event_mobilizon_ids,
+            events_from_mobilizon,
+        )
+    )
 
-    unpublished_events = await get_unpublished_events(unpublished_mobilizon_events)
-    for event in unpublished_events:
+    for event in new_unpublished_events:
         await event.to_model().save()
 
-    return unpublished_events
+    return new_unpublished_events
 
 
 async def create_publisher(name: str, account_ref: Optional[str] = None) -> None:

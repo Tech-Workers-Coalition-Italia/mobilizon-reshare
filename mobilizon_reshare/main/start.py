@@ -7,11 +7,8 @@ from mobilizon_reshare.publishers.coordinator import (
     PublicationFailureNotifiersCoordinator,
 )
 from mobilizon_reshare.publishers.coordinator import PublisherCoordinator
-from mobilizon_reshare.storage.query.model_creation import (
-    create_event_publication_models,
-)
-from mobilizon_reshare.storage.query.read_query import get_published_events
-from mobilizon_reshare.storage.query.save_query import (
+from mobilizon_reshare.storage.query.read import get_published_events
+from mobilizon_reshare.storage.query.write import (
     create_unpublished_events,
     save_publication_report,
 )
@@ -46,7 +43,7 @@ async def start():
     if event:
         logger.info(f"Event to publish found: {event.name}")
 
-        models = await create_event_publication_models(event)
+        models = await event.build_unsaved_publications()
         publications = list(EventPublication.from_orm(m, event) for m in models)
         reports = PublisherCoordinator(publications).run()
 

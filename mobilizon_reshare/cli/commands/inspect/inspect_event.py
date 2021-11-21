@@ -6,7 +6,7 @@ from arrow import Arrow
 from mobilizon_reshare.event.event import EventPublicationStatus
 from mobilizon_reshare.event.event import MobilizonEvent
 from mobilizon_reshare.event.event_selection_strategies import select_unpublished_events
-from mobilizon_reshare.storage.query.read_query import (
+from mobilizon_reshare.storage.query.read import (
     get_published_events,
     events_with_status,
     get_all_events,

@@ -6,9 +6,6 @@ import pytest
 
 from mobilizon_reshare.main.recap import recap
 from mobilizon_reshare.models.publication import PublicationStatus
-from mobilizon_reshare.storage.query.model_creation import (
-    create_event_publication_models,
-)
 
 
 @pytest.mark.parametrize(

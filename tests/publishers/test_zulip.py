@@ -17,10 +17,7 @@ from mobilizon_reshare.publishers.exceptions import (
     InvalidMessage,
 )
 from mobilizon_reshare.publishers.platforms.zulip import ZulipFormatter, ZulipPublisher
-from mobilizon_reshare.storage.query.save_query import update_publishers
-from mobilizon_reshare.storage.query.model_creation import (
-    create_event_publication_models,
-)
+from mobilizon_reshare.storage.query.write import update_publishers
 
 api_uri = "https://zulip.twc-italia.org/api/v1/"
 users_me = {

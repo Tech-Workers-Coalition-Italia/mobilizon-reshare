@@ -7,7 +7,7 @@ import pytest
 from mobilizon_reshare.event.event import MobilizonEvent, EventPublicationStatus
 from mobilizon_reshare.models.event import Event
 from mobilizon_reshare.models.publication import PublicationStatus
-from mobilizon_reshare.storage.query.read_query import (
+from mobilizon_reshare.storage.query.read import (
     get_mobilizon_event_publications,
     get_published_events,
     events_with_status,
