@@ -8,6 +8,7 @@ from tortoise.transactions import atomic
 from mobilizon_reshare.event.event import MobilizonEvent, EventPublicationStatus
 from mobilizon_reshare.models.event import Event
 from mobilizon_reshare.models.publication import Publication, PublicationStatus
+from mobilizon_reshare.publishers import get_active_publishers
 from mobilizon_reshare.publishers.abstract import EventPublication
 from mobilizon_reshare.storage.query import CONNECTION_NAME
 
@@ -95,6 +96,28 @@ def _add_date_window(
     return query
 
 
+@atomic(CONNECTION_NAME)
+async def publications_with_status(
+    status: PublicationStatus,
+    event_mobilizon_id: Optional[UUID] = None,
+    from_date: Optional[Arrow] = None,
+    to_date: Optional[Arrow] = None,
+) -> dict[UUID, Publication]:
+    query = Publication.filter(status=status)
+
+    if event_mobilizon_id:
+        query = query.prefetch_related("event").filter(
+            event__mobilizon_id=event_mobilizon_id
+        )
+
+    query = _add_date_window(query, "timestamp", from_date, to_date)
+
+    publications_list = (
+        await query.prefetch_related("publisher").order_by("timestamp").distinct()
+    )
+    return {pub.id: pub for pub in publications_list}
+
+
 async def events_without_publications(
     from_date: Optional[Arrow] = None, to_date: Optional[Arrow] = None,
 ) -> list[MobilizonEvent]:
@@ -105,7 +128,7 @@ async def events_without_publications(
     return list(map(MobilizonEvent.from_model, events))
 
 
-def _remove_duplicated_events(events: list[MobilizonEvent]):
+def _remove_duplicated_events(events: list[MobilizonEvent]) -> list[MobilizonEvent]:
     """Remove duplicates based on mobilizon_id"""
     result = []
     seen_ids = set()

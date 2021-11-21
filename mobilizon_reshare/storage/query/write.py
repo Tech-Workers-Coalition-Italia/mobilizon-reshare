@@ -5,6 +5,7 @@ import arrow
 from tortoise.transactions import atomic
 
 from mobilizon_reshare.event.event import MobilizonEvent
+from mobilizon_reshare.models.event import Event
 from mobilizon_reshare.models.publication import Publication
 from mobilizon_reshare.models.publisher import Publisher
 from mobilizon_reshare.publishers.coordinator import PublisherCoordinatorReport
@@ -15,16 +16,18 @@ from mobilizon_reshare.storage.query.read import events_without_publications
 @atomic(CONNECTION_NAME)
 async def save_publication_report(
     coordinator_report: PublisherCoordinatorReport,
-    publication_models: List[Publication],
 ) -> None:
-    publication_models = {m.id: m for m in publication_models}
     for publication_report in coordinator_report.reports:
-        publication_id = publication_report.publication.id
-        publication_models[publication_id].status = publication_report.status
-        publication_models[publication_id].reason = publication_report.reason
-        publication_models[publication_id].timestamp = arrow.now().datetime
-
-        await publication_models[publication_id].save()
+        event = await Event.filter(mobilizon_id=publication_report.publication.event.mobilizon_id).first()
+        publisher = await Publisher.filter(name=publication_report.publication.publisher.name).first()
+        await Publication.create(
+            id=publication_report.publication.id,
+            event_id=event.id,
+            publisher_id=publisher.id,
+            status=publication_report.status,
+            reason=publication_report.reason,
+            timestamp=arrow.now().datetime
+        )
 
 
 @atomic(CONNECTION_NAME)
