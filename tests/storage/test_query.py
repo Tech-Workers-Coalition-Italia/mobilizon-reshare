@@ -14,7 +14,9 @@ from mobilizon_reshare.storage.query.read import (
     prefetch_event_relations,
     publications_with_status,
     events_without_publications,
+    build_publications,
 )
+from tests import setup_publishers
 from tests.storage import complete_specification
 from tests.storage import result_publication
 from tests.storage import today
@@ -212,3 +214,40 @@ async def test_events_without_publications(spec, expected_events, generate_model
     unpublished_events = list(await events_without_publications())
     assert len(unpublished_events) == len(expected_events)
     assert unpublished_events == expected_events
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize(
+    "spec, event, active_publishers, n_publications",
+    [
+        (
+            {"event": 2, "publications": [], "publisher": ["zulip"]},
+            event_0,
+            [],
+            0,
+        ),
+        (
+            {"event": 2, "publications": [], "publisher": ["zulip"]},
+            event_0,
+            ["zulip"],
+            1,
+        ),
+        (
+            {"event": 2, "publications": [], "publisher": ["telegram", "zulip", "mastodon", "facebook"]},
+            event_0,
+            ["telegram", "zulip", "mastodon", "facebook"],
+            4,
+        ),
+    ],
+)
+async def test_build_publications(spec, event, active_publishers, n_publications, generate_models):
+    await generate_models(spec)
+    await setup_publishers(active_publishers)
+
+    publications = list(await build_publications(event))
+
+    assert len(publications) == n_publications
+
+    for p in publications:
+        assert p.event == event
+        assert p.publisher.name in active_publishers

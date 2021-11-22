@@ -1,5 +1,3 @@
-from functools import partial
-
 import pytest
 import requests
 import responses
@@ -7,8 +5,6 @@ import responses
 from mobilizon_reshare.config.config import get_settings
 from mobilizon_reshare.models.publication import PublicationStatus
 from mobilizon_reshare.models.publisher import Publisher
-from mobilizon_reshare.publishers import get_active_publishers
-from mobilizon_reshare.publishers.abstract import EventPublication
 from mobilizon_reshare.publishers.coordinator import PublisherCoordinator
 from mobilizon_reshare.publishers.exceptions import (
     InvalidEvent,
@@ -17,7 +13,8 @@ from mobilizon_reshare.publishers.exceptions import (
     InvalidMessage,
 )
 from mobilizon_reshare.publishers.platforms.zulip import ZulipFormatter, ZulipPublisher
-from mobilizon_reshare.storage.query.write import update_publishers
+from mobilizon_reshare.storage.query.read import build_publications
+from tests import setup_publishers
 
 api_uri = "https://zulip.twc-italia.org/api/v1/"
 users_me = {
@@ -86,10 +83,9 @@ def mocked_client_error_response():
 @pytest.fixture
 @pytest.mark.asyncio
 async def setup_db(event_model_generator, publication_model_generator):
+    await setup_publishers(["zulip"])
+
     settings = get_settings()
-    for publisher in get_active_publishers():
-        if publisher != "zulip":
-            settings["publisher"][publisher]["active"] = False
     settings["publisher"]["zulip"][
         "bot_email"
     ] = "giacomotest2-bot@zulip.twc-italia.org"
@@ -97,7 +93,6 @@ async def setup_db(event_model_generator, publication_model_generator):
         "instance"
     ] = "https://zulip.twc-italia.org"
 
-    await update_publishers(["zulip"])
     publisher = await Publisher.filter(name="zulip").first()
     event = event_model_generator()
     await event.save()
@@ -109,42 +104,35 @@ async def setup_db(event_model_generator, publication_model_generator):
 
 @pytest.fixture
 @pytest.mark.asyncio
-async def publication_models(event):
+async def unsaved_publications(event):
     await event.to_model().save()
-    publication_models = await create_event_publication_models(event)
-    return publication_models
+    return await build_publications(event)
 
 
 @pytest.mark.asyncio
 async def test_zulip_publisher(
-    mocked_valid_response, setup_db, event, publication_models
+    mocked_valid_response, setup_db, unsaved_publications
 ):
 
-    report = PublisherCoordinator(
-        list(map(partial(EventPublication.from_orm, event=event), publication_models,))
-    ).run()
+    report = PublisherCoordinator(unsaved_publications).run()
 
     assert report.reports[0].status == PublicationStatus.COMPLETED
 
 
 @pytest.mark.asyncio
 async def test_zulip_publishr_failure_invalid_credentials(
-    mocked_credential_error_response, setup_db, event, publication_models
+    mocked_credential_error_response, setup_db, unsaved_publications
 ):
-    report = PublisherCoordinator(
-        list(map(partial(EventPublication.from_orm, event=event), publication_models))
-    ).run()
+    report = PublisherCoordinator(unsaved_publications).run()
     assert report.reports[0].status == PublicationStatus.FAILED
     assert report.reports[0].reason == "403 Error - Your credentials are not valid!"
 
 
 @pytest.mark.asyncio
 async def test_zulip_publisher_failure_client_error(
-    mocked_client_error_response, setup_db, event, publication_models
+    mocked_client_error_response, setup_db, unsaved_publications
 ):
-    report = PublisherCoordinator(
-        list(map(partial(EventPublication.from_orm, event=event), publication_models))
-    ).run()
+    report = PublisherCoordinator(unsaved_publications).run()
     assert report.reports[0].status == PublicationStatus.FAILED
     assert report.reports[0].reason == "400 Error - Invalid request"
 

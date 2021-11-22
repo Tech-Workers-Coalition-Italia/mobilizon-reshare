@@ -152,22 +152,9 @@ async def get_unpublished_events(
     return _remove_duplicated_events(all_unpublished_events)
 
 
-async def build_unsaved_publications(event: MobilizonEvent) -> MobilizonEvent:
-    event_model = await Event.filter()
-    models = list(event_model.build_publication_by_publisher_name(name)
-                  for name in get_active_publishers())
-    return (
-        list(EventPublication.from_orm(m, event) for m in models),
-        {m.id: m for m in models},
-    )
-
-
-    result = []
-    publishers = get_active_publishers()
-    for publisher in publishers:
-        result.append(
-            await self.build_publication_by_publisher_name(
-                publisher, PublicationStatus.UNSAVED
-            )
-        )
-    return result
+@atomic(CONNECTION_NAME)
+async def build_publications(event: MobilizonEvent) -> list[EventPublication]:
+    event_model = await Event.filter(mobilizon_id=event.mobilizon_id).first()
+    models = [await event_model.build_publication_by_publisher_name(name)
+              for name in get_active_publishers()]
+    return list(EventPublication.from_orm(m, event) for m in models)
