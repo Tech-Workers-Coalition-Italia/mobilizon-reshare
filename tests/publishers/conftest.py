@@ -5,7 +5,9 @@ from uuid import UUID
 import arrow
 import pytest
 
+import mobilizon_reshare.storage.query.read
 from mobilizon_reshare.event.event import MobilizonEvent
+from mobilizon_reshare.models.publisher import Publisher
 from mobilizon_reshare.publishers.abstract import (
     AbstractPlatform,
     AbstractEventFormatter,
@@ -77,3 +79,20 @@ def mock_publisher_invalid_response(message_collector):
             pass
 
     return MockPublisher()
+
+
+@pytest.fixture()
+async def mock_active_publishers_config(monkeypatch):
+    p = Publisher(name="zulip")
+    await p.save()
+
+    def _mock_active_pub():
+        return ["zulip"]
+
+    monkeypatch.setattr(
+        mobilizon_reshare.storage.query.read,
+        "get_active_publishers",
+        _mock_active_pub
+    )
+
+    return p

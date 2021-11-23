@@ -16,10 +16,9 @@ from mobilizon_reshare.storage.query.read import (
     events_without_publications,
     build_publications,
 )
-from tests import setup_publishers
 from tests.storage import complete_specification
 from tests.storage import result_publication
-from tests.storage import today
+from tests import today
 
 event_0 = MobilizonEvent(
     name="event_0",
@@ -98,7 +97,12 @@ async def test_get_mobilizon_event_publications(generate_models):
     ],
 )
 async def test_publications_with_status(
-    status, mobilizon_id, from_date, to_date, expected_result, generate_models,
+    status,
+    mobilizon_id,
+    from_date,
+    to_date,
+    expected_result,
+    generate_models,
 ):
     await generate_models(complete_specification)
     publications = await publications_with_status(
@@ -189,6 +193,25 @@ async def test_event_with_status_window(
             ],
         ),
         (
+            {
+                "event": 3,
+                "publications": [
+                    {
+                        "event_idx": 1,
+                        "publisher_idx": 0,
+                        "status": PublicationStatus.FAILED,
+                    },
+                    {
+                        "event_idx": 2,
+                        "publisher_idx": 0,
+                        "status": PublicationStatus.COMPLETED,
+                    },
+                ],
+                "publisher": ["zulip"],
+            },
+            [event_0],
+        ),
+        (
             complete_specification,
             [
                 MobilizonEvent(
@@ -218,31 +241,37 @@ async def test_events_without_publications(spec, expected_events, generate_model
 
 @pytest.mark.asyncio
 @pytest.mark.parametrize(
-    "spec, event, active_publishers, n_publications",
+    "mock_active_publishers, spec, event, n_publications",
     [
         (
+            [],
             {"event": 2, "publications": [], "publisher": ["zulip"]},
             event_0,
-            [],
             0,
         ),
         (
+            ["zulip"],
             {"event": 2, "publications": [], "publisher": ["zulip"]},
             event_0,
-            ["zulip"],
             1,
         ),
         (
-            {"event": 2, "publications": [], "publisher": ["telegram", "zulip", "mastodon", "facebook"]},
-            event_0,
             ["telegram", "zulip", "mastodon", "facebook"],
+            {
+                "event": 2,
+                "publications": [],
+                "publisher": ["telegram", "zulip", "mastodon", "facebook"],
+            },
+            event_0,
             4,
         ),
     ],
+    indirect=["mock_active_publishers"],
 )
-async def test_build_publications(spec, event, active_publishers, n_publications, generate_models):
+async def test_build_publications(
+    mock_active_publishers, spec, event, n_publications, generate_models
+):
     await generate_models(spec)
-    await setup_publishers(active_publishers)
 
     publications = list(await build_publications(event))
 
@@ -250,4 +279,4 @@ async def test_build_publications(spec, event, active_publishers, n_publications
 
     for p in publications:
         assert p.event == event
-        assert p.publisher.name in active_publishers
+        assert p.publisher.name in mock_active_publishers

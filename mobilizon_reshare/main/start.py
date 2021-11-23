@@ -6,7 +6,10 @@ from mobilizon_reshare.publishers.coordinator import (
     PublicationFailureNotifiersCoordinator,
 )
 from mobilizon_reshare.publishers.coordinator import PublisherCoordinator
-from mobilizon_reshare.storage.query.read import get_published_events, build_publications
+from mobilizon_reshare.storage.query.read import (
+    get_published_events,
+    build_publications,
+)
 from mobilizon_reshare.storage.query.write import (
     create_unpublished_events,
     save_publication_report,

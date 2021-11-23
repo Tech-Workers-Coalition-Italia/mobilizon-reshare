@@ -14,7 +14,6 @@ from mobilizon_reshare.publishers.exceptions import (
 )
 from mobilizon_reshare.publishers.platforms.zulip import ZulipFormatter, ZulipPublisher
 from mobilizon_reshare.storage.query.read import build_publications
-from tests import setup_publishers
 
 api_uri = "https://zulip.twc-italia.org/api/v1/"
 users_me = {
@@ -82,16 +81,14 @@ def mocked_client_error_response():
 
 @pytest.fixture
 @pytest.mark.asyncio
-async def setup_db(event_model_generator, publication_model_generator):
-    await setup_publishers(["zulip"])
-
+async def setup_db(
+    mock_active_publishers_config, event_model_generator, publication_model_generator
+):
     settings = get_settings()
     settings["publisher"]["zulip"][
         "bot_email"
     ] = "giacomotest2-bot@zulip.twc-italia.org"
-    settings["publisher"]["zulip"][
-        "instance"
-    ] = "https://zulip.twc-italia.org"
+    settings["publisher"]["zulip"]["instance"] = "https://zulip.twc-italia.org"
 
     publisher = await Publisher.filter(name="zulip").first()
     event = event_model_generator()
@@ -110,9 +107,7 @@ async def unsaved_publications(event):
 
 
 @pytest.mark.asyncio
-async def test_zulip_publisher(
-    mocked_valid_response, setup_db, unsaved_publications
-):
+async def test_zulip_publisher(mocked_valid_response, setup_db, unsaved_publications):
 
     report = PublisherCoordinator(unsaved_publications).run()
 

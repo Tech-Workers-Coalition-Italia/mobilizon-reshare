@@ -155,6 +155,8 @@ async def get_unpublished_events(
 @atomic(CONNECTION_NAME)
 async def build_publications(event: MobilizonEvent) -> list[EventPublication]:
     event_model = await Event.filter(mobilizon_id=event.mobilizon_id).first()
-    models = [await event_model.build_publication_by_publisher_name(name)
-              for name in get_active_publishers()]
+    models = [
+        await event_model.build_publication_by_publisher_name(name)
+        for name in get_active_publishers()
+    ]
     return list(EventPublication.from_orm(m, event) for m in models)
