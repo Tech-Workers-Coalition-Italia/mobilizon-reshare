@@ -13,15 +13,6 @@ from mobilizon_reshare.publishers.abstract import EventPublication
 from mobilizon_reshare.storage.query import CONNECTION_NAME
 
 
-async def get_mobilizon_event_publications(
-    event: MobilizonEvent,
-) -> Iterable[Publication]:
-    models = await prefetch_event_relations(
-        Event.filter(mobilizon_id=event.mobilizon_id)
-    )
-    return models[0].publications
-
-
 async def get_published_events(
     from_date: Optional[Arrow] = None, to_date: Optional[Arrow] = None
 ) -> Iterable[MobilizonEvent]:

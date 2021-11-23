@@ -8,10 +8,8 @@ from mobilizon_reshare.event.event import MobilizonEvent, EventPublicationStatus
 from mobilizon_reshare.models.event import Event
 from mobilizon_reshare.models.publication import PublicationStatus
 from mobilizon_reshare.storage.query.read import (
-    get_mobilizon_event_publications,
     get_published_events,
     events_with_status,
-    prefetch_event_relations,
     publications_with_status,
     events_without_publications,
     build_publications,
@@ -40,33 +38,6 @@ async def test_get_published_events(generate_models):
     published_events = list(await get_published_events())
 
     assert len(published_events) == 3
-
-
-@pytest.mark.asyncio
-async def test_get_mobilizon_event_publications(generate_models):
-    await generate_models(complete_specification)
-
-    models = await prefetch_event_relations(Event.filter(name="event_0"))
-    mobilizon_event = MobilizonEvent.from_model(models[0])
-
-    publications = list(await get_mobilizon_event_publications(mobilizon_event))
-    for pub in publications:
-        await pub.fetch_related("event")
-        await pub.fetch_related("publisher")
-
-    assert len(publications) == 3
-
-    assert publications[0].event.name == "event_0"
-    assert publications[0].publisher.name == "telegram"
-    assert publications[0].status == PublicationStatus.COMPLETED
-
-    assert publications[1].event.name == "event_0"
-    assert publications[1].publisher.name == "twitter"
-    assert publications[1].status == PublicationStatus.COMPLETED
-
-    assert publications[2].event.name == "event_0"
-    assert publications[2].publisher.name == "mastodon"
-    assert publications[2].status == PublicationStatus.COMPLETED
 
 
 @pytest.mark.asyncio

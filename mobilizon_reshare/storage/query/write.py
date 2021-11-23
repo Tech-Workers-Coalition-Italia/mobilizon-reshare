@@ -17,6 +17,9 @@ from mobilizon_reshare.storage.query.read import events_without_publications
 async def save_publication_report(
     coordinator_report: PublisherCoordinatorReport,
 ) -> None:
+    """
+    Store a publication process outcome
+    """
     for publication_report in coordinator_report.reports:
         event = await Event.filter(
             mobilizon_id=publication_report.publication.event.mobilizon_id
@@ -38,6 +41,11 @@ async def save_publication_report(
 async def create_unpublished_events(
     events_from_mobilizon: Iterable[MobilizonEvent],
 ) -> list[MobilizonEvent]:
+    """
+    Compute the difference between remote and local events and store it.
+
+    Returns the unpublished events merged state.
+    """
     # We store only new events, i.e. events whose mobilizon_id wasn't found in the DB.
     unpublished_events = await events_without_publications()
     known_event_mobilizon_ids = set(
