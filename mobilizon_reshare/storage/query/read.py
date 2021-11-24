@@ -1,4 +1,4 @@
-from typing import Iterable, Optional, Dict, List
+from typing import Iterable, Optional
 from uuid import UUID
 
 from arrow import Arrow
@@ -8,16 +8,9 @@ from tortoise.transactions import atomic
 from mobilizon_reshare.event.event import MobilizonEvent, EventPublicationStatus
 from mobilizon_reshare.models.event import Event
 from mobilizon_reshare.models.publication import Publication, PublicationStatus
+from mobilizon_reshare.publishers import get_active_publishers
+from mobilizon_reshare.publishers.abstract import EventPublication
 from mobilizon_reshare.storage.query import CONNECTION_NAME
-
-
-async def get_mobilizon_event_publications(
-    event: MobilizonEvent,
-) -> Iterable[Publication]:
-    models = await prefetch_event_relations(
-        Event.filter(mobilizon_id=event.mobilizon_id)
-    )
-    return models[0].publications
 
 
 async def get_published_events(
@@ -100,7 +93,7 @@ async def publications_with_status(
     event_mobilizon_id: Optional[UUID] = None,
     from_date: Optional[Arrow] = None,
     to_date: Optional[Arrow] = None,
-) -> Dict[UUID, Publication]:
+) -> dict[UUID, Publication]:
     query = Publication.filter(status=status)
 
     if event_mobilizon_id:
@@ -118,7 +111,7 @@ async def publications_with_status(
 
 async def events_without_publications(
     from_date: Optional[Arrow] = None, to_date: Optional[Arrow] = None,
-) -> List[MobilizonEvent]:
+) -> list[MobilizonEvent]:
     query = Event.filter(publications__id=None)
     events = await prefetch_event_relations(
         _add_date_window(query, "begin_datetime", from_date, to_date)
@@ -126,7 +119,7 @@ async def events_without_publications(
     return list(map(MobilizonEvent.from_model, events))
 
 
-def _remove_duplicated_events(events: List[MobilizonEvent]):
+def _remove_duplicated_events(events: list[MobilizonEvent]) -> list[MobilizonEvent]:
     """Remove duplicates based on mobilizon_id"""
     result = []
     seen_ids = set()
@@ -139,7 +132,7 @@ def _remove_duplicated_events(events: List[MobilizonEvent]):
 
 async def get_unpublished_events(
     unpublished_mobilizon_events: Iterable[MobilizonEvent],
-) -> List[MobilizonEvent]:
+) -> list[MobilizonEvent]:
     """
     Returns all the unpublished events, removing duplicates that are present both in the DB and in the mobilizon query
     """
@@ -148,3 +141,13 @@ async def get_unpublished_events(
         db_unpublished_events
     )
     return _remove_duplicated_events(all_unpublished_events)
+
+
+@atomic(CONNECTION_NAME)
+async def build_publications(event: MobilizonEvent) -> list[EventPublication]:
+    event_model = await Event.filter(mobilizon_id=event.mobilizon_id).first()
+    models = [
+        await event_model.build_publication_by_publisher_name(name)
+        for name in get_active_publishers()
+    ]
+    return list(EventPublication.from_orm(m, event) for m in models)

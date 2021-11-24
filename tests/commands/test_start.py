@@ -11,7 +11,8 @@ from mobilizon_reshare.models.publication import PublicationStatus
 
 @pytest.mark.asyncio
 @pytest.mark.parametrize(
-    "elements", [[]],
+    "elements",
+    [[]],
 )
 async def test_start_no_event(
     mock_mobilizon_success_answer, mobilizon_answer, caplog, elements
@@ -47,7 +48,6 @@ async def test_start_new_event(
         assert "Event to publish found" in caplog.text
         assert message_collector == [
             "test event|Some description",
-            "test event|Some description",
         ]
 
         all_events = (
@@ -63,7 +63,7 @@ async def test_start_new_event(
 
         # it should create a publication for each publisher
         publications = all_events[0].publications
-        assert len(publications) == 2, publications
+        assert len(publications) == 1, publications
 
         # all the other events should have no publication
         for e in all_events[1:]:
@@ -85,7 +85,8 @@ async def test_start_new_event(
     "publisher_class", [pytest.lazy_fixture("mock_publisher_class")]
 )
 @pytest.mark.parametrize(
-    "elements", [[]],
+    "elements",
+    [[]],
 )
 @pytest.mark.parametrize("publication_window", [(0, 24)])
 async def test_start_event_from_db(
@@ -109,16 +110,15 @@ async def test_start_event_from_db(
         assert "Event to publish found" in caplog.text
         assert message_collector == [
             "test event|description of the event",
-            "test event|description of the event",
         ]
 
         await event_model.fetch_related("publications", "publications__publisher")
         # it should create a publication for each publisher
         publications = event_model.publications
-        assert len(publications) == 2, publications
+        assert len(publications) == 1, publications
 
         # all the publications for the first event should be saved as COMPLETED
-        for p in publications[1:]:
+        for p in publications:
             assert p.status == PublicationStatus.COMPLETED
 
         # the derived status for the event should be COMPLETED
@@ -133,7 +133,8 @@ async def test_start_event_from_db(
     "publisher_class", [pytest.lazy_fixture("mock_publisher_invalid_class")]
 )
 @pytest.mark.parametrize(
-    "elements", [[]],
+    "elements",
+    [[]],
 )
 @pytest.mark.parametrize("publication_window", [(0, 24)])
 async def test_start_publisher_failure(
@@ -159,7 +160,7 @@ async def test_start_publisher_failure(
         await event_model.fetch_related("publications", "publications__publisher")
         # it should create a publication for each publisher
         publications = event_model.publications
-        assert len(publications) == 2, publications
+        assert len(publications) == 1, publications
 
         # all the publications for event should be saved as FAILED
         for p in publications:
@@ -168,7 +169,7 @@ async def test_start_publisher_failure(
 
         assert "Event to publish found" in caplog.text
         assert message_collector == [
-            f"Publication {p.id} failed with status: 1."
+            f"Publication {p.id} failed with status: 0."
             f"\nReason: credentials error\nPublisher: mock"
             for p in publications
             for _ in range(2)

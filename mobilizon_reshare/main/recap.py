@@ -15,7 +15,7 @@ from mobilizon_reshare.publishers.platforms.platform_mapping import (
     get_publisher_class,
     get_formatter_class,
 )
-from mobilizon_reshare.storage.query.read_query import events_with_status
+from mobilizon_reshare.storage.query.read import events_with_status
 
 logger = logging.getLogger(__name__)
 
@@ -33,7 +33,7 @@ async def recap() -> Optional[BaseCoordinatorReport]:
     events_to_recap = await select_events_to_recap()
 
     if events_to_recap:
-        logger.debug(f"Found {len(events_to_recap)} events to recap.")
+        logger.info(f"Found {len(events_to_recap)} events to recap.")
         recap_publications = [
             RecapPublication(
                 get_publisher_class(publisher)(),
@@ -49,4 +49,4 @@ async def recap() -> Optional[BaseCoordinatorReport]:
                 PublicationFailureNotifiersCoordinator(report).notify_failure()
         return reports
     else:
-        logger.debug("Found no events")
+        logger.info("Found no events")

@@ -7,17 +7,16 @@ import pytest
 from mobilizon_reshare.event.event import MobilizonEvent, EventPublicationStatus
 from mobilizon_reshare.models.event import Event
 from mobilizon_reshare.models.publication import PublicationStatus
-from mobilizon_reshare.storage.query.read_query import (
-    get_mobilizon_event_publications,
+from mobilizon_reshare.storage.query.read import (
     get_published_events,
     events_with_status,
-    prefetch_event_relations,
     publications_with_status,
     events_without_publications,
+    build_publications,
 )
 from tests.storage import complete_specification
 from tests.storage import result_publication
-from tests.storage import today
+from tests import today
 
 event_0 = MobilizonEvent(
     name="event_0",
@@ -39,33 +38,6 @@ async def test_get_published_events(generate_models):
     published_events = list(await get_published_events())
 
     assert len(published_events) == 3
-
-
-@pytest.mark.asyncio
-async def test_get_mobilizon_event_publications(generate_models):
-    await generate_models(complete_specification)
-
-    models = await prefetch_event_relations(Event.filter(name="event_0"))
-    mobilizon_event = MobilizonEvent.from_model(models[0])
-
-    publications = list(await get_mobilizon_event_publications(mobilizon_event))
-    for pub in publications:
-        await pub.fetch_related("event")
-        await pub.fetch_related("publisher")
-
-    assert len(publications) == 3
-
-    assert publications[0].event.name == "event_0"
-    assert publications[0].publisher.name == "telegram"
-    assert publications[0].status == PublicationStatus.COMPLETED
-
-    assert publications[1].event.name == "event_0"
-    assert publications[1].publisher.name == "twitter"
-    assert publications[1].status == PublicationStatus.COMPLETED
-
-    assert publications[2].event.name == "event_0"
-    assert publications[2].publisher.name == "mastodon"
-    assert publications[2].status == PublicationStatus.COMPLETED
 
 
 @pytest.mark.asyncio
@@ -96,7 +68,12 @@ async def test_get_mobilizon_event_publications(generate_models):
     ],
 )
 async def test_publications_with_status(
-    status, mobilizon_id, from_date, to_date, expected_result, generate_models,
+    status,
+    mobilizon_id,
+    from_date,
+    to_date,
+    expected_result,
+    generate_models,
 ):
     await generate_models(complete_specification)
     publications = await publications_with_status(
@@ -187,6 +164,25 @@ async def test_event_with_status_window(
             ],
         ),
         (
+            {
+                "event": 3,
+                "publications": [
+                    {
+                        "event_idx": 1,
+                        "publisher_idx": 0,
+                        "status": PublicationStatus.FAILED,
+                    },
+                    {
+                        "event_idx": 2,
+                        "publisher_idx": 0,
+                        "status": PublicationStatus.COMPLETED,
+                    },
+                ],
+                "publisher": ["zulip"],
+            },
+            [event_0],
+        ),
+        (
             complete_specification,
             [
                 MobilizonEvent(
@@ -212,3 +208,46 @@ async def test_events_without_publications(spec, expected_events, generate_model
     unpublished_events = list(await events_without_publications())
     assert len(unpublished_events) == len(expected_events)
     assert unpublished_events == expected_events
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize(
+    "mock_active_publishers, spec, event, n_publications",
+    [
+        (
+            [],
+            {"event": 2, "publications": [], "publisher": ["zulip"]},
+            event_0,
+            0,
+        ),
+        (
+            ["zulip"],
+            {"event": 2, "publications": [], "publisher": ["zulip"]},
+            event_0,
+            1,
+        ),
+        (
+            ["telegram", "zulip", "mastodon", "facebook"],
+            {
+                "event": 2,
+                "publications": [],
+                "publisher": ["telegram", "zulip", "mastodon", "facebook"],
+            },
+            event_0,
+            4,
+        ),
+    ],
+    indirect=["mock_active_publishers"],
+)
+async def test_build_publications(
+    mock_active_publishers, spec, event, n_publications, generate_models
+):
+    await generate_models(spec)
+
+    publications = list(await build_publications(event))
+
+    assert len(publications) == n_publications
+
+    for p in publications:
+        assert p.event == event
+        assert p.publisher.name in mock_active_publishers

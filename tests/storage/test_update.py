@@ -12,8 +12,12 @@ from mobilizon_reshare.publishers.coordinator import (
     PublisherCoordinatorReport,
     EventPublicationReport,
 )
-from mobilizon_reshare.storage.query.read_query import publications_with_status
-from mobilizon_reshare.storage.query.save_query import (
+from mobilizon_reshare.publishers.platforms.telegram import (
+    TelegramFormatter,
+    TelegramPublisher,
+)
+from mobilizon_reshare.storage.query.read import publications_with_status
+from mobilizon_reshare.storage.query.write import (
     save_publication_report,
     update_publishers,
 )
@@ -21,6 +25,18 @@ from tests.storage import complete_specification
 from tests.storage import today
 
 two_publishers_specification = {"publisher": ["telegram", "twitter"]}
+
+event_1 = MobilizonEvent(
+    name="event_1",
+    description="desc_1",
+    mobilizon_id=UUID(int=1),
+    mobilizon_link="moblink_1",
+    thumbnail_link="thumblink_1",
+    location="loc_1",
+    status=EventPublicationStatus.WAITING,
+    begin_datetime=arrow.get(today + timedelta(days=1)),
+    end_datetime=arrow.get(today + timedelta(days=1) + timedelta(hours=2)),
+)
 
 
 @pytest.mark.asyncio
@@ -48,7 +64,10 @@ two_publishers_specification = {"publisher": ["telegram", "twitter"]}
     ],
 )
 async def test_update_publishers(
-    specification, names, expected_result, generate_models,
+    specification,
+    names,
+    expected_result,
+    generate_models,
 ):
     await generate_models(specification)
     await update_publishers(names)
@@ -74,46 +93,41 @@ async def test_update_publishers(
                         status=PublicationStatus.COMPLETED,
                         reason="",
                         publication=EventPublication(
-                            id=UUID(int=4), formatter=None, event=None, publisher=None
+                            id=UUID(int=6),
+                            formatter=TelegramFormatter(),
+                            event=event_1,
+                            publisher=TelegramPublisher(),
                         ),
                     ),
                 ],
             ),
-            MobilizonEvent(
-                name="event_1",
-                description="desc_1",
-                mobilizon_id=UUID(int=1),
-                mobilizon_link="moblink_1",
-                thumbnail_link="thumblink_1",
-                location="loc_1",
-                status=EventPublicationStatus.WAITING,
-                begin_datetime=arrow.get(today + timedelta(days=1)),
-                end_datetime=arrow.get(today + timedelta(days=1) + timedelta(hours=2)),
-            ),
+            event_1,
             {
-                UUID(int=4): Publication(
-                    id=UUID(int=4), status=PublicationStatus.COMPLETED, reason=""
+                UUID(int=6): Publication(
+                    id=UUID(int=6), status=PublicationStatus.COMPLETED, reason=""
                 ),
             },
         ],
     ],
 )
 async def test_save_publication_report(
-    specification, report, event, expected_result, generate_models,
+    specification,
+    report,
+    event,
+    expected_result,
+    generate_models,
 ):
     await generate_models(specification)
+    known_publication_ids = set(p.id for p in await Publication.all())
 
-    publications = await publications_with_status(
-        status=PublicationStatus.COMPLETED, event_mobilizon_id=event.mobilizon_id,
-    )
-    await save_publication_report(report, list(publications.values()))
-    publication_ids = set(publications.keys())
+    await save_publication_report(report)
+
     publications = {
-        p_id: await Publication.filter(id=p_id).first() for p_id in publication_ids
+        p.id: p for p in await Publication.filter(id__not_in=known_publication_ids)
     }
 
     assert len(publications) == len(expected_result)
-    for i in publication_ids:
+    for i in publications.keys():
         assert publications[i].status == expected_result[i].status
         assert publications[i].reason == expected_result[i].reason
         assert publications[i].timestamp

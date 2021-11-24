@@ -89,13 +89,11 @@ async def mock_publications(
         await publisher.save()
         publication = PublicationModel(
             id=UUID(int=i + 1),
-            status=PublicationStatus.UNSAVED,
             event=event,
             publisher=publisher,
             timestamp=None,
             reason=None,
         )
-        await publication.save()
         publication = EventPublication.from_orm(publication, test_event)
         publication.publisher = mock_publisher_valid
         publication.formatter = mock_formatter_valid

@@ -2,7 +2,7 @@ from uuid import UUID
 
 import pytest
 
-from mobilizon_reshare.storage.query.read_query import (
+from mobilizon_reshare.storage.query.read import (
     get_unpublished_events,
     get_all_events,
 )
