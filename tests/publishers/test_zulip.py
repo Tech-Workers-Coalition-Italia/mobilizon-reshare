@@ -141,21 +141,14 @@ def test_event_validation(event):
 def test_message_length_success(event):
     message = "a" * 500
     event.description = message
-    assert (
-        ZulipFormatter().validate_message(
-            ZulipFormatter().get_message_from_event(event)
-        )
-        is None
-    )
+    assert ZulipFormatter().validate_event(event) is None
 
 
 def test_message_length_failure(event):
     message = "a" * 10000
     event.description = message
     with pytest.raises(InvalidMessage):
-        ZulipFormatter().validate_message(
-            ZulipFormatter().get_message_from_event(event)
-        )
+        ZulipFormatter().validate_event(event)
 
 
 def test_validate_response():

@@ -13,6 +13,7 @@ from mobilizon_reshare.publishers.exceptions import (
     InvalidCredentials,
     InvalidEvent,
     PublisherError,
+    InvalidMessage,
 )
 
 
@@ -31,16 +32,16 @@ class TwitterFormatter(AbstractEventFormatter):
         "mobilizon_reshare.publishers.templates", "twitter_recap_header.tmpl.j2"
     )
 
-    def validate_event(self, event: MobilizonEvent) -> None:
+    def _validate_event(self, event: MobilizonEvent) -> None:
         text = event.description
         if not (text and text.strip()):
             self._log_error("No text was found", raise_error=InvalidEvent)
 
-    def validate_message(self, message) -> None:
+    def _validate_message(self, message) -> None:
         # TODO this is not precise. It should count the characters according to Twitter's logic but
         # Tweepy doesn't seem to support the validation client side
         if len(message.encode("utf-8")) > 280:
-            raise PublisherError("Message is too long")
+            self._log_error("Message is too long", raise_error=InvalidMessage)
 
 
 class TwitterPlatform(AbstractPlatform):
@@ -65,7 +66,7 @@ class TwitterPlatform(AbstractPlatform):
         try:
             return self._get_api().update_status(message)
         except TweepyException as e:
-            raise PublisherError(e.args[0])
+            self._log_error(e.args[0], raise_error=PublisherError)
 
     def validate_credentials(self):
         if not self._get_api().verify_credentials():

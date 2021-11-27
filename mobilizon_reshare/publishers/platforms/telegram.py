@@ -65,14 +65,14 @@ class TelegramFormatter(AbstractEventFormatter):
 
         return TelegramFormatter.restore_links(message)
 
-    def validate_event(self, event: MobilizonEvent) -> None:
+    def _validate_event(self, event: MobilizonEvent) -> None:
         description = event.description
         if not (description and description.strip()):
             self._log_error("No description was found", raise_error=InvalidEvent)
 
-    def validate_message(self, message: str) -> None:
+    def _validate_message(self, message: str) -> None:
         if len(message) >= 4096:
-            raise InvalidMessage("Message is too long")
+            self._log_error("Message is too long", raise_error=InvalidMessage)
 
     def _preprocess_event(self, event: MobilizonEvent):
         event.description = html_to_markdown(event.description)

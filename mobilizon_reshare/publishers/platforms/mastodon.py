@@ -34,14 +34,14 @@ class MastodonFormatter(AbstractEventFormatter):
         "mobilizon_reshare.publishers.templates", "mastodon_recap_header.tmpl.j2"
     )
 
-    def validate_event(self, event: MobilizonEvent) -> None:
+    def _validate_event(self, event: MobilizonEvent) -> None:
         text = event.description
         if not (text and text.strip()):
             self._log_error("No text was found", raise_error=InvalidEvent)
 
-    def validate_message(self, message) -> None:
+    def _validate_message(self, message) -> None:
         if len(message.encode("utf-8")) >= self.conf.toot_length:
-            raise InvalidMessage("Message is too long")
+            self._log_error("Message is too long", raise_error=InvalidMessage)
 
 
 class MastodonPlatform(AbstractPlatform):

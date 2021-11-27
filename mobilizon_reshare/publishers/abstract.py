@@ -114,13 +114,26 @@ class AbstractPlatform(ABC, LoggerMixin, ConfLoaderMixin):
 
 class AbstractEventFormatter(LoggerMixin, ConfLoaderMixin):
     @abstractmethod
-    def validate_event(self, message) -> None:
+    def _validate_event(self, event: MobilizonEvent) -> None:
         """
         Validates publisher's event.
         Should raise ``PublisherError`` (or one of its subclasses) if event
         is not valid.
         """
         raise NotImplementedError  # pragma: no cover
+
+    @abstractmethod
+    def _validate_message(self, message: str) -> None:
+        """
+        Validates notifier's message.
+        Should raise ``PublisherError`` (or one of its subclasses) if message
+        is not valid.
+        """
+        raise NotImplementedError  # pragma: no cover
+
+    def validate_event(self, event: MobilizonEvent) -> None:
+        self._validate_event(event)
+        self._validate_message(self.get_message_from_event(event))
 
     def _preprocess_event(self, event):
         """
@@ -141,15 +154,6 @@ class AbstractEventFormatter(LoggerMixin, ConfLoaderMixin):
         """
         template_path = self.conf.msg_template_path or self.default_template_path
         return JINJA_ENV.get_template(template_path)
-
-    @abstractmethod
-    def validate_message(self, message: str) -> None:
-        """
-        Validates notifier's message.
-        Should raise ``PublisherError`` (or one of its subclasses) if message
-        is not valid.
-        """
-        raise NotImplementedError  # pragma: no cover
 
     def get_recap_header(self):
         template_path = (
