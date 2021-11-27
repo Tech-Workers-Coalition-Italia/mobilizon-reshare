@@ -36,14 +36,14 @@ class ZulipFormatter(AbstractEventFormatter):
         "mobilizon_reshare.publishers.templates", "zulip_recap_header.tmpl.j2"
     )
 
-    def validate_event(self, event: MobilizonEvent) -> None:
+    def _validate_event(self, event: MobilizonEvent) -> None:
         text = event.description
         if not (text and text.strip()):
             self._log_error("No text was found", raise_error=InvalidEvent)
 
-    def validate_message(self, message) -> None:
+    def _validate_message(self, message: str) -> None:
         if len(message.encode("utf-8")) >= 10000:
-            raise InvalidMessage("Message is too long")
+            self._log_error("Message is too long", raise_error=InvalidMessage)
 
     def _preprocess_event(self, event: MobilizonEvent):
         event.description = html_to_markdown(event.description)

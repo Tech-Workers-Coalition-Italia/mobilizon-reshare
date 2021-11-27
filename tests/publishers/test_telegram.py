@@ -15,12 +15,7 @@ from mobilizon_reshare.publishers.platforms.telegram import (
 def test_message_length_success(event):
     message = "a" * 500
     event.description = message
-    assert (
-        TelegramFormatter().validate_message(
-            TelegramFormatter().get_message_from_event(event)
-        )
-        is None
-    )
+    assert TelegramFormatter().validate_event(event) is None
 
 
 def test_message_length_failure(event):
@@ -28,9 +23,7 @@ def test_message_length_failure(event):
     event.description = message
 
     with pytest.raises(InvalidMessage):
-        TelegramFormatter().validate_message(
-            TelegramFormatter().get_message_from_event(event)
-        )
+        TelegramFormatter().validate_event(event)
 
 
 @pytest.mark.parametrize(

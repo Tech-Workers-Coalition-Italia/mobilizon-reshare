@@ -16,16 +16,14 @@ from mobilizon_reshare.publishers.platforms.mastodon import (
 def test_message_length_success(event):
     message = "a" * 200
     event.name = message
-    message = MastodonFormatter().get_message_from_event(event)
-    MastodonFormatter().validate_message(message)
+    MastodonFormatter().validate_event(event)
 
 
 def test_message_length_failure(event):
     message = "a" * 500
     event.name = message
-    message = MastodonFormatter().get_message_from_event(event)
     with pytest.raises(InvalidMessage):
-        MastodonFormatter().validate_message(message)
+        MastodonFormatter().validate_event(event)
 
 
 def test_event_validation(event):

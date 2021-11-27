@@ -113,7 +113,6 @@ class PublisherCoordinator:
             f(*args, **kwargs)
             return reasons
         except Exception as e:
-            logger.error(str(e))
             return reasons + [str(e)]
 
     def _validate(self):
@@ -122,15 +121,11 @@ class PublisherCoordinator:
         for publication in self.publications:
             reasons = []
             reasons = self._safe_run(
-                reasons, publication.publisher.validate_credentials,
+                reasons,
+                publication.publisher.validate_credentials,
             )
             reasons = self._safe_run(
                 reasons, publication.formatter.validate_event, publication.event
-            )
-            reasons = self._safe_run(
-                reasons,
-                publication.formatter.validate_message,
-                publication.formatter.get_message_from_event(publication.event),
             )
 
             if len(reasons) > 0:
