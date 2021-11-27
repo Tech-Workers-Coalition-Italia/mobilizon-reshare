@@ -38,4 +38,4 @@ build-backend = "poetry.core.masonry.api"
 mobilizon-reshare="mobilizon_reshare.cli.cli:mobilizon_reshare"
 
 [tool.pytest.ini_options]
-addopts = "--cov-config=.coveragerc --cov=. --cov-report html tests/"
+addopts = "--cov-config=.coveragerc --cov=. --cov-report term-missing tests/"
