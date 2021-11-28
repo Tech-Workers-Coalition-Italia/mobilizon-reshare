@@ -420,6 +420,7 @@ Facebook authentication.")
          ("python-iniconfig" ,python-iniconfig)
          ("poetry" ,poetry)
          ("python-pytest" ,python-pytest-6)
+         ("python-pytest-cov" ,python-pytest-cov)
          ("python-pytest-asyncio" ,python-pytest-asyncio-0.15)
          ("python-pytest-lazy-fixture"
           ,python-pytest-lazy-fixture)
