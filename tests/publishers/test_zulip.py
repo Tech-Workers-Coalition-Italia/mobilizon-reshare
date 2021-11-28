@@ -9,8 +9,8 @@ from mobilizon_reshare.publishers.coordinator import PublisherCoordinator
 from mobilizon_reshare.publishers.exceptions import (
     InvalidEvent,
     InvalidResponse,
-    ZulipError,
     InvalidMessage,
+    HTTPResponseError,
 )
 from mobilizon_reshare.publishers.platforms.zulip import ZulipFormatter, ZulipPublisher
 from mobilizon_reshare.storage.query.read import build_publications
@@ -120,7 +120,7 @@ async def test_zulip_publishr_failure_invalid_credentials(
 ):
     report = PublisherCoordinator(unsaved_publications).run()
     assert report.reports[0].status == PublicationStatus.FAILED
-    assert report.reports[0].reason == "403 Error - Your credentials are not valid!"
+    assert report.reports[0].reason.startswith("403 Client Error: Forbidden for url: ")
 
 
 @pytest.mark.asyncio
@@ -129,7 +129,7 @@ async def test_zulip_publisher_failure_client_error(
 ):
     report = PublisherCoordinator(unsaved_publications).run()
     assert report.reports[0].status == PublicationStatus.FAILED
-    assert report.reports[0].reason == "400 Error - Invalid request"
+    assert report.reports[0].reason.startswith("400 Client Error: Bad Request for url:")
 
 
 def test_event_validation(event):
@@ -172,8 +172,8 @@ def test_validate_response_invalid_request():
     response = requests.Response()
     response.status_code = 400
     response._content = b"""{"result":"error", "msg":"wrong request"}"""
-    with pytest.raises(ZulipError) as e:
+    with pytest.raises(HTTPResponseError) as e:
 
         ZulipPublisher()._validate_response(response)
 
-    e.match("wrong request")
+    e.match("400 Client Error: None for url:")
