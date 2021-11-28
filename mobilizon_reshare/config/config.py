@@ -1,5 +1,4 @@
 import importlib.resources
-import os
 from pathlib import Path
 from typing import Optional
 
@@ -63,7 +62,6 @@ def build_settings(
     ) as bundled_settings_path:
         for f in [
             settings_file,
-            os.environ.get("MOBILIZION_RESHARE_SETTINGS_FILE"),
             Path(dirs.user_config_dir, "mobilizon_reshare.toml"),
             Path(dirs.site_config_dir, "mobilizon_reshare.toml"),
             bundled_settings_path,
