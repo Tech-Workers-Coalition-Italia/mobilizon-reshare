@@ -18,6 +18,7 @@ from mobilizon_reshare.publishers.exceptions import (
     InvalidResponse,
     ZulipError,
     InvalidMessage,
+    HTTPResponseError,
 )
 
 
@@ -109,7 +110,15 @@ class ZulipPlatform(AbstractPlatform):
                 raise_error=InvalidBot,
             )
 
-    def _validate_response(self, res) -> dict:
+    def _validate_response(self, res: Response) -> dict:
+        try:
+            res.raise_for_status()
+        except requests.exceptions.HTTPError as e:
+            self._log_debug(str(res))
+            self._log_error(
+                str(e), raise_error=HTTPResponseError,
+            )
+
         # See https://zulip.com/api/rest-error-handling
         try:
             data = res.json()
