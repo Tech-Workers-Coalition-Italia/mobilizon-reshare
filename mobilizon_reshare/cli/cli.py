@@ -10,6 +10,7 @@ from mobilizon_reshare.cli.commands.format.format import format_event
 from mobilizon_reshare.cli.commands.inspect.inspect_event import inspect_events
 from mobilizon_reshare.cli.commands.start.main import main as start_main
 from mobilizon_reshare.cli.commands.recap.main import main as recap_main
+from mobilizon_reshare.config.config import current_version
 from mobilizon_reshare.config.publishers import publisher_names
 
 from mobilizon_reshare.event.event import EventPublicationStatus
@@ -42,6 +43,13 @@ to_date_option = click.option(
 )
 
 
+def print_version(ctx, param, value):
+    if not value or ctx.resilient_parsing:
+        return
+    click.echo(current_version())
+    ctx.exit()
+
+
 class InspectTarget(Enum):
     ALL = "all"
     WAITING = "waiting"
@@ -51,6 +59,9 @@ class InspectTarget(Enum):
 
 
 @click.group()
+@click.option(
+    "--version", is_flag=True, callback=print_version, expose_value=False, is_eager=True
+)
 def mobilizon_reshare():
     pass
 
