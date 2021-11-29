@@ -93,7 +93,7 @@ async def publications_with_status(
     event_mobilizon_id: Optional[UUID] = None,
     from_date: Optional[Arrow] = None,
     to_date: Optional[Arrow] = None,
-) -> dict[UUID, Publication]:
+) -> Publication:
     query = Publication.filter(status=status)
 
     if event_mobilizon_id:
@@ -103,10 +103,7 @@ async def publications_with_status(
 
     query = _add_date_window(query, "timestamp", from_date, to_date)
 
-    publications_list = (
-        await query.prefetch_related("publisher").order_by("timestamp").distinct()
-    )
-    return {pub.id: pub for pub in publications_list}
+    return await query.prefetch_related("publisher").order_by("timestamp").distinct()
 
 
 async def events_without_publications(
