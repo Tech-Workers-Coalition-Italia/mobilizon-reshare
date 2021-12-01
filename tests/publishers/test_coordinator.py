@@ -1,4 +1,5 @@
 import logging
+from datetime import timedelta
 from uuid import UUID
 
 import pytest
@@ -18,6 +19,7 @@ from mobilizon_reshare.publishers.coordinator import (
     PublicationFailureNotifiersCoordinator,
     RecapCoordinator,
 )
+from tests import today
 
 
 @pytest.fixture()
@@ -91,7 +93,7 @@ async def mock_publications(
             id=UUID(int=i + 1),
             event=event,
             publisher=publisher,
-            timestamp=None,
+            timestamp=today + timedelta(hours=i),
             reason=None,
         )
         publication = EventPublication.from_orm(publication, test_event)

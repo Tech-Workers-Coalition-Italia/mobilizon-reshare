@@ -55,6 +55,14 @@ async def events_with_status(
     )
 
 
+async def get_all_publications(
+    from_date: Optional[Arrow] = None, to_date: Optional[Arrow] = None,
+) -> Iterable[Publication]:
+    return await prefetch_publication_relations(
+        _add_date_window(Publication.all(), "timestamp", from_date, to_date)
+    )
+
+
 async def get_all_events(
     from_date: Optional[Arrow] = None, to_date: Optional[Arrow] = None,
 ) -> Iterable[MobilizonEvent]:
@@ -70,6 +78,14 @@ async def prefetch_event_relations(queryset: QuerySet[Event]) -> list[Event]:
     return (
         await queryset.prefetch_related("publications__publisher")
         .order_by("begin_datetime")
+        .distinct()
+    )
+
+
+async def prefetch_publication_relations(queryset: QuerySet[Publication]) -> list[Publication]:
+    return (
+        await queryset.prefetch_related("publisher", "event")
+        .order_by("timestamp")
         .distinct()
     )
 
@@ -93,7 +109,7 @@ async def publications_with_status(
     event_mobilizon_id: Optional[UUID] = None,
     from_date: Optional[Arrow] = None,
     to_date: Optional[Arrow] = None,
-) -> Publication:
+) -> Iterable[Publication]:
     query = Publication.filter(status=status)
 
     if event_mobilizon_id:
@@ -101,9 +117,9 @@ async def publications_with_status(
             event__mobilizon_id=event_mobilizon_id
         )
 
-    query = _add_date_window(query, "timestamp", from_date, to_date)
-
-    return await query.prefetch_related("publisher").order_by("timestamp").distinct()
+    return await prefetch_publication_relations(
+        _add_date_window(query, "timestamp", from_date, to_date)
+    )
 
 
 async def events_without_publications(
