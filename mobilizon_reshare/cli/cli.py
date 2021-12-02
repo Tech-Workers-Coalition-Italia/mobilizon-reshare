@@ -33,18 +33,21 @@ status_name_to_enum = {
 }
 
 settings_file_option = click.option(
+    "-f",
     "--settings-file",
     type=click.Path(exists=True),
     help="The path for the settings file. "
     "Overrides the one specified in the environment variables.",
 )
 from_date_option = click.option(
+    "-b",
     "--begin",
     type=click.DateTime(),
     expose_value=True,
     help="Include only events that begin after this datetime",
 )
 to_date_option = click.option(
+    "-e",
     "--end",
     type=click.DateTime(),
     expose_value=True,
