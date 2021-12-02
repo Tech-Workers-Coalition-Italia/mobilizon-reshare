@@ -2,6 +2,7 @@ import functools
 
 import click
 from arrow import Arrow
+from click import pass_context
 
 from mobilizon_reshare.cli import safe_execution
 from mobilizon_reshare.cli.commands.format.format import format_event
@@ -53,12 +54,21 @@ to_date_option = click.option(
     expose_value=True,
     help="Include only events that begin before this datetime",
 )
-status_option = click.option(
+event_status_option = click.option(
     "-s",
     "--status",
+    type=click.Choice(list(status_name_to_enum["event"].keys())),
     default="all",
     expose_value=True,
-    help="Include only objects with the given status",
+    help="Include only events with the given status",
+)
+publication_status_option = click.option(
+    "-s",
+    "--status",
+    type=click.Choice(list(status_name_to_enum["publication"].keys())),
+    default="all",
+    expose_value=True,
+    help="Include only publications with the given status",
 )
 
 
@@ -73,43 +83,64 @@ def print_version(ctx, param, value):
 @click.option(
     "--version", is_flag=True, callback=print_version, expose_value=False, is_eager=True
 )
-def mobilizon_reshare():
-    pass
+@settings_file_option
+@pass_context
+def mobilizon_reshare(ctx, settings_file):
+    ctx.ensure_object(dict)
+    ctx.obj["settings-file"] = settings_file
 
 
 @mobilizon_reshare.command(help="Synchronize and publish events")
-@settings_file_option
-def start(settings_file):
-    safe_execution(start_main, settings_file=settings_file)
+def start(ctx):
+    ctx.ensure_object(dict)
+    safe_execution(start_main, settings_file=ctx.obj["settings-file"])
 
 
 @mobilizon_reshare.command(help="Publish a recap of already published events")
-@settings_file_option
-def recap(settings_file):
-    safe_execution(recap_main, settings_file=settings_file)
+def recap(ctx):
+    ctx.ensure_object(dict)
+    safe_execution(recap_main, settings_file=ctx.obj["settings-file"])
 
 
-@mobilizon_reshare.command(help="List objects in the database with different criteria")
+@mobilizon_reshare.group(help="List objects in the database with different criteria")
 @from_date_option
 @to_date_option
-@click.argument(
-    "object",
-    type=click.Choice(list(status_name_to_enum.keys())),
-)
-@settings_file_option
-@status_option
-def inspect(object, begin, end, settings_file, status):
-    begin = Arrow.fromdatetime(begin) if begin else None
-    end = Arrow.fromdatetime(end) if end else None
+@pass_context
+def inspect(ctx, begin, end):
+    ctx.ensure_object(dict)
+    ctx.obj["begin"] = Arrow.fromdatetime(begin) if begin else None
+    ctx.obj["end"] = Arrow.fromdatetime(end) if end else None
 
+
+@inspect.command(help="Query for events in the database")
+@event_status_option
+@pass_context
+def event(ctx, status):
+    ctx.ensure_object(dict)
     safe_execution(
         functools.partial(
-            inspect_events if object == "event" else inspect_publications,
-            status_name_to_enum[object][status],
-            frm=begin,
-            to=end,
+            inspect_events,
+            status_name_to_enum["event"][status],
+            frm=ctx.obj["begin"],
+            to=ctx.obj["end"],
         ),
-        settings_file,
+        ctx.obj["settings-file"],
+    )
+
+
+@inspect.command(help="Query for publications in the database")
+@publication_status_option
+@pass_context
+def publication(ctx, status):
+    ctx.ensure_object(dict)
+    safe_execution(
+        functools.partial(
+            inspect_publications,
+            status_name_to_enum["publication"][status],
+            frm=ctx.obj["begin"],
+            to=ctx.obj["end"],
+        ),
+        ctx.obj["settings-file"],
     )
 
 
@@ -120,11 +151,12 @@ def inspect(object, begin, end, settings_file, status):
 @settings_file_option
 @click.argument("event-id", type=click.UUID)
 @click.argument("publisher", type=click.Choice(publisher_names))
-def format(settings_file, event_id, publisher):
+def format(ctx, event_id, publisher):
+    ctx.ensure_object(dict)
     safe_execution(
-        functools.partial(format_event, event_id, publisher), settings_file,
+        functools.partial(format_event, event_id, publisher), ctx.obj["settings-file"],
     )
 
 
 if __name__ == "__main__":
-    mobilizon_reshare()
+    mobilizon_reshare(obj={})
