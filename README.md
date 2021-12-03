@@ -1,3 +1,5 @@
+[![CI](https://github.com/Tech-Workers-Coalition-Italia/mobilizon-reshare/actions/workflows/main.yml/badge.svg?branch=master)](https://github.com/Tech-Workers-Coalition-Italia/mobilizon-reshare/actions/workflows/main.yml)
+
 The goal of mobilizon_reshare is to provide a suite to reshare Mobilizon events on a broad selection of platforms. This
 tool enables an organization to automate their social media strategy in regards
 to events and their promotion. 
