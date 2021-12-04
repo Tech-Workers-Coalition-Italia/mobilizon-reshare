@@ -20,9 +20,11 @@ class MoReDB:
             self.path.parent.mkdir(parents=True, exist_ok=True)
 
     async def __implement_db_changes__(self):
+        # return
         print('implementing db changes')
         command = Command(tortoise_config=TORTOISE_ORM, app='models',
-                          location='./')
+                          location='./migrations'
+                          )
         await command.init()
         await command.upgrade()
 

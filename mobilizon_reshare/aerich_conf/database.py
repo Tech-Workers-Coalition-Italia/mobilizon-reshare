@@ -1,11 +1,12 @@
 """tortoise orm conf for aerich"""
 from pathlib import Path
-import toml
+from mobilizon_reshare.config.config import get_settings
 
 CONF_FILE = "mobilizon_reshare/settings.toml"
 
-SETTINGS = toml.load(CONF_FILE)
-db_path = Path(SETTINGS['default']['db_path'])
+SETTINGS = get_settings(CONF_FILE)
+db_path = Path(SETTINGS.db_path)
+print(db_path)
 
 db_url = f"sqlite:///{db_path}"
 
