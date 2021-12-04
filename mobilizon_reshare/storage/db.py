@@ -5,6 +5,8 @@ from tortoise import Tortoise
 
 from mobilizon_reshare.config.publishers import publisher_names
 from mobilizon_reshare.storage.query.write import update_publishers
+from aerich import Command
+from mobilizon_reshare.aerich_conf.database import TORTOISE_ORM
 
 logger = logging.getLogger(__name__)
 
@@ -17,7 +19,16 @@ class MoReDB:
         if not self.is_init:
             self.path.parent.mkdir(parents=True, exist_ok=True)
 
+    async def __implement_db_changes__(self):
+        print('implementing db changes')
+        command = Command(tortoise_config=TORTOISE_ORM, app='models',
+                          location='./')
+        await command.init()
+        await command.upgrade()
+
+
     async def setup(self):
+        await self.__implement_db_changes__()
         await Tortoise.init(
             db_url=f"sqlite:///{self.path}",
             modules={
