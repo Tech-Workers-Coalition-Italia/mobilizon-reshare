@@ -45,14 +45,14 @@ from_date_option = click.option(
     "--begin",
     type=click.DateTime(),
     expose_value=True,
-    help="Include only events that begin after this datetime",
+    help="Include only events that begin after this datetime.",
 )
 to_date_option = click.option(
     "-e",
     "--end",
     type=click.DateTime(),
     expose_value=True,
-    help="Include only events that begin before this datetime",
+    help="Include only events that begin before this datetime.",
 )
 event_status_option = click.option(
     "-s",
@@ -60,7 +60,7 @@ event_status_option = click.option(
     type=click.Choice(list(status_name_to_enum["event"].keys())),
     default="all",
     expose_value=True,
-    help="Include only events with the given status",
+    help="Include only events with the given STATUS.",
 )
 publication_status_option = click.option(
     "-s",
@@ -68,7 +68,7 @@ publication_status_option = click.option(
     type=click.Choice(list(status_name_to_enum["publication"].keys())),
     default="all",
     expose_value=True,
-    help="Include only publications with the given status",
+    help="Include only publications with the given STATUS.",
 )
 
 
@@ -90,19 +90,19 @@ def mobilizon_reshare(ctx, settings_file):
     ctx.obj["settings-file"] = settings_file
 
 
-@mobilizon_reshare.command(help="Synchronize and publish events")
+@mobilizon_reshare.command(help="Synchronize and publish events.")
 def start(ctx):
     ctx.ensure_object(dict)
     safe_execution(start_main, settings_file=ctx.obj["settings-file"])
 
 
-@mobilizon_reshare.command(help="Publish a recap of already published events")
+@mobilizon_reshare.command(help="Publish a recap of already published events.")
 def recap(ctx):
     ctx.ensure_object(dict)
     safe_execution(recap_main, settings_file=ctx.obj["settings-file"])
 
 
-@mobilizon_reshare.group(help="List objects in the database with different criteria")
+@mobilizon_reshare.group(help="List objects in the database with different criteria.")
 @from_date_option
 @to_date_option
 @pass_context
@@ -112,7 +112,7 @@ def inspect(ctx, begin, end):
     ctx.obj["end"] = Arrow.fromdatetime(end) if end else None
 
 
-@inspect.command(help="Query for events in the database")
+@inspect.command(help="Query for events in the database.")
 @event_status_option
 @pass_context
 def event(ctx, status):
@@ -128,7 +128,7 @@ def event(ctx, status):
     )
 
 
-@inspect.command(help="Query for publications in the database")
+@inspect.command(help="Query for publications in the database.")
 @publication_status_option
 @pass_context
 def publication(ctx, status):
@@ -145,8 +145,8 @@ def publication(ctx, status):
 
 
 @mobilizon_reshare.command(
-    help="Format and print event with mobilizon id EVENT-ID using the publisher's format named"
-    "PUBLISHER"
+    help="Format and print event with EVENT-ID using the publisher's format named "
+    "PUBLISHER."
 )
 @settings_file_option
 @click.argument("event-id", type=click.UUID)
