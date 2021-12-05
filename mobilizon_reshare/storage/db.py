@@ -19,18 +19,16 @@ class MoReDB:
         if not self.is_init:
             self.path.parent.mkdir(parents=True, exist_ok=True)
 
-    async def __implement_db_changes__(self):
-        # return
-        print('implementing db changes')
+    async def _implement_db_changes(self):
+        logging.info("Updating database to latest version")
         command = Command(tortoise_config=TORTOISE_ORM, app='models',
-                          location='./migrations'
-                          )
+                          location='./migrations')
         await command.init()
         await command.upgrade()
 
 
     async def setup(self):
-        await self.__implement_db_changes__()
+        await self._implement_db_changes()
         await Tortoise.init(
             db_url=f"sqlite:///{self.path}",
             modules={
