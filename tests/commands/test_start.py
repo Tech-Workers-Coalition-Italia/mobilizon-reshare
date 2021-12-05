@@ -1,7 +1,10 @@
-from logging import DEBUG
+import uuid
+from logging import DEBUG, INFO
 
+import arrow
 import pytest
 
+from mobilizon_reshare.storage.query.read import get_all_events
 from tests.commands.conftest import simple_event_element
 from mobilizon_reshare.event.event import MobilizonEvent, EventPublicationStatus
 from mobilizon_reshare.main.start import start
@@ -11,8 +14,7 @@ from mobilizon_reshare.models.publication import PublicationStatus
 
 @pytest.mark.asyncio
 @pytest.mark.parametrize(
-    "elements",
-    [[]],
+    "elements", [[]],
 )
 async def test_start_no_event(
     mock_mobilizon_success_answer, mobilizon_answer, caplog, elements
@@ -38,6 +40,7 @@ async def test_start_new_event(
     mock_publisher_config,
     mock_publication_window,
     message_collector,
+    elements,
 ):
     with caplog.at_level(DEBUG):
         # calling the start command
@@ -57,9 +60,7 @@ async def test_start_new_event(
         )
 
         # the start command should save all the events in the database
-        assert len(all_events) == len(
-            mobilizon_answer["data"]["group"]["organizedEvents"]["elements"]
-        ), all_events
+        assert len(all_events) == len(elements), all_events
 
         # it should create a publication for each publisher
         publications = all_events[0].publications
@@ -85,8 +86,7 @@ async def test_start_new_event(
     "publisher_class", [pytest.lazy_fixture("mock_publisher_class")]
 )
 @pytest.mark.parametrize(
-    "elements",
-    [[]],
+    "elements", [[]],
 )
 @pytest.mark.parametrize("publication_window", [(0, 24)])
 async def test_start_event_from_db(
@@ -133,8 +133,7 @@ async def test_start_event_from_db(
     "publisher_class", [pytest.lazy_fixture("mock_publisher_invalid_class")]
 )
 @pytest.mark.parametrize(
-    "elements",
-    [[]],
+    "elements", [[]],
 )
 @pytest.mark.parametrize("publication_window", [(0, 24)])
 async def test_start_publisher_failure(
@@ -179,3 +178,69 @@ async def test_start_publisher_failure(
             MobilizonEvent.from_model(event_model).status
             == EventPublicationStatus.FAILED
         )
+
+
+@pytest.fixture
+async def published_event(event_generator):
+
+    event = event_generator()
+    event_model = event.to_model()
+    await event_model.save()
+    assert await start() is None
+    await event_model.refresh_from_db()
+    await event_model.fetch_related("publications")
+    for pub in event_model.publications:
+        pub.timestamp = arrow.now().shift(days=-2).datetime
+        await pub.save()
+    return event_model
+
+
+def second_event_element():
+    return {
+        "beginsOn": "2021-05-23T12:15:00Z",
+        "description": "description of the second event",
+        "endsOn": "2021-05-23T15:15:00Z",
+        "onlineAddress": None,
+        "options": {"showEndTime": True, "showStartTime": True},
+        "physicalAddress": None,
+        "picture": None,
+        "title": "test event",
+        "url": "https://some_mobilizon/events/1e2e5943-4a5c-497a-b65d-90457b715d7b",
+        "uuid": str(uuid.uuid4()),
+    }
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize(
+    "publisher_class", [pytest.lazy_fixture("mock_publisher_class")]
+)
+@pytest.mark.parametrize(
+    "elements", [[second_event_element()]],
+)
+@pytest.mark.parametrize("publication_window", [(0, 24)])
+async def test_start_second_execution(
+    mock_mobilizon_success_answer,
+    mobilizon_answer,
+    caplog,
+    mock_publisher_config,
+    mock_publication_window,
+    message_collector,
+    event_generator,
+    published_event,
+):
+    # the fixture published_event provides an existing event in the db
+
+    # I clean the message collector
+    message_collector.data = []
+
+    with caplog.at_level(INFO):
+        # calling the start command
+        assert await start() is None
+
+        # verify that the second event gets published
+        assert "Event to publish found" in caplog.text
+        assert message_collector == [
+            "test event|description of the second event",
+        ]
+        # I verify that the db event and the new event coming from mobilizon are both in the db
+        assert len(list(await get_all_events())) == 2
