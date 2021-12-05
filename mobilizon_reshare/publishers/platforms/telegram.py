@@ -38,7 +38,7 @@ class TelegramFormatter(AbstractEventFormatter):
         ".",
         "(",
         "!",
-        ")",
+        ")",sss
         "{",
         "}",
     ]
