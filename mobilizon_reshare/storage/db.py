@@ -1,5 +1,5 @@
 import logging
-import sys
+import asyncio
 from pathlib import Path
 from tortoise import Tortoise
 from aerich import Command
@@ -37,8 +37,33 @@ TORTOISE_ORM = {
 }
 
 
+async def shutdown(loop):
+    """shutdown method"""
+    logging.critical("SHUTDOWN CALLED")
+    logging.info("closing database connections")
+    tasks = [t for t in asyncio.all_tasks() if t is asyncio.current_task()]
+    _ = [task.cancel() for task in tasks]
+    logging.info("Cancelling %i tasks", len(tasks))
+    await asyncio.gather(*tasks, return_exceptions=True)
+    logging.info("flushing metrics")
+    loop.stop()
+
+
+async def handle_exception(loop, context):
+    """exception handler"""
+    logging.critical("HANDLER CALLED")
+    msg = context.get("exception", context["message"])
+    logging.critical("Caught exception: %s", msg)
+    logging.info("shutting down")
+    await shutdown(loop)
+    await tear_down()
+
+
 class MoReDB:
     def __init__(self, path: Path):
+        loop = asyncio.get_event_loop()
+        loop.set_exception_handler(handle_exception)
+
         self.path = path
         # TODO: Check if DB is openable/"queriable"
         self.is_init = self.path.exists() and (not self.path.is_dir())
@@ -55,12 +80,15 @@ class MoReDB:
             await command.upgrade()
         except FileNotFoundError:
             logging.critical("aerich configuration not found, fatal error")
-            # raise
-            sys.exit(1)
-
+            raise
 
     async def setup(self):
-        await self._implement_db_changes()
+        implement_db_changes = asyncio.create_task(self._implement_db_changes())
+        _, _ = await asyncio.wait({implement_db_changes},
+                                  return_when=asyncio.FIRST_EXCEPTION)
+        if implement_db_changes.exception():
+            logging.critical("exception during aerich init")
+            raise implement_db_changes.exception()
         await Tortoise.init(
             db_url=get_db_url(),
             modules={
