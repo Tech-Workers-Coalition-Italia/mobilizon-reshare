@@ -1,4 +1,5 @@
 import logging
+import sys
 from pathlib import Path
 from tortoise import Tortoise
 from aerich import Command
@@ -46,10 +47,16 @@ class MoReDB:
 
     async def _implement_db_changes(self):
         logging.info("Updating database to latest version")
-        command = Command(tortoise_config=TORTOISE_ORM, app='models',
-                          location='./migrations')
-        await command.init()
-        await command.upgrade()
+        try:
+
+            command = Command(tortoise_config=TORTOISE_ORM, app='models',
+                              location='./migrations')
+            await command.init()
+            await command.upgrade()
+        except FileNotFoundError:
+            logging.critical("aerich configuration not found, fatal error")
+            # raise
+            sys.exit(1)
 
 
     async def setup(self):
