@@ -48,11 +48,10 @@ def build_settings(
     Creates a Dynaconf base object. Configuration files are checked in this order:
 
       1. CLI argument
-      2. `MOBILIZION_RESHARE_SETTINGS_FILE` environment variable;
-      3. User configuration directory. On Linux that's `$XDG_CONFIG_HOME/mobilizon_reshare/<mobilizon-reshare-version>`;
-      4. User configuration directory. On Linux that's the first element of
+      2. User configuration directory. On Linux that's `$XDG_CONFIG_HOME/mobilizon_reshare/<mobilizon-reshare-version>`;
+      3. System configuration directory. On Linux that's the first element of
          `$XDG_CONFIG_DIRS` + `/mobilizon_reshare/<mobilizon-reshare-version>`.
-      5. The default configuration distributed with the package.
+      4. The default configuration distributed with the package.
 
     The first available configuration file will be loaded.
     """

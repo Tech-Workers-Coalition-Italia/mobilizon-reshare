@@ -36,135 +36,6 @@
 (define-public python-3.9-wrapper
   (wrap-python3 python-3.9))
 
-;; TODO: This should probably be upstreamed.
-(define-public python-dotenv
-  (package
-    (name "python-dotenv")
-    (version "0.17.0")
-    (source
-     (origin
-       (method url-fetch)
-       (uri (pypi-uri "python-dotenv" version))
-       (sha256
-        (base32
-         "0jjg7b8073gxsmh47ic152xdxym5zhw887ilh0ddl45gl0nph6s7"))))
-    (build-system python-build-system)
-    (propagated-inputs
-     `(("python-click" ,python-click)))
-    (native-inputs
-     `(("python-mock" ,python-mock)
-       ("python-pytest" ,python-pytest)
-       ("python-sh" ,python-sh)))
-    (home-page
-     "https://github.com/theskumar/python-dotenv")
-    (synopsis
-     "Setup environment variables according to .env files")
-    (description
-     "This package provides the @code{python-dotenv} Python module to
-read key-value pairs from a .env file and set them as environment variables")
-    (license license:bsd-3)))
-
-;; TODO: This should probably be upstreamed.
-;; This is only for python-dynaconf.
-(define-public python-dotenv-0.13.0
-  (package (inherit python-dotenv)
-    (name "python-dotenv")
-    (version "0.13.0")
-    (source
-     (origin
-       (method url-fetch)
-       (uri (pypi-uri "python-dotenv" version))
-       (sha256
-        (base32
-         "0x5dagmfn31phrbxlwacw3s4w5vibv8fxqc62nqcdvdhjsy0k69v"))))))
-
-;; TODO: This should probably be upstreamed.
-;; This is only for python-dynaconf.
-(define-public python-ruamel.yaml-0.16.10
-  (package (inherit python-ruamel.yaml)
-    (name "python-ruamel.yaml")
-    (version "0.16.10")
-    (source
-     (origin
-       (method url-fetch)
-       (uri (pypi-uri "ruamel.yaml" version))
-       (sha256
-        (base32
-         "0m5rwlf3iwsb1w9l98qx9alvqxk41gfphksj03x2zxwbfx569709"))))))
-
-;; TODO: This should probably be upstreamed.
-(define-public python-dynaconf
-  (package
-    (name "dynaconf")
-    (version "3.1.5")
-    (source
-     (origin
-       (method git-fetch)
-       (uri
-        (git-reference
-         (url "https://github.com/rochacbruno/dynaconf")
-         (commit version)))
-       (file-name (git-file-name name version))
-       (sha256
-        (base32
-         "0hxp1iadwmva79l16frvc77jrisppb09z6k1asm0qfjjzwyaswg3"))
-       (patches (search-patches "dynaconf-Unvendor-dependencies.patch"))
-       (modules '((guix build utils)))
-       (snippet '(begin
-                   ;; Remove vendored dependencies
-                   (let ((unvendor '("click" "dotenv" "ruamel" "toml")))
-                     (with-directory-excursion "dynaconf/vendor"
-                       (for-each delete-file-recursively unvendor))
-                     (with-directory-excursion "dynaconf/vendor_src"
-                       (for-each delete-file-recursively unvendor)))))))
-    (build-system python-build-system)
-    (arguments
-     `(#:phases
-       (modify-phases %standard-phases
-         (replace 'check
-           (lambda* (#:key tests? outputs #:allow-other-keys)
-             (when tests?
-               (setenv "PATH"
-                       (string-append (assoc-ref outputs "out") "/bin:"
-                                      (getenv "PATH")))
-               ;; These tests depend on hvac and a
-               ;; live Vault process.
-               (delete-file "tests/test_vault.py")
-               (invoke "make" "test_only")))))))
-    (propagated-inputs
-     `(("python-click" ,python-click)
-       ("python-configobj" ,python-configobj)
-       ("python-dotenv" ,python-dotenv-0.13.0)
-       ("python-ruamel.yaml" ,python-ruamel.yaml-0.16.10)
-       ("python-toml" ,python-toml)))
-    (native-inputs
-     `(("python-django" ,python-django)
-       ("python-flask" ,python-flask)
-       ("python-pytest" ,python-pytest-6)
-       ("python-pytest-cov" ,python-pytest-cov)
-       ("python-pytest-mock" ,python-pytest-mock)))
-    (home-page "https://www.dynaconf.com/")
-    (synopsis "The dynamic configurator for your Python project")
-    (description
-     "This package provides @code{dynaconf} the dynamic configurator manager for
-your Python project.  It provides features such as:
-
-@itemize
-@item Inspired by the @url{https://12factor.net/config, 12-factor application guide};
-@item Settings management (default values, validation, parsing, templating);
-@item Protection of sensitive information (passwords/tokens);
-@item Multiple file formats @code{toml|yaml|json|ini|py} and also customizable
-loaders;
-@item Full support for environment variables to override existing settings
-(dotenv support included);
-@item Optional layered system for multiple environments @code{[default,
-development, testing, production]};
-@item Built-in support for Hashicorp Vault and Redis as settings and secrets storage;
-@item Built-in extensions for Django and Flask web frameworks;
-@item CLI for common operations such as @code{init, list, write, validate, export}.
-@end itemize")
-    (license license:expat)))
-
 ;; This is only for mobilizon-bots.git.
 (define-public python-arrow-1.1
   (package (inherit python-arrow)
@@ -432,7 +303,7 @@ Facebook authentication.")
          ("python-arrow" ,python-arrow-1.1)
          ("python-beautifulsoup4" ,python-beautifulsoup4)
          ("python-click" ,python-click)
-         ("python-dynaconf" ,python-dynaconf)
+         ("dynaconf" ,dynaconf)
          ("python-facebook-sdk" ,python-facebook-sdk.git)
          ("python-jinja2" ,python-jinja2)
          ("python-markdownify" ,python-markdownify)
