@@ -39,6 +39,10 @@ class TelegramFormatter(AbstractEventFormatter):
         "(",
         "!",
         ")",
+        ">",
+        "<",
+        "{",
+        "}",
     ]
 
     @staticmethod
@@ -115,7 +119,8 @@ class TelegramPlatform(AbstractPlatform):
             res.raise_for_status()
         except requests.exceptions.HTTPError as e:
             self._log_error(
-                f"Server returned invalid data: {str(e)}", raise_error=InvalidResponse,
+                f"Server returned invalid data: {str(e)}\n{res.text}",
+                raise_error=InvalidResponse,
             )
 
         try:
