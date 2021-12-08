@@ -83,23 +83,22 @@ def print_version(ctx, param, value):
 @click.option(
     "--version", is_flag=True, callback=print_version, expose_value=False, is_eager=True
 )
-@settings_file_option
 @pass_context
-def mobilizon_reshare(ctx, settings_file):
-    ctx.ensure_object(dict)
-    ctx.obj["settings-file"] = settings_file
+def mobilizon_reshare():
+    pass
 
 
 @mobilizon_reshare.command(help="Synchronize and publish events.")
-def start(ctx):
+@settings_file_option
+def start(ctx, settings):
     ctx.ensure_object(dict)
-    safe_execution(start_main, settings_file=ctx.obj["settings-file"])
+    safe_execution(start_main, settings_file=settings)
 
 
 @mobilizon_reshare.command(help="Publish a recap of already published events.")
-def recap(ctx):
-    ctx.ensure_object(dict)
-    safe_execution(recap_main, settings_file=ctx.obj["settings-file"])
+@settings_file_option
+def recap(settings):
+    safe_execution(recap_main, settings_file=settings)
 
 
 @mobilizon_reshare.group(help="List objects in the database with different criteria.")
@@ -114,8 +113,9 @@ def inspect(ctx, begin, end):
 
 @inspect.command(help="Query for events in the database.")
 @event_status_option
+@settings_file_option
 @pass_context
-def event(ctx, status):
+def event(ctx, status, settings):
     ctx.ensure_object(dict)
     safe_execution(
         functools.partial(
@@ -124,14 +124,15 @@ def event(ctx, status):
             frm=ctx.obj["begin"],
             to=ctx.obj["end"],
         ),
-        ctx.obj["settings-file"],
+        settings,
     )
 
 
 @inspect.command(help="Query for publications in the database.")
 @publication_status_option
+@settings_file_option
 @pass_context
-def publication(ctx, status):
+def publication(ctx, status, settings):
     ctx.ensure_object(dict)
     safe_execution(
         functools.partial(
@@ -140,7 +141,7 @@ def publication(ctx, status):
             frm=ctx.obj["begin"],
             to=ctx.obj["end"],
         ),
-        ctx.obj["settings-file"],
+        settings,
     )
 
 
@@ -148,13 +149,12 @@ def publication(ctx, status):
     help="Format and print event with EVENT-ID using the publisher's format named "
     "PUBLISHER."
 )
-@settings_file_option
 @click.argument("event-id", type=click.UUID)
 @click.argument("publisher", type=click.Choice(publisher_names))
-def format(ctx, event_id, publisher):
-    ctx.ensure_object(dict)
+@settings_file_option
+def format(event_id, publisher, settings):
     safe_execution(
-        functools.partial(format_event, event_id, publisher), ctx.obj["settings-file"],
+        functools.partial(format_event, event_id, publisher), settings,
     )
 
 
