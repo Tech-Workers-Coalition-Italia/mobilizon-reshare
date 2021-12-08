@@ -85,6 +85,14 @@ class MobilizonEvent:
     @staticmethod
     def from_model(event: Event, tz: str = "UTC"):
         publication_status = MobilizonEvent.compute_status(list(event.publications))
+        publication_time = {}
+
+        for pub in event.publications:
+            if publication_status != EventPublicationStatus.WAITING:
+                assert pub.timestamp is not None
+                publication_time[pub.publisher.name] = arrow.get(
+                    tortoise.timezone.localtime(value=pub.timestamp, timezone=tz)
+                ).to("local")
         return MobilizonEvent(
             name=event.name,
             description=event.description,
@@ -98,12 +106,6 @@ class MobilizonEvent:
             mobilizon_id=event.mobilizon_id,
             thumbnail_link=event.thumbnail_link,
             location=event.location,
-            publication_time={
-                pub.publisher.name: arrow.get(
-                    tortoise.timezone.localtime(value=pub.timestamp, timezone=tz)
-                ).to("local")
-                for pub in event.publications
-                if publication_status != EventPublicationStatus.WAITING
-            },
+            publication_time=publication_time,
             status=publication_status,
         )
