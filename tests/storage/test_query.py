@@ -5,7 +5,6 @@ import arrow
 import pytest
 
 from mobilizon_reshare.event.event import MobilizonEvent, EventPublicationStatus
-from mobilizon_reshare.models.event import Event
 from mobilizon_reshare.models.publication import PublicationStatus
 from mobilizon_reshare.storage.query.read import (
     get_published_events,
@@ -83,7 +82,7 @@ async def test_publications_with_status(
         to_date=to_date,
     )
 
-    assert publications == {pub.id: pub for pub in expected_result}
+    assert publications == expected_result
 
 
 @pytest.mark.asyncio

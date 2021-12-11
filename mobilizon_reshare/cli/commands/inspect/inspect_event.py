@@ -27,8 +27,8 @@ def show_events(events: Iterable[MobilizonEvent]):
 
 def pretty(event: MobilizonEvent):
     return (
-        f"{event.name}|{click.style(event.status.name, fg=status_to_color[event.status])}"
-        f"|{event.mobilizon_id}|{event.begin_datetime.isoformat()}->{event.end_datetime.isoformat()}"
+        f"{event.name : ^40}{click.style(event.status.name, fg=status_to_color[event.status]) : ^22}"
+        f"{str(event.mobilizon_id) : <40}{event.begin_datetime.isoformat() : <29}{event.end_datetime.isoformat()}"
     )
 
 
