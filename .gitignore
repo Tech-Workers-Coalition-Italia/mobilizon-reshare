@@ -181,3 +181,6 @@ etc/
 var/
 docker-image.tar.gz
 .guix-root
+
+# test run script
+test_run.sh

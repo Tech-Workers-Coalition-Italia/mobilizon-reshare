@@ -22,6 +22,7 @@ markdownify = "^0.9"
 appdirs = "^1.4"
 tweepy = "^4.1"
 facebook-sdk = {git = "https://github.com/mobolic/facebook-sdk.git"}
+aerich = "^0.5.8"
 
 [tool.poetry.dev-dependencies]
 responses = "^0.13"
