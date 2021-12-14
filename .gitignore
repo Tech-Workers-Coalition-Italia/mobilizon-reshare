@@ -184,6 +184,3 @@ docker-image.tar.gz
 
 # test run script
 test_run.sh
-
-# pylint rc
-pylintrc
