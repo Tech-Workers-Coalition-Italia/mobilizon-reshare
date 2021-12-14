@@ -84,21 +84,22 @@ def print_version(ctx, param, value):
     "--version", is_flag=True, callback=print_version, expose_value=False, is_eager=True
 )
 @pass_context
-def mobilizon_reshare():
+def mobilizon_reshare(obj):
     pass
 
 
 @mobilizon_reshare.command(help="Synchronize and publish events.")
 @settings_file_option
-def start(ctx, settings):
+@pass_context
+def start(ctx, settings_file):
     ctx.ensure_object(dict)
-    safe_execution(start_main, settings_file=settings)
+    safe_execution(start_main, settings_file=settings_file)
 
 
 @mobilizon_reshare.command(help="Publish a recap of already published events.")
 @settings_file_option
-def recap(settings):
-    safe_execution(recap_main, settings_file=settings)
+def recap(settings_file):
+    safe_execution(recap_main, settings_file=settings_file)
 
 
 @mobilizon_reshare.group(help="List objects in the database with different criteria.")
@@ -115,7 +116,7 @@ def inspect(ctx, begin, end):
 @event_status_option
 @settings_file_option
 @pass_context
-def event(ctx, status, settings):
+def event(ctx, status, settings_file):
     ctx.ensure_object(dict)
     safe_execution(
         functools.partial(
@@ -124,7 +125,7 @@ def event(ctx, status, settings):
             frm=ctx.obj["begin"],
             to=ctx.obj["end"],
         ),
-        settings,
+        settings_file,
     )
 
 
@@ -132,7 +133,7 @@ def event(ctx, status, settings):
 @publication_status_option
 @settings_file_option
 @pass_context
-def publication(ctx, status, settings):
+def publication(ctx, status, settings_file):
     ctx.ensure_object(dict)
     safe_execution(
         functools.partial(
@@ -141,7 +142,7 @@ def publication(ctx, status, settings):
             frm=ctx.obj["begin"],
             to=ctx.obj["end"],
         ),
-        settings,
+        settings_file,
     )
 
 
@@ -152,9 +153,9 @@ def publication(ctx, status, settings):
 @click.argument("event-id", type=click.UUID)
 @click.argument("publisher", type=click.Choice(publisher_names))
 @settings_file_option
-def format(event_id, publisher, settings):
+def format(event_id, publisher, settings_file):
     safe_execution(
-        functools.partial(format_event, event_id, publisher), settings,
+        functools.partial(format_event, event_id, publisher), settings_file,
     )
 
 
