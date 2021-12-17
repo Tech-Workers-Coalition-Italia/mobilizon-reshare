@@ -82,7 +82,9 @@ async def prefetch_event_relations(queryset: QuerySet[Event]) -> list[Event]:
     )
 
 
-async def prefetch_publication_relations(queryset: QuerySet[Publication]) -> list[Publication]:
+async def prefetch_publication_relations(
+    queryset: QuerySet[Publication],
+) -> list[Publication]:
     return (
         await queryset.prefetch_related("publisher", "event")
         .order_by("timestamp")
@@ -164,3 +166,10 @@ async def build_publications(event: MobilizonEvent) -> list[EventPublication]:
         for name in get_active_publishers()
     ]
     return list(EventPublication.from_orm(m, event) for m in models)
+
+
+@atomic(CONNECTION_NAME)
+async def get_event(event_mobilizon_id) -> None:
+    event = await Event.filter(mobilizon_id=event_mobilizon_id).first()
+    await event.fetch_related("publications")
+    return event

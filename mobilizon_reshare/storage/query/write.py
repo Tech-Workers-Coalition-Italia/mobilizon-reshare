@@ -24,9 +24,9 @@ async def save_publication_report(
         event = await Event.filter(
             mobilizon_id=publication_report.publication.event.mobilizon_id
         ).first()
-        publisher = await Publisher.filter(
+        publisher = await get_publisher_by_name(
             name=publication_report.publication.publisher.name
-        ).first()
+        )
         await Publication.create(
             id=publication_report.publication.id,
             event_id=event.id,
@@ -69,11 +69,13 @@ async def create_publisher(name: str, account_ref: Optional[str] = None) -> None
 
 
 @atomic(CONNECTION_NAME)
-async def update_publishers(
-    names: Iterable[str],
-) -> None:
+async def update_publishers(names: Iterable[str],) -> None:
     names = set(names)
     known_publisher_names = set(p.name for p in await Publisher.all())
     for name in names.difference(known_publisher_names):
         logging.info(f"Creating {name} publisher")
         await create_publisher(name)
+
+
+async def get_publisher_by_name(name):
+    return await Publisher.filter(name=name).first()
