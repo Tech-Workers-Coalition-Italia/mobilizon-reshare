@@ -62,6 +62,9 @@ class MobilizonEvent:
             location=self.location,
             begin_datetime=self.begin_datetime.astimezone(self.begin_datetime.tzinfo),
             end_datetime=self.end_datetime.astimezone(self.end_datetime.tzinfo),
+            last_update_time=self.last_update_time.astimezone(
+                self.last_update_time.tzinfo
+            ),
         )
 
     @staticmethod

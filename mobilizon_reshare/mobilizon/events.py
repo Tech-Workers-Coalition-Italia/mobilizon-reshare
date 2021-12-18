@@ -54,9 +54,9 @@ query_future_events = """{{
                 elements {{
                   title,
                   url,
+                  updatedAt,
                   beginsOn,
                   endsOn,
-                  updatedAt,
                   options {{
                     showStartTime,
                     showEndTime,
