@@ -18,6 +18,8 @@ class Event(Model):
 
     begin_datetime = fields.DatetimeField()
     end_datetime = fields.DatetimeField()
+    last_update_time = fields.DatetimeField()
+    puppa = fields.BooleanField(default=True)
 
     publications: fields.ReverseRelation["Publication"]
 

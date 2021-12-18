@@ -28,6 +28,7 @@ class MobilizonEvent:
     end_datetime: arrow.Arrow
     mobilizon_link: str
     mobilizon_id: UUID
+    last_update_time: arrow.Arrow
     thumbnail_link: Optional[str] = None
     location: Optional[str] = None
     publication_time: Optional[dict[str, arrow.Arrow]] = None
@@ -108,4 +109,7 @@ class MobilizonEvent:
             location=event.location,
             publication_time=publication_time,
             status=publication_status,
+            last_update_time=arrow.get(
+                tortoise.timezone.localtime(value=event.last_update_time, timezone=tz)
+            ).to("local"),
         )

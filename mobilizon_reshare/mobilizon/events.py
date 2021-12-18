@@ -44,6 +44,7 @@ def parse_event(data):
         location=parse_location(data),
         publication_time=None,
         status=EventPublicationStatus.WAITING,
+        last_update_time=arrow.get(data["updatedAt"]) if "updatedAt" in data else None,
     )
 
 
@@ -55,6 +56,7 @@ query_future_events = """{{
                   url,
                   beginsOn,
                   endsOn,
+                  updatedAt,
                   options {{
                     showStartTime,
                     showEndTime,
