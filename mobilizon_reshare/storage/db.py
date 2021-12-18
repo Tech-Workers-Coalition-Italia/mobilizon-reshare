@@ -41,6 +41,9 @@ def get_tortoise_orm():
     }
 
 
+TORTOISE_ORM = get_tortoise_orm()
+
+
 class MoReDB:
     def __init__(self, path: Path):
         self.path = path
