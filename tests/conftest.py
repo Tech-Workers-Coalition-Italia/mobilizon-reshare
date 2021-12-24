@@ -369,7 +369,15 @@ def mock_publisher_invalid(mock_publisher_invalid_class):
 
 
 @pytest.fixture
-async def event_with_failed_publication(stored_event, mock_publisher_config):
+async def event_with_failed_publication(
+    stored_event, mock_publisher_config, failed_publication
+):
+    return stored_event
+
+
+@pytest.fixture
+async def failed_publication(stored_event):
+
     p = Publication(
         event=stored_event,
         status=PublicationStatus.FAILED,
@@ -377,4 +385,4 @@ async def event_with_failed_publication(stored_event, mock_publisher_config):
         publisher=await get_publisher_by_name("mock"),
     )
     await p.save()
-    return stored_event
+    return p

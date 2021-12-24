@@ -1,18 +1,14 @@
+import logging
 from uuid import UUID
 
-from mobilizon_reshare.models.publication import PublicationStatus
-from mobilizon_reshare.storage.query.read import get_event
+from mobilizon_reshare.publishers.coordinator import (
+    PublisherCoordinator,
+    PublicationFailureNotifiersCoordinator,
+)
+from mobilizon_reshare.storage.query.read import get_failed_publications_for_event
+from mobilizon_reshare.storage.query.write import save_publication_report
 
-
-async def build_retry_publications(event_mobilizon_id):
-    event = await get_event(event_mobilizon_id)
-
-    return list(
-        filter(
-            lambda publications: publications.status == PublicationStatus.FAILED,
-            event.publications,
-        )
-    )
+logger = logging.getLogger(__name__)
 
 
 async def retry(event_id: UUID = None):
@@ -21,5 +17,15 @@ async def retry(event_id: UUID = None):
             "Autonomous retry not implemented yet, please specify an event_id"
         )
 
-    retry_publications = await build_retry_publications(event_id)
-    assert retry_publications, retry_publications
+    failed_publications = await get_failed_publications_for_event(event_id)
+    if not failed_publications:
+        logger.info("No failed publications found.")
+        return
+
+    logger.info(f"Found {len(failed_publications)} publications.")
+    reports = PublisherCoordinator(failed_publications).run()
+
+    await save_publication_report(reports)
+    for report in reports.reports:
+        if not report.succesful:
+            PublicationFailureNotifiersCoordinator(report,).notify_failure()

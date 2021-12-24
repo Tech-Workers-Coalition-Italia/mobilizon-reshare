@@ -1,3 +1,4 @@
+from functools import partial
 from typing import Iterable, Optional
 from uuid import UUID
 
@@ -173,3 +174,18 @@ async def get_event(event_mobilizon_id) -> None:
     event = await Event.filter(mobilizon_id=event_mobilizon_id).first()
     await event.fetch_related("publications")
     return event
+
+
+async def get_failed_publications_for_event(event_mobilizon_id):
+    event = await get_event(event_mobilizon_id)
+    failed_publications = list(
+        filter(
+            lambda publications: publications.status == PublicationStatus.FAILED,
+            event.publications,
+        )
+    )
+    for p in failed_publications:
+        await p.fetch_related("publisher")
+    return list(
+        map(partial(EventPublication.from_orm, event=event), failed_publications)
+    )

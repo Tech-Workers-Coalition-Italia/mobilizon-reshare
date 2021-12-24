@@ -13,6 +13,33 @@ from mobilizon_reshare.storage.query import CONNECTION_NAME
 from mobilizon_reshare.storage.query.read import events_without_publications
 
 
+async def upsert_publication(publication_report, event):
+
+    publisher = await get_publisher_by_name(
+        name=publication_report.publication.publisher.name
+    )
+    old_publication = await Publication.filter(
+        id=publication_report.publication.id
+    ).first()
+    if old_publication:
+        # I update the existing publication with the new report
+        old_publication.timestamp = arrow.now().datetime
+        old_publication.status = publication_report.status
+        old_publication.reason = publication_report.reason
+
+        await old_publication.save(force_update=True)
+    else:
+        # I create a new publication
+        await Publication.create(
+            id=publication_report.publication.id,
+            event_id=event.id,
+            publisher_id=publisher.id,
+            status=publication_report.status,
+            reason=publication_report.reason,
+            timestamp=arrow.now().datetime,
+        )
+
+
 @atomic(CONNECTION_NAME)
 async def save_publication_report(
     coordinator_report: PublisherCoordinatorReport,
@@ -24,17 +51,7 @@ async def save_publication_report(
         event = await Event.filter(
             mobilizon_id=publication_report.publication.event.mobilizon_id
         ).first()
-        publisher = await get_publisher_by_name(
-            name=publication_report.publication.publisher.name
-        )
-        await Publication.create(
-            id=publication_report.publication.id,
-            event_id=event.id,
-            publisher_id=publisher.id,
-            status=publication_report.status,
-            reason=publication_report.reason,
-            timestamp=arrow.now().datetime,
-        )
+        await upsert_publication(publication_report, event)
 
 
 @atomic(CONNECTION_NAME)
