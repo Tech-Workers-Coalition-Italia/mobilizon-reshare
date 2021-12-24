@@ -11,6 +11,7 @@ from mobilizon_reshare.models.event import Event
 from mobilizon_reshare.models.publication import Publication, PublicationStatus
 from mobilizon_reshare.publishers import get_active_publishers
 from mobilizon_reshare.publishers.abstract import EventPublication
+from mobilizon_reshare.publishers.exceptions import EventNotFound
 from mobilizon_reshare.storage.query import CONNECTION_NAME
 
 
@@ -172,6 +173,8 @@ async def build_publications(event: MobilizonEvent) -> list[EventPublication]:
 @atomic(CONNECTION_NAME)
 async def get_event(event_mobilizon_id) -> None:
     event = await Event.filter(mobilizon_id=event_mobilizon_id).first()
+    if not event:
+        raise EventNotFound(f"No event with mobilizon_id {event_mobilizon_id} found.")
     await event.fetch_related("publications")
     return event
 
