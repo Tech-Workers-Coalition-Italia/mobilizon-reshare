@@ -1,44 +1,58 @@
 import os
+from unittest.mock import MagicMock
 
 import dynaconf
 import pkg_resources
 import pytest
 
-from mobilizon_reshare.config.config import get_settings
+from mobilizon_reshare.config import config
+from mobilizon_reshare.config.config import get_settings, CustomConfig
 
 
 @pytest.fixture
-def invalid_settings_file(tmp_path, toml_content):
+def mock_settings(toml_content, tmp_path):
+    CustomConfig.settings = None
+    CustomConfig._instance = None
     file = tmp_path / "tmp.toml"
     file.write_text(toml_content)
-    return file
+    old_method = config.get_settings_files_paths
+    config.get_settings_files_paths = MagicMock(return_value=[file.absolute()])
+    yield
+    config.get_settings_files_paths = old_method
 
 
 @pytest.mark.parametrize("toml_content", ["invalid toml["])
-def test_get_settings_failure_invalid_toml(invalid_settings_file):
+def test_get_settings_failure_invalid_toml(mock_settings,):
     with pytest.raises(dynaconf.vendor.toml.decoder.TomlDecodeError):
-        get_settings(invalid_settings_file.absolute())
+        get_settings()
 
 
 @pytest.mark.parametrize("toml_content", [""])
-def test_get_settings_failure_invalid_preliminary_config(invalid_settings_file):
+def test_get_settings_failure_invalid_preliminary_config(mock_settings,):
     os.environ["SECRETS_FOR_DYNACONF"] = ""
 
     with pytest.raises(dynaconf.validator.ValidationError):
-        get_settings(invalid_settings_file.absolute())
+        get_settings()
 
 
 @pytest.mark.parametrize(
-    "invalid_toml,pattern_in_exception",
-    [["config_with_invalid_strategy.toml", "break_between_events_in_minutes"]],
+    "toml_content,pattern_in_exception",
+    [
+        [
+            open(
+                pkg_resources.resource_filename(
+                    "tests.resources.config", "config_with_invalid_strategy.toml"
+                )
+            ).read(),
+            "break_between_events_in_minutes",
+        ]
+    ],
 )
 def test_get_settings_failure_config_base_validators(
-    invalid_toml, pattern_in_exception
+    mock_settings, pattern_in_exception
 ):
 
     with pytest.raises(dynaconf.validator.ValidationError) as e:
-        get_settings(
-            pkg_resources.resource_filename("tests.resources.config", invalid_toml)
-        )
+        get_settings()
 
     assert e.match(pattern_in_exception)
