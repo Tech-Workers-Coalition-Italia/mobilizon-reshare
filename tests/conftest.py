@@ -11,7 +11,7 @@ import responses
 from tortoise.contrib.test import finalizer, initializer
 
 import mobilizon_reshare
-from mobilizon_reshare.config.config import get_settings, CustomConfig, build_and_validate_settings
+from mobilizon_reshare.config.config import get_settings
 from mobilizon_reshare.event.event import MobilizonEvent, EventPublicationStatus
 from mobilizon_reshare.models.event import Event
 from mobilizon_reshare.models.notification import Notification, NotificationStatus
@@ -357,4 +357,3 @@ def mock_publisher_invalid_class(message_collector):
 def mock_publisher_invalid(mock_publisher_invalid_class):
 
     return mock_publisher_invalid_class()
-

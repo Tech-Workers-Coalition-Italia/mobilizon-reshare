@@ -9,18 +9,13 @@ from dynaconf import Dynaconf, Validator
 import mobilizon_reshare
 from mobilizon_reshare.config import strategies, publishers, notifiers
 from mobilizon_reshare.config.notifiers import notifier_names
-
 from mobilizon_reshare.config.publishers import publisher_names
 
 base_validators = [
     # strategy to decide events to publish
     Validator("selection.strategy", must_exist=True, is_type_of=str),
     Validator(
-        "publishing.window.begin",
-        must_exist=True,
-        is_type_of=int,
-        gte=0,
-        lte=24,
+        "publishing.window.begin", must_exist=True, is_type_of=int, gte=0, lte=24,
     ),
     Validator("publishing.window.end", must_exist=True, is_type_of=int, gte=0, lte=24),
     # url of the main Mobilizon instance to download events from
@@ -41,23 +36,27 @@ def current_version() -> str:
     with importlib.resources.open_text(mobilizon_reshare, "VERSION") as fp:
         return fp.read()
 
+
 def get_settings_files_paths():
 
     dirs = AppDirs(appname="mobilizon-reshare", version=current_version())
-    bundled_settings_path= pkg_resources.resource_filename(
+    bundled_settings_path = pkg_resources.resource_filename(
         "mobilizon_reshare", "settings.toml"
     )
-    bundled_secrets_path=pkg_resources.resource_filename(
+    bundled_secrets_path = pkg_resources.resource_filename(
         "mobilizon_reshare", ".secrets.toml"
     )
-    return [ Path(dirs.user_config_dir, "mobilizon_reshare.toml").absolute(),
-    Path(dirs.site_config_dir, "mobilizon_reshare.toml").absolute(),
-    Path(dirs.site_config_dir, ".secrets.toml").absolute(),
-    Path(dirs.site_config_dir, ".secrets.toml").absolute(),
-    bundled_settings_path, bundled_secrets_path]
+    return [
+        Path(dirs.user_config_dir, "mobilizon_reshare.toml").absolute(),
+        Path(dirs.site_config_dir, "mobilizon_reshare.toml").absolute(),
+        Path(dirs.site_config_dir, ".secrets.toml").absolute(),
+        Path(dirs.site_config_dir, ".secrets.toml").absolute(),
+        bundled_settings_path,
+        bundled_secrets_path,
+    ]
 
-def build_settings(validators: Optional[list[Validator]] = None
-):
+
+def build_settings(validators: Optional[list[Validator]] = None):
     """
     Creates a Dynaconf base object. Configuration files are checked in this order:
 
@@ -89,8 +88,7 @@ def build_and_validate_settings():
 
     # we first do a preliminary load of the settings without validation. We will later use them to determine which
     # publishers, notifiers and strategy have been selected
-    raw_settings = build_settings(validators=activeness_validators
-    )
+    raw_settings = build_settings(validators=activeness_validators)
 
     # we retrieve validators that are conditional. Each module will analyze the settings and decide which validators
     # need to be applied.
@@ -116,8 +114,8 @@ def build_and_validate_settings():
 # validation that prevents us to employ their mechanism to specify settings files. This could probably be reworked
 # better in the future.
 
-class CustomConfig(object):
 
+class CustomConfig(object):
     @classmethod
     def get_instance(cls):
         if not hasattr(cls, "_instance") or cls._instance is None:
@@ -126,10 +124,11 @@ class CustomConfig(object):
 
     def __init__(self):
         self.settings = build_and_validate_settings()
+
     @classmethod
     def clear(cls):
-        cls._instance=None
+        cls._instance = None
+
 
 def get_settings():
     return CustomConfig.get_instance().settings
-
