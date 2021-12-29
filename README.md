@@ -49,13 +49,7 @@ strategy around your events. This might mean very different things for different
 a goal of this project. To do so though, you need to guide the tool and understand in detail the options available to 
 configure it in accordance to the requirements of your desired social media strategy.
 
-The first option you want to edit is
-`publishing.window` that defines the `begin` and `end` hours of your publication window. This means the time frame during the 
-day in which the tool will consider to publish events. If `begin`>`end`, the window will be overnight 
-(i.e `begin=19 end=11`, means the tool will publish from 7PM until 11 AM). For now, the hours taken into consideration 
-are in the server's timezone.
-
-A second important element is the selection strategy. This is the way the tool will decide which event to pick and 
+The first element you want to edit is the selection strategy. This is the way the tool will decide which event to pick and 
 publish among all those available. At every execution of `mobilizon-reshare` will publish at most one event so you have
 to consider how the selected strategy will interact with the external scheduling. The strategies assume that the
 schedule will fire at regular intervals, unless specified otherwise. These intervals can vary but they should be small 

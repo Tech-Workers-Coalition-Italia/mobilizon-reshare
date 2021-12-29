@@ -32,13 +32,11 @@ async def test_start_no_event(
     "elements",
     [[simple_event_element()], [simple_event_element(), simple_event_element()]],
 )
-@pytest.mark.parametrize("publication_window", [(0, 24)])
 async def test_start_new_event(
     mock_mobilizon_success_answer,
     mobilizon_answer,
     caplog,
     mock_publisher_config,
-    mock_publication_window,
     message_collector,
     elements,
 ):
@@ -88,13 +86,11 @@ async def test_start_new_event(
 @pytest.mark.parametrize(
     "elements", [[]],
 )
-@pytest.mark.parametrize("publication_window", [(0, 24)])
 async def test_start_event_from_db(
     mock_mobilizon_success_answer,
     mobilizon_answer,
     caplog,
     mock_publisher_config,
-    mock_publication_window,
     message_collector,
     event_generator,
 ):
@@ -135,13 +131,11 @@ async def test_start_event_from_db(
 @pytest.mark.parametrize(
     "elements", [[]],
 )
-@pytest.mark.parametrize("publication_window", [(0, 24)])
 async def test_start_publisher_failure(
     mock_mobilizon_success_answer,
     mobilizon_answer,
     caplog,
     mock_publisher_config,
-    mock_publication_window,
     message_collector,
     event_generator,
     mock_notifier_config,
@@ -217,13 +211,11 @@ def second_event_element():
 @pytest.mark.parametrize(
     "elements", [[second_event_element()]],
 )
-@pytest.mark.parametrize("publication_window", [(0, 24)])
 async def test_start_second_execution(
     mock_mobilizon_success_answer,
     mobilizon_answer,
     caplog,
     mock_publisher_config,
-    mock_publication_window,
     message_collector,
     event_generator,
     published_event,

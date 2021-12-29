@@ -301,14 +301,6 @@ def mock_mobilizon_success_answer(mobilizon_answer, mobilizon_url):
 
 
 @pytest.fixture
-def mock_publication_window(publication_window):
-    begin, end = publication_window
-    get_settings().update(
-        {"publishing.window.begin": begin, "publishing.window.end": end}
-    )
-
-
-@pytest.fixture
 def mock_formatter_class():
     class MockFormatter(AbstractEventFormatter):
         def validate_event(self, event) -> None:
