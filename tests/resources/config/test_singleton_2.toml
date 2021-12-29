@@ -4,7 +4,7 @@ group="my_group"
 
 [testing.selection]
 strategy = "next_event"
-9
+
 
 [testing.selection.strategy_options]
 break_between_events_in_minutes =60

@@ -41,6 +41,7 @@ class TelegramFormatter(AbstractEventFormatter):
         ")",
         ">",
         "<",
+        ">",
         "{",
         "}",
     ]
