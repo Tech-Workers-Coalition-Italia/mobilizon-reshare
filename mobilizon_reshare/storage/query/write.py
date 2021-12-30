@@ -66,15 +66,19 @@ async def create_unpublished_events(
     # We store only new events, i.e. events whose mobilizon_id wasn't found in the DB.
     unpublished_events = await events_without_publications()
     known_event_mobilizon_ids = set(
-        map(lambda event: event.mobilizon_id, unpublished_events)
-    )
-    new_unpublished_events = list(
-        filter(
-            lambda event: event.mobilizon_id not in known_event_mobilizon_ids,
-            events_from_mobilizon,
+        map(
+            lambda event: str(event.mobilizon_id) + event.last_update_time.format(),
+            unpublished_events,
         )
     )
 
+    new_unpublished_events = list(
+        filter(
+            lambda event: str(event.mobilizon_id) + event.last_update_time.format()
+            not in known_event_mobilizon_ids,
+            events_from_mobilizon,
+        )
+    )
     for event in new_unpublished_events:
         await event.to_model().save()
 
