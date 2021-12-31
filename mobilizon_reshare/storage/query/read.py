@@ -179,6 +179,7 @@ async def get_event(event_mobilizon_id) -> None:
     return event
 
 
+@atomic(CONNECTION_NAME)
 async def get_failed_publications_for_event(event_mobilizon_id):
     event = await get_event(event_mobilizon_id)
     failed_publications = list(
