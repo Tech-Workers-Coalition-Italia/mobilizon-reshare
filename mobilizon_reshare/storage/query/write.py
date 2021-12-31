@@ -6,7 +6,7 @@ from tortoise.transactions import atomic
 
 from mobilizon_reshare.event.event import MobilizonEvent
 from mobilizon_reshare.models.event import Event
-from mobilizon_reshare.models.publication import Publication
+from mobilizon_reshare.models.publication import Publication, PublicationStatus
 from mobilizon_reshare.models.publisher import Publisher
 from mobilizon_reshare.publishers.coordinator import PublisherCoordinatorReport
 from mobilizon_reshare.storage.query import CONNECTION_NAME
@@ -65,20 +65,31 @@ async def create_unpublished_events(
     """
     # We store only new events, i.e. events whose mobilizon_id wasn't found in the DB.
     unpublished_events = await events_without_publications()
-    known_event_mobilizon_ids = set(
-        map(
-            lambda event: str(event.mobilizon_id) + event.last_update_time.format(),
-            unpublished_events,
-        )
-    )
 
-    new_unpublished_events = list(
-        filter(
-            lambda event: str(event.mobilizon_id) + event.last_update_time.format()
-            not in known_event_mobilizon_ids,
-            events_from_mobilizon,
-        )
-    )
+    # save in known_event_mobilizon_key only unique tuple composed by id and updatedAt from unpublished_events
+    known_event_mobilizon_keys = set()
+    for event in unpublished_events:
+        id_tuple = (event.mobilizon_id, event.last_update_time)
+        known_event_mobilizon_keys.add(id_tuple)
+
+    # get list of mobilizon_id publicated successfully
+    publications_ok = await Publication.filter(
+        status=PublicationStatus.COMPLETED
+    ).values_list("id", flat=True)
+
+    # generate list of event to save (insert, update) :
+    #
+    # - event must not be in known keys
+    # - event must not be already successful published
+    new_unpublished_events = []
+    for event in events_from_mobilizon:
+        if (
+            event.mobilizon_id not in publications_ok
+            and (event.mobilizon_id, event.last_update_time)
+            not in known_event_mobilizon_keys
+        ):
+            new_unpublished_events.append(event)
+
     for event in new_unpublished_events:
         await event.to_model().save()
 
