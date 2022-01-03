@@ -1,9 +1,11 @@
+(use-modules (guix channels))
+
 (list
  (channel
   (name 'guix)
   (url "https://git.savannah.gnu.org/git/guix.git")
   (commit
-   "20d525a842ca5d22edc4e2aa4a5d8225c2f5306c")
+   "01ec5efff7cf95cae69493bd4ccfdd21a38770ae")
   (introduction
    (make-channel-introduction
     "9edb3f66fd807b096b48283debdcddccfea34bad"
