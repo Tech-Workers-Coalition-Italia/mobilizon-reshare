@@ -25,6 +25,13 @@ from mobilizon_reshare.publishers.exceptions import PublisherError, InvalidRespo
 from tests import today
 
 
+def pytest_configure(config):
+    env_values = {"SECRETS_FOR_DYNACONF": "mobilizon_reshare/.secrets.toml"}
+    for key in env_values:
+        if not os.environ.get(key):
+            os.environ[key] = env_values[key]
+
+
 def generate_publication_status(published):
     return PublicationStatus.COMPLETED if published else PublicationStatus.WAITING
 
@@ -155,7 +162,9 @@ def event_model_generator():
 
 @pytest.fixture()
 def publisher_model_generator():
-    def _publisher_model_generator(idx=1,):
+    def _publisher_model_generator(
+        idx=1,
+    ):
         return Publisher(name=f"publisher_{idx}", account_ref=f"account_ref_{idx}")
 
     return _publisher_model_generator
@@ -295,7 +304,10 @@ def mock_mobilizon_success_answer(mobilizon_answer, mobilizon_url):
     with responses.RequestsMock() as rsps:
 
         rsps.add(
-            responses.POST, mobilizon_url, json=mobilizon_answer, status=200,
+            responses.POST,
+            mobilizon_url,
+            json=mobilizon_answer,
+            status=200,
         )
         yield
 
