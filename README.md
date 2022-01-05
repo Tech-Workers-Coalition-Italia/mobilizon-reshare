@@ -20,8 +20,19 @@ to install the tool in your system or virtualenv.
 This should install the command `mobilizon-reshare` in your system. Use it to access the CLI and discover the available
 commands and their description.
 
-We know that using `pip` to interact with your system interpreter is not the best practice in the world, but right now we don't
-have the effort to maintain Linux distributions packages besides the [Guix package](https://github.com/Tech-Workers-Coalition-Italia/mobilizon-reshare/blob/master/docker/mobilizon-reshare.scm) that we need for production. 
+### Guix package
+
+If you run the Guix System you can install `mobilizon_reshare` by running:
+
+``` shell
+$ guix install -L . mobilizon-reshare.git
+```
+
+To use the same dependencies used in CI env:
+
+``` shell
+$ guix time-machine -C channels-lock.scm -- install -L . mobilizon-reshare.git
+```
 
 ## Run on your local system
 
