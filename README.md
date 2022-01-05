@@ -12,7 +12,7 @@ to events and their promotion.
 `mobilizon_reshare` is distributed through Pypi and DockerHub. Use 
 
 ```shell
-$ sudo pip install mobilizon-reshare
+$ pip install mobilizon-reshare
 ```
 
 to install the tool in your system or virtualenv.
