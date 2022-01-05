@@ -5,12 +5,6 @@
 `mobilizon_reshare` is a Python application to publish events from Mobilizon on a broad selection of platforms.
 This tool enables an organization to automate their social media strategy in regards to events and their promotion. 
 
-## Scheduling and temporal logic
-
-The tool is designed to work in combination with a scheduler that executes it at
-regular intervals. `mobilizon_reshare` allows fine-grained control over the logic to decide when
-to publish an event, with the minimization of human effort as its first priority.
-
 ## Configuration
 
 The configuration is implemented through Dynaconf. It allows a variety of ways to specify configuration keys. 

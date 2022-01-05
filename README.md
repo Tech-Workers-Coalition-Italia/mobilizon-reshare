@@ -7,6 +7,12 @@ to events and their promotion.
 
 # Usage
 
+## Scheduling and temporal logic
+
+The tool is designed to work in combination with a scheduler that executes it at
+regular intervals. `mobilizon_reshare` allows fine-grained control over the logic to decide when
+to publish an event, with the minimization of human effort as its first priority.
+
 ## Installation
 
 `mobilizon_reshare` is distributed through Pypi and DockerHub. Use 
