@@ -28,8 +28,7 @@ from tests import today
 def pytest_configure(config):
     env_values = {"SECRETS_FOR_DYNACONF": "mobilizon_reshare/.secrets.toml"}
     for key in env_values:
-        if not os.environ.get(key):
-            os.environ[key] = env_values[key]
+        os.environ[key] = env_values[key]
 
 
 def generate_publication_status(published):
