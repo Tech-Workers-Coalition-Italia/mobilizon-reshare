@@ -1,9 +1,9 @@
 import logging
 from datetime import timedelta
 from uuid import UUID
+from unittest.mock import MagicMock
 
 import pytest
-from asynctest import MagicMock
 
 from mobilizon_reshare.event.event import MobilizonEvent
 from mobilizon_reshare.models.publication import (

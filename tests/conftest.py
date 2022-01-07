@@ -22,6 +22,7 @@ from mobilizon_reshare.publishers.abstract import (
     AbstractEventFormatter,
 )
 from mobilizon_reshare.publishers.exceptions import PublisherError, InvalidResponse
+from mobilizon_reshare.storage.query.write import get_publisher_by_name
 from tests import today
 
 
@@ -100,6 +101,14 @@ def event() -> MobilizonEvent:
         thumbnail_link="http://some_link.com/123.jpg",
         location="location",
     )
+
+
+@pytest.fixture
+async def stored_event(event):
+    model = event.to_model()
+    await model.save()
+    await model.fetch_related("publications")
+    return model
 
 
 @pytest.fixture(scope="function", autouse=True)
@@ -349,3 +358,23 @@ def mock_publisher_invalid_class(message_collector):
 def mock_publisher_invalid(mock_publisher_invalid_class):
 
     return mock_publisher_invalid_class()
+
+
+@pytest.fixture
+async def event_with_failed_publication(
+    stored_event, mock_publisher_config, failed_publication
+):
+    return stored_event
+
+
+@pytest.fixture
+async def failed_publication(stored_event):
+
+    p = Publication(
+        event=stored_event,
+        status=PublicationStatus.FAILED,
+        timestamp=arrow.now().datetime,
+        publisher=await get_publisher_by_name("mock"),
+    )
+    await p.save()
+    return p

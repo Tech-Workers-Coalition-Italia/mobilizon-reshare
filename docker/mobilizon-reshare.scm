@@ -3,6 +3,7 @@
   #:use-module (guix gexp)
   #:use-module (guix git-download)
   #:use-module (guix packages)
+  #:use-module (guix transformations)
   #:use-module (guix utils)
   #:use-module ((guix licenses) #:prefix license:)
   #:use-module (guix build-system python)
@@ -10,6 +11,7 @@
   #:use-module (gnu packages check)
   #:use-module (gnu packages databases)
   #:use-module (gnu packages django)
+  #:use-module (gnu packages openstack)
   #:use-module (gnu packages python)
   #:use-module (gnu packages python-build)
   #:use-module (gnu packages python-check)
@@ -30,11 +32,53 @@
              "https://wiki.coopcycle.org/en:license"
              "Coopyleft License")))
 
-(define wrap-python3
-  (@@ (gnu packages python) wrap-python3))
+;; This comes from Guix commit ef347195278eb160ec725bbdccf71d67c0fa4271
+(define python-asynctest-from-the-past
+  (package
+    (name "python-asynctest")
+    (version "0.13.0")
+    (source
+     (origin
+       (method url-fetch)
+       (uri (pypi-uri "asynctest" version))
+       (sha256
+        (base32
+         "1b3zsy7p84gag6q8ai2ylyrhx213qdk2h2zb6im3xn0m5n264y62"))))
+    (build-system python-build-system)
+    (arguments
+     '(#:tests? #f))
+    (home-page "https://github.com/Martiusweb/asynctest")
+    (synopsis "Extension of unittest for testing asyncio libraries")
+    (description
+     "The package asynctest is built on top of the standard unittest module
+and cuts down boilerplate code when testing libraries for asyncio.")
+    (license license:asl2.0)))
 
-(define-public python-3.9-wrapper
-  (wrap-python3 python-3.9))
+;; After core-updates-freeze merge poetry stopped building.
+;; We pin the version based on old master until it'll be fixed.
+(define python-os-testr/fixed
+  (package
+    (inherit python-os-testr)
+    (native-inputs
+     (modify-inputs (package-native-inputs python-os-testr)
+       (prepend python-testrepository)))))
+
+(define python-msgpack-transitional/fixed
+  (package
+    (inherit python-msgpack-transitional)
+    (arguments
+     (substitute-keyword-arguments (package-arguments python-msgpack-transitional)
+      ((#:phases phases)
+       `(modify-phases ,phases
+          (delete 'check)))))))
+
+(define-public poetry/pinned
+  (let ((transform
+         (package-input-rewriting/spec `(("python-msgpack-transitional" .
+                                          ,(const python-msgpack-transitional/fixed))
+                                         ("python-os-testr" .
+                                          ,(const python-os-testr/fixed))))))
+    (transform poetry)))
 
 ;; This is only for mobilizon-bots.git.
 (define-public python-arrow-1.1
@@ -48,35 +92,6 @@
        (sha256
         (base32
          "1n2vzyrirfj7fp0zn6iipm3i8bch0g4m14z02nrvlyjiyfmi7zmq"))))))
-
-;; This is only for mobilizon-bots.git.
-(define-public python-tortoise-orm-0.17
-  (package (inherit python-tortoise-orm)
-    (name "python-tortoise-orm")
-    (version "0.17.6")
-    (source
-     (origin
-       (method url-fetch)
-       (uri (pypi-uri "tortoise-orm" version))
-       (sha256
-        (base32
-         "0viwmd8773b4bz8119d26wd3qxrdhmafrqd4m8bdz3439gcpq67l"))))))
-
-;; This is only for mobilizon-bots.git.
-(define-public python-pytest-asyncio-0.15
-  (package (inherit python-pytest-asyncio)
-    (name "python-pytest-asyncio")
-    (version "0.15.1")
-    (source
-     (origin
-       (method url-fetch)
-       (uri (pypi-uri "pytest-asyncio" version))
-       (sha256
-        (base32
-         "0vrzsrg3j1cfd57m0b3r5xf87rslgcs42jya346mdg9bc6wwwr15"))))
-    (arguments
-     (substitute-keyword-arguments (package-arguments python-pytest-asyncio)
-       ((#:tests? _ #f) #f)))))
 
 (define-public python-markdownify
   (package
@@ -93,81 +108,13 @@
     (arguments
      `(#:tests? #f))
     (native-inputs
-     `(("python-pytest" ,python-pytest-6)))
+     (list python-pytest-6))
     (propagated-inputs
-     `(("python-flake8" ,python-flake8)
-       ("python-beautifulsoup4" ,python-beautifulsoup4)
-       ("python-six" ,python-six)))
+     (list python-flake8 python-beautifulsoup4 python-six))
     (home-page
      "http://github.com/matthewwithanm/python-markdownify")
     (synopsis "Convert HTML to markdown.")
     (description "Convert HTML to markdown.")
-    (license license:expat)))
-
-(define-public python-ipaddress
-  (package
-    (name "python-ipaddress")
-    (version "1.0.23")
-    (source
-     (origin
-       (method url-fetch)
-       (uri (pypi-uri "ipaddress" version))
-       (sha256
-        (base32 "1qp743h30s04m3cg3yk3fycad930jv17q7dsslj4mfw0jlvf1y5p"))))
-    (build-system python-build-system)
-    (home-page "https://github.com/phihag/ipaddress")
-    (synopsis "IPv4/IPv6 manipulation library")
-    (description "IPv4/IPv6 manipulation library")
-    (license #f)))
-
-(define-public python-vcrpy
-  (package
-    (name "python-vcrpy")
-    (version "4.1.1")
-    (source
-     (origin
-       (method url-fetch)
-       (uri (pypi-uri "vcrpy" version))
-       (sha256
-        (base32 "16gmzxs3lzbgf1828n0q61vbmwyhpvzdlk37x6gdk8n05zr5n2ap"))))
-    (build-system python-build-system)
-    (arguments
-     `(#:phases
-       (modify-phases %standard-phases
-         (replace 'check
-           (lambda* (#:key tests? outputs #:allow-other-keys)
-             (when tests?
-               (substitute* "tox.ini"
-                 (("AWS_ACCESS_KEY_ID") "PYTHONPATH"))
-               (setenv "PYTHONPATH" (string-append ".:" (getenv "PYTHONPATH")))
-               ;; These tests require network access.
-               (delete-file "tests/unit/test_stubs.py")
-               (invoke "pytest" "tests/unit")))))))
-    (native-inputs
-     `(
-       ("python-black" ,python-black)
-       ("python-coverage" ,python-coverage)
-       ("python-flake8" ,python-flake8)
-       ("python-flask" ,python-flask)
-       ("python-httplib2" ,python-httplib2)
-       ("python-ipaddress" ,python-ipaddress)
-       ("python-mock" ,python-mock)
-       ("python-pytest" ,python-pytest)
-       ("python-pytest-cov" ,python-pytest-cov)
-       ("python-pytest-httpbin" ,python-pytest-httpbin)
-       ("python-tox" ,python-tox)
-       ("python-urllib3" ,python-urllib3)))
-
-    (propagated-inputs
-     `(("python-pyyaml" ,python-pyyaml)
-       ("python-six" ,python-six)
-       ("python-wrapt" ,python-wrapt)
-       ("python-yarl" ,python-yarl)))
-    (home-page "https://github.com/kevin1024/vcrpy")
-    (synopsis
-     "Automatically mock your HTTP interactions to simplify and speed up testing")
-    (description
-     "Automatically mock your HTTP interactions to simplify and speed up testing")
     (license license:expat)))
 
 (define-public python-tweepy
@@ -190,17 +137,13 @@
      `(#:phases
        (modify-phases %standard-phases
          (replace 'check
-           (lambda* (#:key tests? inputs outputs #:allow-other-keys)
+           (lambda* (#:key tests? #:allow-other-keys)
              (when tests?
                (invoke "python" "-m" "unittest")))))))
     (propagated-inputs
-     `(("python-aiohttp" ,python-aiohttp)
-       ("python-requests" ,python-requests)
-       ("python-requests-oauthlib" ,python-requests-oauthlib)))
+     (list python-aiohttp python-requests python-requests-oauthlib))
     (native-inputs
-     `(("python-coveralls" ,python-coveralls)
-       ("python-tox" ,python-tox)
-       ("python-vcrpy" ,python-vcrpy)))
+     (list python-coveralls python-tox python-vcrpy))
     (home-page "https://www.tweepy.org/")
     (synopsis "Twitter library for Python")
     (description "Twitter library for Python")
@@ -249,6 +192,64 @@ Facebook authentication.")
          ;; Tests depend on network access.
          `(#:tests? #false)))))
 
+(define-public python-ddlparse
+  (package
+    (name "python-ddlparse")
+    (version "1.10.0")
+    (source
+      (origin
+        (method url-fetch)
+        (uri (pypi-uri "ddlparse" version))
+        (sha256
+          (base32 "1nh8m6rxslwk05daxshxmgk41qfp18yynydba49b13l4m8dnh634"))))
+    (build-system python-build-system)
+    (arguments
+      ;; Tests depend on network access.
+      `(#:tests? #false))
+    (propagated-inputs (list python-pyparsing))
+    (home-page "http://github.com/shinichi-takii/ddlparse")
+    (synopsis "DDL parase and Convert to BigQuery JSON schema")
+    (description "DDL parase and Convert to BigQuery JSON schema")
+    (license #f)))
+
+(define-public python-dictdiffer/fixed
+  (package (inherit python-dictdiffer)
+    (arguments
+     (substitute-keyword-arguments (package-arguments python-send2trash)
+      ((#:phases phases)
+       `(modify-phases ,phases
+          (delete 'check)))))))
+         ;; (replace 'check
+         ;;  (lambda* (#:key tests? #:allow-other-keys)
+         ;;    (when tests?
+         ;;      (invoke "pytest"))))
+
+
+(define-public python-aerich
+  (package
+    (name "python-aerich")
+    (version "0.6.1")
+    (source
+      (origin
+        (method url-fetch)
+        (uri (pypi-uri "aerich" version))
+        (sha256
+          (base32 "19bvx5icsmmf9ylxyqrxw4wjv77shg5r8pjgdg7plzhn937bzlch"))))
+    (build-system python-build-system)
+    (propagated-inputs
+      (list python-asyncmy
+            python-asyncpg
+            python-click
+            python-ddlparse
+            python-dictdiffer/fixed
+            python-tomlkit
+            python-tortoise-orm))
+    (home-page "https://github.com/tortoise/aerich")
+    (synopsis "A database migrations tool for Tortoise ORM.")
+    (description
+      "This package provides a database migrations tool for Tortoise ORM.")
+    (license #f)))
+
 (define-public mobilizon-reshare.git
   (let ((source-version (with-input-from-file
                             (string-append %source-dir
@@ -265,8 +266,7 @@ Facebook authentication.")
                           #:select? (git-predicate %source-dir)))
       (build-system python-build-system)
       (arguments
-       `(#:python ,python-3.9
-         #:phases
+       `(#:phases
          (modify-phases %standard-phases
            (add-after 'unpack 'generate-setup.py
              (lambda* (#:key inputs outputs #:allow-other-keys)
@@ -287,29 +287,29 @@ Facebook authentication.")
                          ;; because they depend on system timezone.
                          "-k" "not test_get_settings_failure_invalid_toml and not test_format_event")))))))
       (native-inputs
-       `(("python-asynctest" ,python-asynctest)
-         ("python-iniconfig" ,python-iniconfig)
-         ("poetry" ,poetry)
-         ("python-pytest" ,python-pytest-6)
-         ("python-pytest-cov" ,python-pytest-cov)
-         ("python-pytest-asyncio" ,python-pytest-asyncio-0.15)
-         ("python-pytest-lazy-fixture"
-          ,python-pytest-lazy-fixture)
-         ("python-responses" ,python-responses)
-         ("python-wrapper" ,python-3.9-wrapper)))
+       ;; This is needed until we switch to tortoise 0.18.*
+       (list python-asynctest-from-the-past
+             python-iniconfig
+             poetry/pinned
+             python-pytest
+             python-pytest-cov
+             python-pytest-asyncio
+             python-pytest-lazy-fixture
+             python-responses))
       (propagated-inputs
-       `(("python-aiosqlite" ,python-aiosqlite)
-         ("python-appdirs" ,python-appdirs)
-         ("python-arrow" ,python-arrow-1.1)
-         ("python-beautifulsoup4" ,python-beautifulsoup4)
-         ("python-click" ,python-click)
-         ("dynaconf" ,dynaconf)
-         ("python-facebook-sdk" ,python-facebook-sdk.git)
-         ("python-jinja2" ,python-jinja2)
-         ("python-markdownify" ,python-markdownify)
-         ("python-requests" ,python-requests)
-         ("python-tweepy" ,python-tweepy)
-         ("python-tortoise-orm" ,python-tortoise-orm-0.17)))
+       (list python-aerich
+             python-aiosqlite
+             python-appdirs
+             python-arrow-1.1
+             python-beautifulsoup4
+             python-click
+             dynaconf
+             python-facebook-sdk.git
+             python-jinja2
+             python-markdownify
+             python-requests
+             python-tweepy
+             python-tortoise-orm))
       (home-page
        "https://github.com/Tech-Workers-Coalition-Italia/mobilizon-reshare")
       (synopsis
