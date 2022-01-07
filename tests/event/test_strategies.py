@@ -207,39 +207,3 @@ def mock_arrow_now(current_hour):
 
     with patch("arrow.now", mock_now):
         yield
-
-
-@pytest.mark.parametrize("current_hour", [14, 15, 16, 18])
-@pytest.mark.parametrize("publication_window", [(14, 19)])
-def test_publishing_inner_window_true(mock_arrow_now, mock_publication_window):
-    """
-    Testing that the window check correctly returns True when in an inner publishing window.
-    """
-    assert SelectNextEventStrategy().is_in_publishing_window()
-
-
-@pytest.mark.parametrize("current_hour", [2, 10, 11, 19])
-@pytest.mark.parametrize("publication_window", [(14, 19)])
-def test_publishing_inner_window_false(mock_arrow_now, mock_publication_window):
-    """
-    Testing that the window check correctly returns False when not in an inner publishing window.
-    """
-    assert not SelectNextEventStrategy().is_in_publishing_window()
-
-
-@pytest.mark.parametrize("current_hour", [2, 10, 11, 19])
-@pytest.mark.parametrize("publication_window", [(19, 14)])
-def test_publishing_outer_window_true(mock_arrow_now, mock_publication_window):
-    """
-    Testing that the window check correctly returns True when in an outer publishing window.
-    """
-    assert SelectNextEventStrategy().is_in_publishing_window()
-
-
-@pytest.mark.parametrize("current_hour", [14, 15, 16, 18])
-@pytest.mark.parametrize("publication_window", [(19, 14)])
-def test_publishing_outer_window_false(mock_arrow_now, mock_publication_window):
-    """
-    Testing that the window check correctly returns False when not in an outer publishing window.
-    """
-    assert not SelectNextEventStrategy().is_in_publishing_window()

@@ -5,9 +5,6 @@ group="my_group"
 [testing.selection]
 strategy = "next_event"
 
-[testing.publishing.window]
-begin=12
-end=18
 
 [testing.selection.strategy_options]
 break_between_events_in_minutes =60

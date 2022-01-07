@@ -16,25 +16,11 @@ class EventSelectionStrategy(ABC):
         published_events: List[MobilizonEvent],
         unpublished_events: List[MobilizonEvent],
     ) -> Optional[MobilizonEvent]:
-
-        if not self.is_in_publishing_window():
-            logger.info("Outside of publishing window, no event will be published.")
-            return None
         selected = self._select(published_events, unpublished_events)
         if selected:
             return selected[0]
         else:
             return None
-
-    def is_in_publishing_window(self) -> bool:
-        settings = get_settings()
-        window_beginning = settings["publishing"]["window"]["begin"]
-        window_end = settings["publishing"]["window"]["end"]
-        now_hour = arrow.now().datetime.hour
-        if window_beginning <= window_end:
-            return window_beginning <= now_hour < window_end
-        else:
-            return now_hour >= window_beginning or now_hour < window_end
 
     @abstractmethod
     def _select(
@@ -96,8 +82,7 @@ STRATEGY_NAME_TO_STRATEGY_CLASS = {"next_event": SelectNextEventStrategy}
 
 
 def select_unpublished_events(
-    published_events: List[MobilizonEvent],
-    unpublished_events: List[MobilizonEvent],
+    published_events: List[MobilizonEvent], unpublished_events: List[MobilizonEvent],
 ):
 
     strategy = STRATEGY_NAME_TO_STRATEGY_CLASS[
@@ -108,8 +93,7 @@ def select_unpublished_events(
 
 
 def select_event_to_publish(
-    published_events: List[MobilizonEvent],
-    unpublished_events: List[MobilizonEvent],
+    published_events: List[MobilizonEvent], unpublished_events: List[MobilizonEvent],
 ):
 
     strategy = STRATEGY_NAME_TO_STRATEGY_CLASS[

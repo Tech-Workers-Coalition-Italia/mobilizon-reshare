@@ -10,11 +10,10 @@ from mobilizon_reshare.cli.commands.inspect.inspect_event import inspect_events
 from mobilizon_reshare.cli.commands.inspect.inspect_publication import (
     inspect_publications,
 )
-from mobilizon_reshare.cli.commands.start.main import main as start_main
 from mobilizon_reshare.cli.commands.recap.main import main as recap_main
+from mobilizon_reshare.cli.commands.start.main import main as start_main
 from mobilizon_reshare.config.config import current_version
 from mobilizon_reshare.config.publishers import publisher_names
-
 from mobilizon_reshare.event.event import EventPublicationStatus
 from mobilizon_reshare.models.publication import PublicationStatus
 
@@ -32,14 +31,6 @@ status_name_to_enum = {
         "all": None,
     },
 }
-
-settings_file_option = click.option(
-    "-f",
-    "--settings-file",
-    type=click.Path(exists=True),
-    help="The path for the settings file. "
-    "Overrides the one specified in the environment variables.",
-)
 from_date_option = click.option(
     "-b",
     "--begin",
@@ -89,17 +80,15 @@ def mobilizon_reshare(obj):
 
 
 @mobilizon_reshare.command(help="Synchronize and publish events.")
-@settings_file_option
 @pass_context
-def start(ctx, settings_file):
+def start(ctx,):
     ctx.ensure_object(dict)
-    safe_execution(start_main, settings_file=settings_file)
+    safe_execution(start_main,)
 
 
 @mobilizon_reshare.command(help="Publish a recap of already published events.")
-@settings_file_option
-def recap(settings_file):
-    safe_execution(recap_main, settings_file=settings_file)
+def recap():
+    safe_execution(recap_main,)
 
 
 @mobilizon_reshare.group(help="List objects in the database with different criteria.")
@@ -114,9 +103,10 @@ def inspect(ctx, begin, end):
 
 @inspect.command(help="Query for events in the database.")
 @event_status_option
-@settings_file_option
 @pass_context
-def event(ctx, status, settings_file):
+def event(
+    ctx, status,
+):
     ctx.ensure_object(dict)
     safe_execution(
         functools.partial(
@@ -125,15 +115,15 @@ def event(ctx, status, settings_file):
             frm=ctx.obj["begin"],
             to=ctx.obj["end"],
         ),
-        settings_file,
     )
 
 
 @inspect.command(help="Query for publications in the database.")
 @publication_status_option
-@settings_file_option
 @pass_context
-def publication(ctx, status, settings_file):
+def publication(
+    ctx, status,
+):
     ctx.ensure_object(dict)
     safe_execution(
         functools.partial(
@@ -142,7 +132,6 @@ def publication(ctx, status, settings_file):
             frm=ctx.obj["begin"],
             to=ctx.obj["end"],
         ),
-        settings_file,
     )
 
 
@@ -152,11 +141,10 @@ def publication(ctx, status, settings_file):
 )
 @click.argument("event-id", type=click.UUID)
 @click.argument("publisher", type=click.Choice(publisher_names))
-@settings_file_option
-def format(event_id, publisher, settings_file):
-    safe_execution(
-        functools.partial(format_event, event_id, publisher), settings_file,
-    )
+def format(
+    event_id, publisher,
+):
+    safe_execution(functools.partial(format_event, event_id, publisher),)
 
 
 if __name__ == "__main__":
