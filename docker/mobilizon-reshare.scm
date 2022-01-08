@@ -219,11 +219,6 @@ Facebook authentication.")
       ((#:phases phases)
        `(modify-phases ,phases
           (delete 'check)))))))
-         ;; (replace 'check
-         ;;  (lambda* (#:key tests? #:allow-other-keys)
-         ;;    (when tests?
-         ;;      (invoke "pytest"))))
-
 
 (define-public python-aerich
   (package
@@ -285,7 +280,14 @@ Facebook authentication.")
                          ;; This test fails because of the unvendoring
                          ;; of toml from dynaconf and
                          ;; because they depend on system timezone.
-                         "-k" "not test_get_settings_failure_invalid_toml and not test_format_event")))))))
+                         "-k" "not test_get_settings_failure_invalid_toml and not test_format_event"))))
+           (add-before 'sanity-check 'set-dummy-config
+             (lambda _
+               ;; This is needed to prevent the tool from
+               ;; crashing at startup during the sanity check.
+               (setenv "SECRETS_FOR_DYNACONF"
+                       (string-append (getcwd)
+                                      "/mobilizon_reshare/.secrets.toml")))))))
       (native-inputs
        ;; This is needed until we switch to tortoise 0.18.*
        (list python-asynctest-from-the-past
