@@ -3,23 +3,18 @@
   #:use-module (guix gexp)
   #:use-module (guix git-download)
   #:use-module (guix packages)
-  #:use-module (guix transformations)
   #:use-module (guix utils)
   #:use-module ((guix licenses) #:prefix license:)
   #:use-module (guix build-system python)
-  #:use-module (gnu packages)
   #:use-module (gnu packages check)
   #:use-module (gnu packages databases)
-  #:use-module (gnu packages django)
+  #:use-module (gnu packages markup)
   #:use-module (gnu packages openstack)
-  #:use-module (gnu packages python)
   #:use-module (gnu packages python-build)
   #:use-module (gnu packages python-check)
   #:use-module (gnu packages python-web)
   #:use-module (gnu packages python-xyz)
-  #:use-module (gnu packages serialization)
   #:use-module (gnu packages time)
-  #:use-module (gnu packages web)
   #:use-module (ice-9 popen)
   #:use-module (ice-9 rdelim)
   #:use-module (srfi srfi-1))
@@ -79,43 +74,6 @@ and cuts down boilerplate code when testing libraries for asyncio.")
                                          ("python-os-testr" .
                                           ,(const python-os-testr/fixed))))))
     (transform poetry)))
-
-;; This is only for mobilizon-bots.git.
-(define-public python-arrow-1.1
-  (package (inherit python-arrow)
-    (name "python-arrow")
-    (version "1.1.0")
-    (source
-     (origin
-       (method url-fetch)
-       (uri (pypi-uri "arrow" version))
-       (sha256
-        (base32
-         "1n2vzyrirfj7fp0zn6iipm3i8bch0g4m14z02nrvlyjiyfmi7zmq"))))))
-
-(define-public python-markdownify
-  (package
-    (name "python-markdownify")
-    (version "0.9.2")
-    (source
-     (origin
-       (method url-fetch)
-       (uri (pypi-uri "markdownify" version))
-       (sha256
-        (base32
-         "0zfpzdwkf34spmfr2iwkqch3fi0nnll2v5nghvgnrmazjn4rcxdr"))))
-    (build-system python-build-system)
-    (arguments
-     `(#:tests? #f))
-    (native-inputs
-     (list python-pytest-6))
-    (propagated-inputs
-     (list python-flake8 python-beautifulsoup4 python-six))
-    (home-page
-     "http://github.com/matthewwithanm/python-markdownify")
-    (synopsis "Convert HTML to markdown.")
-    (description "Convert HTML to markdown.")
-    (license license:expat)))
 
 (define-public python-tweepy
   (package
@@ -219,11 +177,6 @@ Facebook authentication.")
       ((#:phases phases)
        `(modify-phases ,phases
           (delete 'check)))))))
-         ;; (replace 'check
-         ;;  (lambda* (#:key tests? #:allow-other-keys)
-         ;;    (when tests?
-         ;;      (invoke "pytest"))))
-
 
 (define-public python-aerich
   (package
@@ -285,7 +238,14 @@ Facebook authentication.")
                          ;; This test fails because of the unvendoring
                          ;; of toml from dynaconf and
                          ;; because they depend on system timezone.
-                         "-k" "not test_get_settings_failure_invalid_toml and not test_format_event")))))))
+                         "-k" "not test_get_settings_failure_invalid_toml and not test_format_event"))))
+           (add-before 'sanity-check 'set-dummy-config
+             (lambda _
+               ;; This is needed to prevent the tool from
+               ;; crashing at startup during the sanity check.
+               (setenv "SECRETS_FOR_DYNACONF"
+                       (string-append (getcwd)
+                                      "/mobilizon_reshare/.secrets.toml")))))))
       (native-inputs
        ;; This is needed until we switch to tortoise 0.18.*
        (list python-asynctest-from-the-past
@@ -300,7 +260,7 @@ Facebook authentication.")
        (list python-aerich
              python-aiosqlite
              python-appdirs
-             python-arrow-1.1
+             python-arrow
              python-beautifulsoup4
              python-click
              dynaconf
