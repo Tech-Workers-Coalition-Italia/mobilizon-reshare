@@ -38,3 +38,7 @@ class ZulipError(PublisherError):
 
 class HTTPResponseError(PublisherError):
     """ Publisher receives a HTTP error"""
+
+
+class EventNotFound(Exception):
+    """ Event is not present in the database """
