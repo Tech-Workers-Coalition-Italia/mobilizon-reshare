@@ -23,10 +23,15 @@ from mobilizon_reshare.publishers.abstract import (
 )
 from mobilizon_reshare.publishers.exceptions import PublisherError, InvalidResponse
 from tests import today
+import pkg_resources
 
 
 def pytest_configure(config):
-    env_values = {"SECRETS_FOR_DYNACONF": "mobilizon_reshare/.secrets.toml"}
+    env_values = {
+        "SECRETS_FOR_DYNACONF": pkg_resources.resource_filename(
+            "mobilizon_reshare", ".secrets.toml"
+        )
+    }
     for key in env_values:
         os.environ[key] = env_values[key]
 
