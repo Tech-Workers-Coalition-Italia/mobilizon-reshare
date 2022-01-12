@@ -15,7 +15,7 @@ to publish an event, with the minimization of human effort as its first priority
 
 ## Installation
 
-`mobilizon_reshare` is distributed through Pypi and DockerHub. Use 
+`mobilizon_reshare` is distributed through Pypi and [DockerHub](https://hub.docker.com/r/fishinthecalculator/mobilizon-reshare). Use
 
 ```shell
 $ pip install mobilizon-reshare
@@ -52,7 +52,7 @@ $ sudo crontab -l
 ## Deploying through Docker Compose
 
 To run `mobilizon_reshare` in a production environment you can use the image published to DockerHub. We also provide an example [`docker-compose.yml`](https://github.com/Tech-Workers-Coalition-Italia/mobilizon-reshare/blob/master/docker-compose.yml).
-The image *runs with root privileges*, since they are required to run cron. Right now it 
+The image **runs with root privileges**, since they are required to run cron.
 
 # Contributing
 
