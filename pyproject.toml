@@ -23,6 +23,7 @@ appdirs = "~1.4"
 tweepy = "~4.1"
 facebook-sdk = {git = "https://github.com/mobolic/facebook-sdk.git"}
 aerich = "~0.6"
+python-telegram-bot = "^13.10"
 
 [tool.poetry.dev-dependencies]
 responses = "~0.13"

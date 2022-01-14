@@ -38,7 +38,7 @@ class LoggerMixin:
         method = inspect.currentframe().f_back.f_back.f_code.co_name
         logger.log(level, f"{self}.{method}(): {msg}", *args, **kwargs)
         if raise_error is not None:
-            raise raise_error(msg)
+            raise raise_error
 
 
 class ConfLoaderMixin:
