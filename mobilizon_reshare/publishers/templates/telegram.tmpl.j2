@@ -1,8 +1,8 @@
-*{{ name }}*
+<strong>{{ name }}</strong>
 
 🕒 {{ begin_datetime.format('DD MMMM, HH:mm') }} - {{ end_datetime.format('DD MMMM, HH:mm') }}
 {% if location %}📍 {{ location }}{% endif %}
 
 {{ description }}
 
-[Link]({{mobilizon_link}})
+<a href="{{mobilizon_link}}">Link</a>

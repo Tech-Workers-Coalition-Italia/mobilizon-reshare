@@ -1,3 +1,4 @@
+import dataclasses
 from functools import partial
 from typing import Iterable, Optional
 from uuid import UUID
@@ -167,7 +168,9 @@ async def build_publications(event: MobilizonEvent) -> list[EventPublication]:
         await event_model.build_publication_by_publisher_name(name)
         for name in get_active_publishers()
     ]
-    return list(EventPublication.from_orm(m, event) for m in models)
+    return list(
+        EventPublication.from_orm(m, dataclasses.replace(event)) for m in models
+    )
 
 
 @atomic(CONNECTION_NAME)

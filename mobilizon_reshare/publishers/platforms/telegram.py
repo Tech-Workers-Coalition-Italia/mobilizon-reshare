@@ -1,12 +1,11 @@
-import re
 from typing import Optional
 
 import pkg_resources
 import requests
+from bs4 import BeautifulSoup
 from requests import Response
 
 from mobilizon_reshare.event.event import MobilizonEvent
-from mobilizon_reshare.formatting.description import html_to_markdown
 from mobilizon_reshare.publishers.abstract import (
     AbstractEventFormatter,
     AbstractPlatform,
@@ -33,42 +32,6 @@ class TelegramFormatter(AbstractEventFormatter):
     )
 
     _conf = ("publisher", "telegram")
-    _escape_characters = [
-        "-",
-        ".",
-        "(",
-        "!",
-        ")",
-        ">",
-        "<",
-        ">",
-        "{",
-        "}",
-    ]
-
-    @staticmethod
-    def restore_links(message: str) -> str:
-        """The escape_message function should ignore actually valid links that involve square brackets and parenthesis.
-        This function de-escapes actual links without altering other escaped square brackets and parenthesis"""
-
-        def build_link(match):
-            result = match.group(0)
-            for character in TelegramFormatter._escape_characters:
-                result = result.replace("\\" + character, character)
-            return result
-
-        return re.sub(r"\[(\w*)]\\\(([\w\-/\\.:]*)\\\)", build_link, message,)
-
-    @staticmethod
-    def escape_message(message: str) -> str:
-        """Escape message to comply with Telegram standards"""
-        for character in TelegramFormatter._escape_characters:
-            message = message.replace(character, "\\" + character)
-
-        # Telegram doesn't use headers so # can be removed
-        message = message.replace("#", r"")
-
-        return TelegramFormatter.restore_links(message)
 
     def _validate_event(self, event: MobilizonEvent) -> None:
         description = event.description
@@ -76,13 +39,38 @@ class TelegramFormatter(AbstractEventFormatter):
             self._log_error("No description was found", raise_error=InvalidEvent)
 
     def _validate_message(self, message: str) -> None:
-        if len(message) >= 4096:
+        if (
+            len("".join(BeautifulSoup(message, "html.parser").findAll(text=True)))
+            >= 4096
+        ):
             self._log_error("Message is too long", raise_error=InvalidMessage)
 
-    def _preprocess_event(self, event: MobilizonEvent):
-        event.description = html_to_markdown(event.description)
-        event.name = html_to_markdown(event.name)
-        return event
+    def _preprocess_message(self, message: str) -> str:
+
+        html = BeautifulSoup(message, "html.parser")
+        # replacing paragraphs
+        for tag in html.findAll(["p", "br"]):
+            tag.append("\n")
+            tag.replaceWithChildren()
+        # replacing headers
+        for tag in html.findAll(["h1", "h2", "h3"]):
+            if tag.text:  # only if they are not empty
+                tag.name = "b"
+                tag.insert_after("\n")
+                tag.insert_before("\n")
+            else:
+                tag.decompose()
+        # removing lists
+        for tag in html.findAll("ul"):
+            tag.unwrap()
+        # replacing list elements with dots
+        for tag in html.findAll(["li"]):
+            tag.insert(0, "• ")
+            tag.unwrap()
+        # cleaning html trailing whitespace
+        for tag in html.findAll("a"):
+            tag["href"] = tag["href"].replace(" ", "").strip().lstrip()
+        return str(html)
 
 
 class TelegramPlatform(AbstractPlatform):
@@ -91,9 +79,6 @@ class TelegramPlatform(AbstractPlatform):
     """
 
     name = "telegram"
-
-    def _preprocess_message(self, message: str):
-        return TelegramFormatter.escape_message(message)
 
     def validate_credentials(self):
         res = requests.get(f"https://api.telegram.org/bot{self.conf.token}/getMe")
@@ -107,11 +92,7 @@ class TelegramPlatform(AbstractPlatform):
     def _send(self, message: str, event: Optional[MobilizonEvent] = None) -> Response:
         return requests.post(
             url=f"https://api.telegram.org/bot{self.conf.token}/sendMessage",
-            json={
-                "chat_id": self.conf.chat_id,
-                "text": message,
-                "parse_mode": "markdownv2",
-            },
+            json={"chat_id": self.conf.chat_id, "text": message, "parse_mode": "html"},
         )
 
     def _validate_response(self, res):

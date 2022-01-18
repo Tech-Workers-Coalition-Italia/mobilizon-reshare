@@ -11,7 +11,7 @@ from jinja2 import Environment, FileSystemLoader, Template
 from mobilizon_reshare.config.config import get_settings
 from mobilizon_reshare.event.event import MobilizonEvent
 from mobilizon_reshare.models.publication import Publication as PublicationModel
-from .exceptions import PublisherError, InvalidAttribute
+from .exceptions import InvalidAttribute
 
 JINJA_ENV = Environment(loader=FileSystemLoader("/"))
 
@@ -34,7 +34,7 @@ class LoggerMixin:
     def _log_critical(self, msg, *args, **kwargs):
         self.__log(logging.CRITICAL, msg, *args, **kwargs)
 
-    def __log(self, level, msg, raise_error: PublisherError = None, *args, **kwargs):
+    def __log(self, level, msg, raise_error: type = None, *args, **kwargs):
         method = inspect.currentframe().f_back.f_back.f_code.co_name
         logger.log(level, f"{self}.{method}(): {msg}", *args, **kwargs)
         if raise_error is not None:
@@ -91,12 +91,8 @@ class AbstractPlatform(ABC, LoggerMixin, ConfLoaderMixin):
         """
         Sends a message to the target channel
         """
-        message = self._preprocess_message(message)
         response = self._send(message, event)
         self._validate_response(response)
-
-    def _preprocess_message(self, message: str):
-        return message
 
     @abstractmethod
     def _validate_response(self, response):
@@ -146,7 +142,9 @@ class AbstractEventFormatter(LoggerMixin, ConfLoaderMixin):
         Retrieves a message from the event itself.
         """
         event = self._preprocess_event(event)
-        return event.format(self.get_message_template())
+        message = event.format(self.get_message_template())
+        message = self._preprocess_message(message)
+        return message
 
     def get_message_template(self) -> Template:
         """
@@ -174,6 +172,9 @@ class AbstractEventFormatter(LoggerMixin, ConfLoaderMixin):
         """
         event = self._preprocess_event(event)
         return event.format(self.get_recap_fragment_template())
+
+    def _preprocess_message(self, message: str):
+        return message
 
 
 @dataclass

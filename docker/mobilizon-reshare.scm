@@ -12,8 +12,10 @@
   #:use-module (gnu packages openstack)
   #:use-module (gnu packages python-build)
   #:use-module (gnu packages python-check)
+  #:use-module (gnu packages python-crypto)
   #:use-module (gnu packages python-web)
   #:use-module (gnu packages python-xyz)
+  #:use-module (gnu packages qt)
   #:use-module (gnu packages time)
   #:use-module (ice-9 popen)
   #:use-module (ice-9 rdelim)
@@ -203,6 +205,130 @@ Facebook authentication.")
       "This package provides a database migrations tool for Tortoise ORM.")
     (license #f)))
 
+(define-public python-pytest-tornado5
+  (package
+    (name "python-pytest-tornado5")
+    (version "2.0.0")
+    (source
+      (origin
+        (method url-fetch)
+        (uri (pypi-uri "pytest-tornado5" version))
+        (sha256
+          (base32 "0qb62jw2w0xr6y942yp0qxiy755bismjfpnxaxjjm05gy2pymr8d"))))
+    (build-system python-build-system)
+    (propagated-inputs (list python-pytest python-tornado))
+    (home-page "https://github.com/vidartf/pytest-tornado")
+    (synopsis
+      "Fixtures and markers to simplify testing of Tornado applications")
+    (description
+      "This package provides a @code{py.test} plugin providing fixtures and markers to
+simplify testing of asynchronous tornado applications.")
+    (license license:asl2.0)))
+
+(define-public python-rethinkdb
+  (package
+    (name "python-rethinkdb")
+    (version "2.4.8")
+    (source
+      (origin
+        (method url-fetch)
+        (uri (pypi-uri "rethinkdb" version))
+        (sha256
+          (base32 "1vmap0la5j8xpigyp5bqph9cb6dskyw76y37n3vb16l9rlmsfxcz"))))
+    (build-system python-build-system)
+    (arguments
+     `(#:tests? #f))
+    (propagated-inputs (list python-six))
+    (home-page "https://github.com/RethinkDB/rethinkdb-python")
+    (synopsis "Python driver library for the RethinkDB database server.")
+    (description "Python driver library for the RethinkDB database server.")
+    (license #f)))
+
+(define-public python-apscheduler
+  (package
+    (name "python-apscheduler")
+    (version "3.8.1")
+    (source
+      (origin
+        (method url-fetch)
+        (uri (pypi-uri "APScheduler" version))
+        (sha256
+          (base32 "0m93bz9qpw6iwhay68bwljjcfyzcbh2rq0lc2yp4iamxrzml9wsw"))))
+    (build-system python-build-system)
+    (arguments
+     `(#:phases
+       (modify-phases %standard-phases
+         (replace 'check
+           (lambda* (#:key tests? #:allow-other-keys)
+             (when tests?
+               ;; FIXME: Currently python-kazoo fails to build.
+               (delete-file "tests/test_jobstores.py")
+               (invoke "pytest")))))))
+    (propagated-inputs
+      (list python-pytz
+            python-setuptools
+            python-six
+            python-tzlocal))
+    (native-inputs
+      (list python-mock
+            python-pyqt
+            python-twisted
+            python-gevent
+            python-setuptools-scm
+            python-sqlalchemy
+            python-redis
+            python-pymongo
+            python-rethinkdb
+            python-pytest
+            python-pytest-asyncio
+            python-pytest-cov
+            python-pytest-tornado5))
+    (home-page "https://github.com/agronholm/apscheduler")
+    (synopsis "In-process task scheduler with Cron-like capabilities")
+    (description "In-process task scheduler with Cron-like capabilities")
+    (license license:expat)))
+
+(define-public python-apscheduler-3.6.3
+  (package (inherit python-apscheduler)
+   (version "3.6.3")
+   (source
+     (origin
+       (method url-fetch)
+       (uri (pypi-uri "APScheduler" version))
+       (sha256
+         (base32 "0i72qpqgrgq6bb9vwsac46m7bqb6mq92g5nf2gydmfvgxng25d9v"))))))
+
+(define-public python-telegram-bot
+  (package
+    (name "python-telegram-bot")
+    (version "13.10")
+    (source
+      (origin
+        (method url-fetch)
+        (uri (pypi-uri "python-telegram-bot" version))
+        (sha256
+          (base32 "0ghyq044s0zi67hxwxdjjfvh37wr86pi5kmpq7harx11311mbifj"))))
+    (build-system python-build-system)
+    (arguments
+     ;; FIXME: Most tests require network access. Some of them can
+     ;; be run from the git repository but many still fail due
+     ;; to vendoring of a seemingly heavily patched urllib3.
+     `(#:tests? #f))
+    (native-inputs
+     (list python-beautifulsoup4
+           python-pytest
+           python-flaky))
+    (propagated-inputs
+      (list python-apscheduler-3.6.3
+            python-cachetools
+            python-certifi
+            python-pytz
+            python-tornado-6))
+    (home-page "https://python-telegram-bot.org/")
+    (synopsis "We have made you a wrapper you can't refuse")
+    (description "We have made you a wrapper you can't refuse")
+    (license #f)))
+
 (define-public mobilizon-reshare.git
   (let ((source-version (with-input-from-file
                             (string-append %source-dir
@@ -236,9 +362,8 @@ Facebook authentication.")
                (when tests?
                  (invoke "python" "-m" "pytest"
                          ;; This test fails because of the unvendoring
-                         ;; of toml from dynaconf and
-                         ;; because they depend on system timezone.
-                         "-k" "not test_get_settings_failure_invalid_toml and not test_format_event"))))
+                         ;; of toml from dynaconf.
+                         "-k" "not test_get_settings_failure_invalid_toml"))))
            (add-before 'sanity-check 'set-dummy-config
              (lambda _
                ;; This is needed to prevent the tool from
@@ -268,6 +393,7 @@ Facebook authentication.")
              python-jinja2
              python-markdownify
              python-requests
+             python-telegram-bot
              python-tweepy
              python-tortoise-orm))
       (home-page

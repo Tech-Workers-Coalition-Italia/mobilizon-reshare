@@ -26,27 +26,6 @@ def test_message_length_failure(event):
         TelegramFormatter().validate_event(event)
 
 
-@pytest.mark.parametrize(
-    "message, result",
-    [
-        ["", ""],
-        ["a#b", "ab"],
-        ["-", "\\-"],
-        ["(", "\\("],
-        ["!", "\\!"],
-        [")", "\\)"],
-        [")!", "\\)\\!"],
-        ["[link](https://link.com)", "[link](https://link.com)"],
-        [
-            "[link](https://link.com) [link2](https://link.com)",
-            "[link](https://link.com) [link2](https://link.com)",
-        ],
-    ],
-)
-def test_escape_message(message, result):
-    assert TelegramFormatter().escape_message(message) == result
-
-
 def test_event_validation(event):
     event.description = None
     with pytest.raises(InvalidEvent):
