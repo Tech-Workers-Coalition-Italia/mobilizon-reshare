@@ -362,9 +362,8 @@ simplify testing of asynchronous tornado applications.")
                (when tests?
                  (invoke "python" "-m" "pytest"
                          ;; This test fails because of the unvendoring
-                         ;; of toml from dynaconf and
-                         ;; because they depend on system timezone.
-                         "-k" "not test_get_settings_failure_invalid_toml and not test_format_event"))))
+                         ;; of toml from dynaconf.
+                         "-k" "not test_get_settings_failure_invalid_toml"))))
            (add-before 'sanity-check 'set-dummy-config
              (lambda _
                ;; This is needed to prevent the tool from
