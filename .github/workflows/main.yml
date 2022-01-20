@@ -32,7 +32,7 @@ jobs:
       - name: Install dependencies
         run: scripts/install_github_actions_dev_dependencies.sh
       - name: Run tests in dev env
-        run: poetry run pytest
+        run: poetry run pytest -m "not timezone_sensitive"
 
   run-tests-preprod:
     # The type of runner that the job will run on
