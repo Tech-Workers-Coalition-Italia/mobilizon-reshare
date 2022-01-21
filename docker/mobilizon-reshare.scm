@@ -360,10 +360,8 @@ simplify testing of asynchronous tornado applications.")
            (replace 'check
              (lambda* (#:key tests? inputs outputs #:allow-other-keys)
                (when tests?
-                 (invoke "python" "-m" "pytest"
-                         ;; This test fails because of the unvendoring
-                         ;; of toml from dynaconf.
-                         "-k" "not test_get_settings_failure_invalid_toml"))))
+                 (setenv "POETRY_VIRTUALENVS_CREATE" "false")
+                 (invoke "./scripts/run_pipeline_tests.sh"))))
            (add-before 'sanity-check 'set-dummy-config
              (lambda _
                ;; This is needed to prevent the tool from
