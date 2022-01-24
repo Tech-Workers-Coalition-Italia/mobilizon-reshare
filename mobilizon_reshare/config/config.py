@@ -39,17 +39,13 @@ def get_settings_files_paths():
     bundled_settings_path = pkg_resources.resource_filename(
         "mobilizon_reshare", "settings.toml"
     )
-    bundled_secrets_path = pkg_resources.resource_filename(
-        "mobilizon_reshare", ".secrets.toml"
-    )
-    return [
+    for config_path in [
         Path(dirs.user_config_dir, "mobilizon_reshare.toml").absolute(),
         Path(dirs.site_config_dir, "mobilizon_reshare.toml").absolute(),
-        Path(dirs.site_config_dir, ".secrets.toml").absolute(),
-        Path(dirs.site_config_dir, ".secrets.toml").absolute(),
         bundled_settings_path,
-        bundled_secrets_path,
-    ]
+    ]:
+        if config_path and Path(config_path).exists():
+            return config_path
 
 
 def build_settings(validators: Optional[list[Validator]] = None):
