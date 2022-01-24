@@ -32,7 +32,7 @@ jobs:
       - name: Install dependencies
         run: scripts/install_github_actions_dev_dependencies.sh
       - name: Run tests in dev env
-        run: run_pipeline_tests.sh
+        run: scripts/run_pipeline_tests.sh
 
   run-tests-preprod:
     # The type of runner that the job will run on
