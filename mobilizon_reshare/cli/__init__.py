@@ -20,22 +20,11 @@ async def init():
     dictConfig(settings["logging"])
     db_path = Path(settings.db_path)
     db = MoReDB(db_path)
-    db_setup = asyncio.create_task(db.setup())
-    _, _ = await asyncio.wait({db_setup}, return_when=asyncio.FIRST_EXCEPTION)
-    if db_setup.exception():
-        logging.critical("exception during db setup")
-        raise db_setup.exception()
+    await db.setup()
 
 
 async def _safe_execution(f):
-    init_task = asyncio.create_task(init())
-    _, _ = await asyncio.wait({init_task}, return_when=asyncio.FIRST_EXCEPTION)
-    if init_task.exception():
-        logging.critical("exception during init")
-        # raise init_task.exception()
-        # sys.exit(1)
-        loop = asyncio.get_event_loop()
-        loop.stop()
+    await init()
 
     return_code = 1
     try:
