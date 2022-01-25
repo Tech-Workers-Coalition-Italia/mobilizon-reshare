@@ -1,5 +1,7 @@
 import logging
 from pathlib import Path
+
+import pkg_resources
 from tortoise import Tortoise
 from aerich import Command
 from mobilizon_reshare.config.publishers import publisher_names
@@ -55,9 +57,13 @@ class MoReDB:
 
     async def _implement_db_changes(self):
         logging.info("Updating database to latest version")
+        migration_queries_location = pkg_resources.resource_filename(
+            "mobilizon_reshare", "migrations"
+        )
         command = Command(
             tortoise_config=TORTOISE_ORM,
             app="models",
+            location=migration_queries_location,
         )
         await command.init()
         await command.upgrade()
