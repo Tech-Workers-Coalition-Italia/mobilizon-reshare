@@ -12,4 +12,4 @@
        '("git-cal" "man-db" "texinfo"
          "python-pre-commit"
          "ripgrep" "python-semver"
-         "fd"))))
+         "fd" "docker-compose"))))
