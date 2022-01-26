@@ -1,4 +1,5 @@
 import importlib.resources
+import logging
 from pathlib import Path
 from typing import Optional
 
@@ -10,6 +11,8 @@ import mobilizon_reshare
 from mobilizon_reshare.config import strategies, publishers, notifiers
 from mobilizon_reshare.config.notifiers import notifier_names
 from mobilizon_reshare.config.publishers import publisher_names
+
+logger = logging.getLogger(__name__)
 
 base_validators = [
     # strategy to decide events to publish
@@ -39,17 +42,14 @@ def get_settings_files_paths():
     bundled_settings_path = pkg_resources.resource_filename(
         "mobilizon_reshare", "settings.toml"
     )
-    bundled_secrets_path = pkg_resources.resource_filename(
-        "mobilizon_reshare", ".secrets.toml"
-    )
-    return [
+    for config_path in [
         Path(dirs.user_config_dir, "mobilizon_reshare.toml").absolute(),
         Path(dirs.site_config_dir, "mobilizon_reshare.toml").absolute(),
-        Path(dirs.site_config_dir, ".secrets.toml").absolute(),
-        Path(dirs.site_config_dir, ".secrets.toml").absolute(),
         bundled_settings_path,
-        bundled_secrets_path,
-    ]
+    ]:
+        if config_path and Path(config_path).exists():
+            logger.debug(f"Loading configuration from {config_path}")
+            return config_path
 
 
 def build_settings(validators: Optional[list[Validator]] = None):

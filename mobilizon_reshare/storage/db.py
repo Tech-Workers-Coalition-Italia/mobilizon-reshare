@@ -1,6 +1,7 @@
 import logging
-import sys
 from pathlib import Path
+
+import pkg_resources
 from tortoise import Tortoise
 from aerich import Command
 from mobilizon_reshare.config.publishers import publisher_names
@@ -38,6 +39,8 @@ def get_tortoise_orm():
                 "default_connection": "default",
             },
         },
+        # always store UTC time in database
+        "use_tz": True,
     }
 
 
@@ -54,34 +57,21 @@ class MoReDB:
 
     async def _implement_db_changes(self):
         logging.info("Updating database to latest version")
-        try:
-
-            command = Command(
-                tortoise_config=get_tortoise_orm(),
-                app="models",
-                location="./migrations",
-            )
-            await command.init()
-            await command.upgrade()
-        except FileNotFoundError:
-            logging.critical("aerich configuration not found, fatal error")
-            await tear_down()
-            sys.exit(1)
+        migration_queries_location = pkg_resources.resource_filename(
+            "mobilizon_reshare", "migrations"
+        )
+        command = Command(
+            tortoise_config=TORTOISE_ORM,
+            app="models",
+            location=migration_queries_location,
+        )
+        await command.init()
+        await command.upgrade()
 
     async def setup(self):
         await self._implement_db_changes()
         await Tortoise.init(
-            db_url=get_db_url(),
-            modules={
-                "models": [
-                    "mobilizon_reshare.models.event",
-                    "mobilizon_reshare.models.notification",
-                    "mobilizon_reshare.models.publication",
-                    "mobilizon_reshare.models.publisher",
-                ]
-            },
-            # always store UTC time in database
-            use_tz=True,
+            config=TORTOISE_ORM,
         )
         if not self.is_init:
             await Tortoise.generate_schemas()

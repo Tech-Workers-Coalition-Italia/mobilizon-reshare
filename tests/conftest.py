@@ -25,6 +25,11 @@ from mobilizon_reshare.publishers.exceptions import PublisherError, InvalidRespo
 from mobilizon_reshare.storage.query.write import get_publisher_by_name
 from tests import today
 
+with importlib.resources.path(
+    mobilizon_reshare, ".secrets.toml"
+) as bundled_secrets_path:
+    os.environ["SECRETS_FOR_DYNACONF"] = str(bundled_secrets_path)
+
 
 def generate_publication_status(published):
     return PublicationStatus.COMPLETED if published else PublicationStatus.WAITING
@@ -124,15 +129,8 @@ def initialize_db_tests() -> None:
         db_url=db_url,
         app_label="models",
     )
-    with importlib.resources.path(
-        mobilizon_reshare, ".secrets.toml"
-    ) as bundled_secrets_path:
-        os.environ["SECRETS_FOR_DYNACONF"] = str(bundled_secrets_path)
-
-        yield None
-
-        os.environ["SECRETS_FOR_DYNACONF"] = ""
-        finalizer()
+    yield None
+    finalizer()
 
 
 @pytest.fixture()
@@ -164,7 +162,9 @@ def event_model_generator():
 
 @pytest.fixture()
 def publisher_model_generator():
-    def _publisher_model_generator(idx=1,):
+    def _publisher_model_generator(
+        idx=1,
+    ):
         return Publisher(name=f"publisher_{idx}", account_ref=f"account_ref_{idx}")
 
     return _publisher_model_generator
@@ -304,7 +304,10 @@ def mock_mobilizon_success_answer(mobilizon_answer, mobilizon_url):
     with responses.RequestsMock() as rsps:
 
         rsps.add(
-            responses.POST, mobilizon_url, json=mobilizon_answer, status=200,
+            responses.POST,
+            mobilizon_url,
+            json=mobilizon_answer,
+            status=200,
         )
         yield
 
