@@ -21,8 +21,6 @@
                                       "/bin")))
               (mkdir-p bin)
               (install-file "scripts/scheduler.py" bin)))))))
-
-
    (propagated-inputs (list mobilizon-reshare.git
                             python-apscheduler-for-telegram-bot))
    (synopsis "Mobilizon Reshare's scheduler")

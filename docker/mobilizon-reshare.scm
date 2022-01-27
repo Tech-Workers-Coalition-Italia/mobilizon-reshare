@@ -29,28 +29,6 @@
              "https://wiki.coopcycle.org/en:license"
              "Coopyleft License")))
 
-;; This comes from Guix commit ef347195278eb160ec725bbdccf71d67c0fa4271
-(define python-asynctest-from-the-past
-  (package
-    (name "python-asynctest")
-    (version "0.13.0")
-    (source
-     (origin
-       (method url-fetch)
-       (uri (pypi-uri "asynctest" version))
-       (sha256
-        (base32
-         "1b3zsy7p84gag6q8ai2ylyrhx213qdk2h2zb6im3xn0m5n264y62"))))
-    (build-system python-build-system)
-    (arguments
-     '(#:tests? #f))
-    (home-page "https://github.com/Martiusweb/asynctest")
-    (synopsis "Extension of unittest for testing asyncio libraries")
-    (description
-     "The package asynctest is built on top of the standard unittest module
-and cuts down boilerplate code when testing libraries for asyncio.")
-    (license license:asl2.0)))
-
 (define-public python-tweepy
   (package
     (name "python-tweepy")
@@ -154,16 +132,44 @@ Facebook authentication.")
        `(modify-phases ,phases
           (delete 'check)))))))
 
+(define-public python-pypika-tortoise-0.1.3
+  (package (inherit python-pypika-tortoise)
+   (version "0.1.3")
+   (source
+     (origin
+       (method url-fetch)
+       (uri (pypi-uri "pypika-tortoise" version))
+       (sha256
+         (base32 "066jb88f3hk42sks69gv6w7k5irf6r0ssbly1n41a3pb19p2vpzc"))))))
+
+(define-public python-tortoise-orm-0.18.1
+  (package (inherit python-tortoise-orm)
+   (version "0.18.1")
+   (source
+     (origin
+       (method url-fetch)
+       (uri (pypi-uri "tortoise-orm" version))
+       (sha256
+         (base32 "1c8xq3620z04i1yp8n6bfshi98qkjjydkbs3zld78a885p762wsk"))))
+   (arguments
+    `(#:tests? #f
+      #:phases
+      (modify-phases %standard-phases
+        (delete 'sanity-check))))
+   (propagated-inputs
+    (modify-inputs (package-propagated-inputs python-tortoise-orm)
+     (replace "python-pypika-tortoise" python-pypika-tortoise-0.1.3)))))
+
 (define-public python-aerich
   (package
     (name "python-aerich")
-    (version "0.6.1")
+    (version "0.6.2")
     (source
       (origin
         (method url-fetch)
         (uri (pypi-uri "aerich" version))
         (sha256
-          (base32 "19bvx5icsmmf9ylxyqrxw4wjv77shg5r8pjgdg7plzhn937bzlch"))))
+          (base32 "1r4xqw9x0fvdjbd36riz72n3ih1p7apv2p92lq1h6nwjfzwr2jvq"))))
     (build-system python-build-system)
     (propagated-inputs
       (list python-asyncmy
@@ -171,8 +177,10 @@ Facebook authentication.")
             python-click
             python-ddlparse
             python-dictdiffer/fixed
+            python-pytz
+            python-pypika-tortoise-0.1.3
             python-tomlkit
-            python-tortoise-orm))
+            python-tortoise-orm-0.18.1))
     (home-page "https://github.com/tortoise/aerich")
     (synopsis "A database migrations tool for Tortoise ORM.")
     (description
@@ -344,9 +352,7 @@ simplify testing of asynchronous tornado applications.")
                        (string-append (getcwd)
                                       "/mobilizon_reshare/.secrets.toml")))))))
       (native-inputs
-       ;; This is needed until we switch to tortoise 0.18.*
-       (list python-asynctest-from-the-past
-             python-iniconfig
+       (list python-iniconfig
              poetry
              python-pytest
              python-pytest-cov
@@ -367,7 +373,7 @@ simplify testing of asynchronous tornado applications.")
              python-requests
              python-telegram-bot
              python-tweepy
-             python-tortoise-orm))
+             python-tortoise-orm-0.18.1))
       (home-page
        "https://github.com/Tech-Workers-Coalition-Italia/mobilizon-reshare")
       (synopsis
