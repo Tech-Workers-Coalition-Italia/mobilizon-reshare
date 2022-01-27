@@ -288,7 +288,7 @@ simplify testing of asynchronous tornado applications.")
     (description "In-process task scheduler with Cron-like capabilities")
     (license license:expat)))
 
-(define-public python-apscheduler-3.6.3
+(define-public python-apscheduler-for-telegram-bot
   (package (inherit python-apscheduler)
    (version "3.6.3")
    (source
@@ -319,7 +319,7 @@ simplify testing of asynchronous tornado applications.")
            python-pytest
            python-flaky))
     (propagated-inputs
-      (list python-apscheduler-3.6.3
+      (list python-apscheduler-for-telegram-bot
             python-cachetools
             python-certifi
             python-pytz
