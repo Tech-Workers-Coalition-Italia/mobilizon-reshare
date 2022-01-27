@@ -10,9 +10,8 @@ from mobilizon_reshare.storage.db import tear_down, MoReDB
 logger = logging.getLogger(__name__)
 
 
-async def graceful_exit(code):
+async def graceful_exit():
     await tear_down()
-    exit(code)
 
 
 async def init():
@@ -33,8 +32,10 @@ async def _safe_execution(f):
         traceback.print_exc()
     finally:
         logger.debug("Closing")
-        await graceful_exit(return_code)
+        await graceful_exit()
+        return return_code
 
 
 def safe_execution(f):
-    asyncio.run(_safe_execution(f))
+    code = asyncio.run(_safe_execution(f))
+    exit(code)
