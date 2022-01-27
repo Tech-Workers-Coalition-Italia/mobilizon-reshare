@@ -1,5 +1,11 @@
-# This module allows to customize the scheduling logic for mobilizon-reshare. It's not intended to be part of the
-# supported code base but just an example on how to schedule the commands of mobilizon-reshare
+#!/usr/bin/env python3
+
+"""
+This module allows to customize the scheduling logic for mobilizon-reshare.
+
+It's not intended to be part of the supported code base but just an example on how to schedule the commands of
+mobilizon-reshare.
+"""
 import asyncio
 from functools import partial
 
