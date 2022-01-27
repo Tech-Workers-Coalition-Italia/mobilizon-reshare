@@ -7,7 +7,6 @@
 (packages->manifest
   (append
     (map cadr (package-direct-inputs mobilizon-reshare.git))
-    (list poetry/pinned)
     (map specification->package+output
        '("git-cal" "man-db" "texinfo"
          "python-pre-commit"

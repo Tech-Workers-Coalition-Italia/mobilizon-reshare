@@ -51,32 +51,6 @@
 and cuts down boilerplate code when testing libraries for asyncio.")
     (license license:asl2.0)))
 
-;; After core-updates-freeze merge poetry stopped building.
-;; We pin the version based on old master until it'll be fixed.
-(define python-os-testr/fixed
-  (package
-    (inherit python-os-testr)
-    (native-inputs
-     (modify-inputs (package-native-inputs python-os-testr)
-       (prepend python-testrepository)))))
-
-(define python-msgpack-transitional/fixed
-  (package
-    (inherit python-msgpack-transitional)
-    (arguments
-     (substitute-keyword-arguments (package-arguments python-msgpack-transitional)
-      ((#:phases phases)
-       `(modify-phases ,phases
-          (delete 'check)))))))
-
-(define-public poetry/pinned
-  (let ((transform
-         (package-input-rewriting/spec `(("python-msgpack-transitional" .
-                                          ,(const python-msgpack-transitional/fixed))
-                                         ("python-os-testr" .
-                                          ,(const python-os-testr/fixed))))))
-    (transform poetry)))
-
 (define-public python-tweepy
   (package
     (name "python-tweepy")
@@ -373,7 +347,7 @@ simplify testing of asynchronous tornado applications.")
        ;; This is needed until we switch to tortoise 0.18.*
        (list python-asynctest-from-the-past
              python-iniconfig
-             poetry/pinned
+             poetry
              python-pytest
              python-pytest-cov
              python-pytest-asyncio
