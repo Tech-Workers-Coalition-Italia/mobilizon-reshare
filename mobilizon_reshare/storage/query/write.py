@@ -1,5 +1,6 @@
 import logging
 from typing import Iterable, Optional
+from uuid import UUID
 
 import arrow
 from tortoise.transactions import atomic
@@ -10,7 +11,10 @@ from mobilizon_reshare.models.publication import Publication
 from mobilizon_reshare.models.publisher import Publisher
 from mobilizon_reshare.publishers.coordinator import PublisherCoordinatorReport
 from mobilizon_reshare.storage.query import CONNECTION_NAME
-from mobilizon_reshare.storage.query.read import events_without_publications
+from mobilizon_reshare.storage.query.read import (
+    events_without_publications,
+    mobilizon_id_to_event_id,
+)
 
 
 async def upsert_publication(publication_report, event):
@@ -63,29 +67,19 @@ async def create_unpublished_events(
 
     Returns the unpublished events merged state.
     """
-    # We store only new events, i.e. events whose mobilizon_id wasn't found in the DB.
-    unpublished_events = await events_without_publications()
-
-    # save in known_event_mobilizon_key only unique tuple composed by id and updatedAt from unpublished_events
-    known_event_mobilizon_keys = {
-        e.mobilizon_id: e.last_update_time for e in unpublished_events
+    known_events_from_db: dict[UUID, arrow.Arrow] = {
+        e.mobilizon_id: e.last_update_time for e in await events_without_publications()
     }
 
-    # generate list of event to save (insert, update) :
-    #
-    # - event must not be in known keys
-    # - event must not be already successful published
-
-    new_unpublished_events = []
     for event in events_from_mobilizon:
-        if event.mobilizon_id in known_event_mobilizon_keys.keys():
-            if event.last_update_time >= known_event_mobilizon_keys[event.mobilizon_id]:
-                new_unpublished_events.append(event)
-        else:
-            new_unpublished_events.append(event)
-
-    for event in new_unpublished_events:
-        await event.to_model().save()
+        event_mobilizon_id: UUID = event.mobilizon_id
+        # We store only new events, i.e. events whose mobilizon_id wasn't found in the DB.
+        if event_mobilizon_id not in known_events_from_db.keys():
+            await event.to_model().save()
+        # If an event is known but has been updated, we save it.
+        elif event.last_update_time > known_events_from_db[event_mobilizon_id]:
+            event_db_id = await mobilizon_id_to_event_id(event_mobilizon_id)
+            await event.to_model(event_db_id).save()
 
     return await events_without_publications()
 

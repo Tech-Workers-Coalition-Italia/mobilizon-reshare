@@ -7,7 +7,7 @@ def simple_template():
     return Template(
         (
             "{{name}}|{{description}}|{{location}}|{{begin_datetime.strftime('%Y-%m-%d, %H:%M')}}"
-            "|{{last_update_time('%Y-%m-%d, %H:%M')}}"
+            "|{{last_update_time.strftime('%Y-%m-%d, %H:%M')}}"
         )
     )
 

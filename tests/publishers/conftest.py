@@ -26,6 +26,7 @@ def test_event():
             "end_datetime": now + timedelta(hours=1),
             "mobilizon_link": "",
             "mobilizon_id": UUID(int=0),
+            "last_update_time": now,
         }
     )
 

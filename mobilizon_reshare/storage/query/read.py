@@ -137,28 +137,17 @@ async def events_without_publications(
     return list(map(MobilizonEvent.from_model, events))
 
 
-def _remove_duplicated_events(events: list[MobilizonEvent]) -> list[MobilizonEvent]:
-    """Remove duplicates based on mobilizon_id"""
-    result = []
-    seen_ids = set()
-    for event in events:
-        if event.mobilizon_id not in seen_ids:
-            result.append(event)
-            seen_ids.add(event.mobilizon_id)
-    return result
+async def get_event(event_mobilizon_id: UUID) -> Event:
+    events = await prefetch_event_relations(Event.filter(mobilizon_id=event_mobilizon_id))
+    if not events:
+        raise EventNotFound(f"No event with mobilizon_id {event_mobilizon_id} found.")
+    assert len(events) == 1, "Events' mobilizon ids are supposed to be unique."
+    return events[0]
 
 
-async def get_unpublished_events(
-    unpublished_mobilizon_events: Iterable[MobilizonEvent],
-) -> list[MobilizonEvent]:
-    """
-    Returns all the unpublished events, removing duplicates that are present both in the DB and in the mobilizon query
-    """
-    db_unpublished_events = await events_without_publications()
-    all_unpublished_events = list(unpublished_mobilizon_events) + list(
-        db_unpublished_events
-    )
-    return _remove_duplicated_events(all_unpublished_events)
+async def mobilizon_id_to_event_id(event_mobilizon_id: UUID) -> UUID:
+    event = await get_event(event_mobilizon_id)
+    return event.id
 
 
 @atomic(CONNECTION_NAME)
@@ -171,15 +160,6 @@ async def build_publications(event: MobilizonEvent) -> list[EventPublication]:
     return list(
         EventPublication.from_orm(m, dataclasses.replace(event)) for m in models
     )
-
-
-@atomic(CONNECTION_NAME)
-async def get_event(event_mobilizon_id) -> None:
-    event = await Event.filter(mobilizon_id=event_mobilizon_id).first()
-    if not event:
-        raise EventNotFound(f"No event with mobilizon_id {event_mobilizon_id} found.")
-    await event.fetch_related("publications")
-    return event
 
 
 @atomic(CONNECTION_NAME)

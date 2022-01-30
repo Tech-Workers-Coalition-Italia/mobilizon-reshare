@@ -20,6 +20,7 @@ simple_event_element = {
     "title": "test event",
     "url": "https://some_mobilizon/events/1e2e5943-4a5c-497a-b65d-90457b715d7b",
     "uuid": "1e2e5943-4a5c-497a-b65d-90457b715d7b",
+    "updatedAt": "2021-05-23T12:15:00Z",
 }
 simple_event_response = {
     "data": {"group": {"organizedEvents": {"elements": [simple_event_element]}}}
@@ -36,6 +37,7 @@ full_event_element = {
     "title": "full event",
     "url": "https://some_mobilizon/events/56e7ca43-1b6b-4c50-8362-0439393197e6",
     "uuid": "56e7ca43-1b6b-4c50-8362-0439393197e6",
+    "updatedAt": "2021-05-25T15:15:00Z",
 }
 full_event_response = {
     "data": {"group": {"organizedEvents": {"elements": [full_event_element]}}}
@@ -58,7 +60,7 @@ simple_event = MobilizonEvent(
     mobilizon_id=UUID("1e2e5943-4a5c-497a-b65d-90457b715d7b"),
     thumbnail_link=None,
     location=None,
-    last_update_time=arrow.get("2021-05-23T15:15:00Z"),
+    last_update_time=arrow.get("2021-05-23T12:15:00Z"),
 )
 
 full_event = MobilizonEvent(
@@ -70,7 +72,7 @@ full_event = MobilizonEvent(
     mobilizon_id=UUID("56e7ca43-1b6b-4c50-8362-0439393197e6"),
     thumbnail_link=None,
     location="http://some_location",
-    last_update_time=arrow.get("2021-05-23T15:15:00Z"),
+    last_update_time=arrow.get("2021-05-25T15:15:00+00:00"),
 )
 
 

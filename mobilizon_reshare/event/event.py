@@ -53,20 +53,25 @@ class MobilizonEvent:
     def format(self, pattern: Template) -> str:
         return self._fill_template(pattern)
 
-    def to_model(self) -> Event:
-        return Event(
-            name=self.name,
-            description=self.description,
-            mobilizon_id=self.mobilizon_id,
-            mobilizon_link=self.mobilizon_link,
-            thumbnail_link=self.thumbnail_link,
-            location=self.location,
-            begin_datetime=self.begin_datetime.astimezone(self.begin_datetime.tzinfo),
-            end_datetime=self.end_datetime.astimezone(self.end_datetime.tzinfo),
-            last_update_time=self.last_update_time.astimezone(
+    def to_model(self, db_id: Optional[UUID] = None) -> Event:
+        kwargs = {
+            "name": self.name,
+            "description": self.description,
+            "mobilizon_id": self.mobilizon_id,
+            "mobilizon_link": self.mobilizon_link,
+            "thumbnail_link": self.thumbnail_link,
+            "location": self.location,
+            "begin_datetime": self.begin_datetime.astimezone(
+                self.begin_datetime.tzinfo
+            ),
+            "end_datetime": self.end_datetime.astimezone(self.end_datetime.tzinfo),
+            "last_update_time": self.last_update_time.astimezone(
                 self.last_update_time.tzinfo
             ),
-        )
+        }
+        if db_id is not None:
+            kwargs.update({"id": db_id})
+        return Event(**kwargs)
 
     @staticmethod
     def compute_status(publications: list[Publication]) -> EventPublicationStatus:
