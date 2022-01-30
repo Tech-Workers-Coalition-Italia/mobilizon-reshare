@@ -28,6 +28,7 @@ event_0 = MobilizonEvent(
     status=EventPublicationStatus.WAITING,
     begin_datetime=arrow.get(today + timedelta(days=0)),
     end_datetime=arrow.get(today + timedelta(days=0) + timedelta(hours=2)),
+    last_update_time=arrow.get(today + timedelta(days=1) + timedelta(hours=2)),
 )
 
 
@@ -159,6 +160,9 @@ async def test_event_with_status_window(
                     end_datetime=arrow.get(
                         today + timedelta(days=1) + timedelta(hours=2)
                     ),
+                    last_update_time=arrow.get(
+                        today + timedelta(days=3) + timedelta(hours=2)
+                    ),
                 ),
             ],
         ),
@@ -195,6 +199,9 @@ async def test_event_with_status_window(
                     publication_time={},
                     begin_datetime=arrow.get(today + timedelta(days=3)),
                     end_datetime=arrow.get(
+                        today + timedelta(days=3) + timedelta(hours=2)
+                    ),
+                    last_update_time=arrow.get(
                         today + timedelta(days=3) + timedelta(hours=2)
                     ),
                 ),

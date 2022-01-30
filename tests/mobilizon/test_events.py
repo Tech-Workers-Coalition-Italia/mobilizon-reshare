@@ -7,7 +7,6 @@ from mobilizon_reshare.event.event import MobilizonEvent
 from mobilizon_reshare.mobilizon.events import (
     get_mobilizon_future_events,
     MobilizonRequestFailed,
-    get_unpublished_events,
 )
 
 simple_event_element = {
@@ -59,6 +58,7 @@ simple_event = MobilizonEvent(
     mobilizon_id=UUID("1e2e5943-4a5c-497a-b65d-90457b715d7b"),
     thumbnail_link=None,
     location=None,
+    last_update_time=arrow.get("2021-05-23T15:15:00Z"),
 )
 
 full_event = MobilizonEvent(
@@ -70,6 +70,7 @@ full_event = MobilizonEvent(
     mobilizon_id=UUID("56e7ca43-1b6b-4c50-8362-0439393197e6"),
     thumbnail_link=None,
     location="http://some_location",
+    last_update_time=arrow.get("2021-05-23T15:15:00Z"),
 )
 
 
@@ -115,18 +116,3 @@ def test_failure_404(mock_mobilizon_failure_answer):
 def test_failure_wrong_group(mock_mobilizon_success_answer):
     with pytest.raises(MobilizonRequestFailed):
         get_mobilizon_future_events()
-
-
-@pytest.mark.parametrize(
-    "mobilizon_answer, published_events,expected_result",
-    [
-        [{"data": {"group": {"organizedEvents": {"elements": []}}}}, [], []],
-        [simple_event_response, [], [simple_event]],
-        [two_events_response, [], [simple_event, full_event]],
-        [two_events_response, [simple_event], [full_event]],
-    ],
-)
-def test_get_unpublished_events(
-    mock_mobilizon_success_answer, published_events, expected_result
-):
-    assert get_unpublished_events(published_events) == expected_result

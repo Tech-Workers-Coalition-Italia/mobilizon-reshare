@@ -41,7 +41,10 @@ users_me = {
 def mocked_valid_response():
     with responses.RequestsMock() as rsps:
         rsps.add(
-            responses.GET, api_uri + "users/me", json=users_me, status=200,
+            responses.GET,
+            api_uri + "users/me",
+            json=users_me,
+            status=200,
         )
         rsps.add(
             responses.POST,
@@ -68,7 +71,10 @@ def mocked_credential_error_response():
 def mocked_client_error_response():
     with responses.RequestsMock() as rsps:
         rsps.add(
-            responses.GET, api_uri + "users/me", json=users_me, status=200,
+            responses.GET,
+            api_uri + "users/me",
+            json=users_me,
+            status=200,
         )
         rsps.add(
             responses.POST,
@@ -115,7 +121,7 @@ async def test_zulip_publisher(mocked_valid_response, setup_db, unsaved_publicat
 
 
 @pytest.mark.asyncio
-async def test_zulip_publishr_failure_invalid_credentials(
+async def test_zulip_publisher_failure_invalid_credentials(
     mocked_credential_error_response, setup_db, unsaved_publications
 ):
     report = PublisherCoordinator(unsaved_publications).run()

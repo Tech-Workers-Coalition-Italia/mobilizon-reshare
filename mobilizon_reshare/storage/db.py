@@ -56,7 +56,7 @@ class MoReDB:
             self.path.parent.mkdir(parents=True, exist_ok=True)
 
     async def _implement_db_changes(self):
-        logging.info("Updating database to latest version")
+
         migration_queries_location = pkg_resources.resource_filename(
             "mobilizon_reshare", "migrations"
         )
@@ -66,7 +66,9 @@ class MoReDB:
             location=migration_queries_location,
         )
         await command.init()
-        await command.upgrade()
+        migrations = await command.upgrade()
+        if migrations:
+            logging.warning("Updating database to latest version")
 
     async def setup(self):
         await self._implement_db_changes()

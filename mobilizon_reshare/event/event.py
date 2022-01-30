@@ -33,6 +33,7 @@ class MobilizonEvent:
     location: Optional[str] = None
     publication_time: Optional[dict[str, arrow.Arrow]] = None
     status: EventPublicationStatus = EventPublicationStatus.WAITING
+    last_update_time: arrow.Arrow
 
     def __post_init__(self):
         assert self.begin_datetime.tzinfo == self.end_datetime.tzinfo

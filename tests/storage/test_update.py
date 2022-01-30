@@ -16,7 +16,6 @@ from mobilizon_reshare.publishers.platforms.telegram import (
     TelegramFormatter,
     TelegramPublisher,
 )
-from mobilizon_reshare.storage.query.read import publications_with_status
 from mobilizon_reshare.storage.query.write import (
     save_publication_report,
     update_publishers,
@@ -36,6 +35,7 @@ event_1 = MobilizonEvent(
     status=EventPublicationStatus.WAITING,
     begin_datetime=arrow.get(today + timedelta(days=1)),
     end_datetime=arrow.get(today + timedelta(days=1) + timedelta(hours=2)),
+    last_update_time=arrow.get(today + timedelta(days=1) + timedelta(hours=2)),
 )
 
 
