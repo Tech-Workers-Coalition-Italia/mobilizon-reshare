@@ -10,6 +10,7 @@ from tortoise.transactions import atomic
 from mobilizon_reshare.event.event import MobilizonEvent, EventPublicationStatus
 from mobilizon_reshare.models.event import Event
 from mobilizon_reshare.models.publication import Publication, PublicationStatus
+from mobilizon_reshare.models.publisher import Publisher
 from mobilizon_reshare.publishers import get_active_publishers
 from mobilizon_reshare.publishers.abstract import EventPublication
 from mobilizon_reshare.publishers.exceptions import EventNotFound
@@ -138,21 +139,44 @@ async def events_without_publications(
 
 
 async def get_event(event_mobilizon_id: UUID) -> Event:
-    events = await prefetch_event_relations(Event.filter(mobilizon_id=event_mobilizon_id))
+    events = await prefetch_event_relations(
+        Event.filter(mobilizon_id=event_mobilizon_id)
+    )
     if not events:
         raise EventNotFound(f"No event with mobilizon_id {event_mobilizon_id} found.")
-    assert len(events) == 1, "Events' mobilizon ids are supposed to be unique."
+
+    assert events[0] and (
+        len(events) == 1
+    ), "Events' mobilizon ids are supposed to be unique."
+
     return events[0]
 
 
-async def mobilizon_id_to_event_id(event_mobilizon_id: UUID) -> UUID:
-    event = await get_event(event_mobilizon_id)
-    return event.id
+async def get_event_last_update_time(event: MobilizonEvent) -> Arrow:
+    event_model = await get_event(event.mobilizon_id)
+    return event_model.last_update_time
+
+
+async def get_event_db_id(event: MobilizonEvent) -> UUID:
+    event_model = await get_event(event.mobilizon_id)
+    return event_model.id
+
+
+async def get_publisher_by_name(name) -> Publisher:
+    return await Publisher.filter(name=name).first()
+
+
+async def is_known(event: MobilizonEvent) -> bool:
+    try:
+        await get_event(event.mobilizon_id)
+        return True
+    except EventNotFound:
+        return False
 
 
 @atomic(CONNECTION_NAME)
 async def build_publications(event: MobilizonEvent) -> list[EventPublication]:
-    event_model = await Event.filter(mobilizon_id=event.mobilizon_id).first()
+    event_model = await get_event(event.mobilizon_id)
     models = [
         await event_model.build_publication_by_publisher_name(name)
         for name in get_active_publishers()
@@ -163,7 +187,9 @@ async def build_publications(event: MobilizonEvent) -> list[EventPublication]:
 
 
 @atomic(CONNECTION_NAME)
-async def get_failed_publications_for_event(event_mobilizon_id):
+async def get_failed_publications_for_event(
+    event_mobilizon_id: UUID,
+) -> list[MobilizonEvent]:
     event = await get_event(event_mobilizon_id)
     failed_publications = list(
         filter(

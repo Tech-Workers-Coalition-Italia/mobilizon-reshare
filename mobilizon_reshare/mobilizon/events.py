@@ -78,9 +78,6 @@ query_future_events = """{{
           }}"""
 
 
-# funzione
-
-
 def get_mobilizon_future_events(
     page: int = 1, from_date: Optional[arrow.Arrow] = None
 ) -> List[MobilizonEvent]:

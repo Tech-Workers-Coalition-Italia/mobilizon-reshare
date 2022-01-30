@@ -13,10 +13,18 @@ from mobilizon_reshare.publishers.coordinator import PublisherCoordinatorReport
 from mobilizon_reshare.storage.query import CONNECTION_NAME
 from mobilizon_reshare.storage.query.read import (
     events_without_publications,
-    mobilizon_id_to_event_id,
+    is_known,
+    get_publisher_by_name,
+    get_event_last_update_time,
+    get_event_db_id,
 )
 
 
+async def create_publisher(name: str, account_ref: Optional[str] = None) -> None:
+    await Publisher.create(name=name, account_ref=account_ref)
+
+
+@atomic(CONNECTION_NAME)
 async def upsert_publication(publication_report, event):
 
     publisher = await get_publisher_by_name(
@@ -67,25 +75,17 @@ async def create_unpublished_events(
 
     Returns the unpublished events merged state.
     """
-    known_events_from_db: dict[UUID, arrow.Arrow] = {
-        e.mobilizon_id: e.last_update_time for e in await events_without_publications()
-    }
-
+    # There are three cases:
     for event in events_from_mobilizon:
-        event_mobilizon_id: UUID = event.mobilizon_id
-        # We store only new events, i.e. events whose mobilizon_id wasn't found in the DB.
-        if event_mobilizon_id not in known_events_from_db.keys():
+        # Either an event is unknown
+        if not await is_known(event):
             await event.to_model().save()
-        # If an event is known but has been updated, we save it.
-        elif event.last_update_time > known_events_from_db[event_mobilizon_id]:
-            event_db_id = await mobilizon_id_to_event_id(event_mobilizon_id)
-            await event.to_model(event_db_id).save()
+        # Or it's known and changed
+        elif event.last_update_time > await get_event_last_update_time(event):
+            await event.to_model(await get_event_db_id(event)).save(force_update=True)
+        # Or it's known and unchanged
 
     return await events_without_publications()
-
-
-async def create_publisher(name: str, account_ref: Optional[str] = None) -> None:
-    await Publisher.create(name=name, account_ref=account_ref)
 
 
 @atomic(CONNECTION_NAME)
@@ -97,7 +97,3 @@ async def update_publishers(
     for name in names.difference(known_publisher_names):
         logging.info(f"Creating {name} publisher")
         await create_publisher(name)
-
-
-async def get_publisher_by_name(name):
-    return await Publisher.filter(name=name).first()

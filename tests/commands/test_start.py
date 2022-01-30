@@ -14,8 +14,7 @@ from mobilizon_reshare.models.publication import PublicationStatus
 
 @pytest.mark.asyncio
 @pytest.mark.parametrize(
-    "elements",
-    [[]],
+    "elements", [[]],
 )
 async def test_start_no_event(
     mock_mobilizon_success_answer, mobilizon_answer, caplog, elements
@@ -85,8 +84,7 @@ async def test_start_new_event(
     "publisher_class", [pytest.lazy_fixture("mock_publisher_class")]
 )
 @pytest.mark.parametrize(
-    "elements",
-    [[]],
+    "elements", [[]],
 )
 async def test_start_event_from_db(
     mock_mobilizon_success_answer,
@@ -131,8 +129,7 @@ async def test_start_event_from_db(
     "publisher_class", [pytest.lazy_fixture("mock_publisher_invalid_class")]
 )
 @pytest.mark.parametrize(
-    "elements",
-    [[]],
+    "elements", [[]],
 )
 async def test_start_publisher_failure(
     mock_mobilizon_success_answer,
@@ -213,8 +210,7 @@ def second_event_element():
     "publisher_class", [pytest.lazy_fixture("mock_publisher_class")]
 )
 @pytest.mark.parametrize(
-    "elements",
-    [[second_event_element()]],
+    "elements", [[second_event_element()]],
 )
 async def test_start_second_execution(
     mock_mobilizon_success_answer,

@@ -1,10 +1,7 @@
-from datetime import timedelta
 from uuid import UUID
 
-import arrow
 import pytest
 
-from mobilizon_reshare.event.event import MobilizonEvent, EventPublicationStatus
 from mobilizon_reshare.models.publication import PublicationStatus, Publication
 from mobilizon_reshare.models.publisher import Publisher
 from mobilizon_reshare.publishers.abstract import EventPublication
@@ -19,24 +16,37 @@ from mobilizon_reshare.publishers.platforms.telegram import (
 from mobilizon_reshare.storage.query.write import (
     save_publication_report,
     update_publishers,
+    create_unpublished_events,
 )
-from tests.storage import complete_specification
-from tests.storage import today
+from tests.storage import (
+    complete_specification,
+    event_0,
+    event_1,
+    event_2,
+    event_3,
+    event_3_updated,
+    event_6,
+)
+
 
 two_publishers_specification = {"publisher": ["telegram", "twitter"]}
 
-event_1 = MobilizonEvent(
-    name="event_1",
-    description="desc_1",
-    mobilizon_id=UUID(int=1),
-    mobilizon_link="moblink_1",
-    thumbnail_link="thumblink_1",
-    location="loc_1",
-    status=EventPublicationStatus.WAITING,
-    begin_datetime=arrow.get(today + timedelta(days=1)),
-    end_datetime=arrow.get(today + timedelta(days=1) + timedelta(hours=2)),
-    last_update_time=arrow.get(today + timedelta(days=1) + timedelta(hours=2)),
-)
+all_published_specification = {
+    "event": 2,
+    "publications": [
+        {"event_idx": 0, "publisher_idx": 1, "status": PublicationStatus.FAILED},
+        {"event_idx": 1, "publisher_idx": 0, "status": PublicationStatus.COMPLETED},
+    ],
+    "publisher": ["telegram", "twitter"],
+}
+
+two_events_specification = {
+    "event": 2,
+    "publications": [
+        {"event_idx": 0, "publisher_idx": 1, "status": PublicationStatus.FAILED},
+    ],
+    "publisher": ["telegram", "twitter"],
+}
 
 
 @pytest.mark.asyncio
@@ -78,6 +88,62 @@ async def test_update_publishers(
 
     assert len(publishers) == len(expected_result)
     assert publishers == expected_result
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize(
+    "specification,events_from_mobilizon,expected_result",
+    [
+        [
+            # Empty DB
+            {"event": 0, "publications": [], "publisher": []},
+            [event_1],
+            [event_1],
+        ],
+        [
+            # Test whether the query actually does nothing when all events are published
+            all_published_specification,
+            [event_1],
+            [],
+        ],
+        [
+            # Test whether the query actually returns only unknown unpublished events
+            all_published_specification,
+            [event_2],
+            [event_2],
+        ],
+        [
+            # Test whether the query actually merges remote and local state
+            {"event": 2, "publisher": ["telegram", "mastodon", "facebook"]},
+            [event_2],
+            [event_0, event_1, event_2],
+        ],
+        [
+            # Test whether the query actually merges remote and local state
+            complete_specification,
+            [event_0, event_1, event_2, event_6],
+            [event_3, event_6],
+        ],
+        [
+            # Test update
+            complete_specification,
+            [event_0, event_3_updated, event_6],
+            [event_3_updated, event_6],
+        ],
+    ],
+)
+async def test_create_unpublished_events(
+    specification,
+    events_from_mobilizon,
+    expected_result,
+    generate_models,
+):
+    await generate_models(specification)
+
+    unpublished_events = await create_unpublished_events(events_from_mobilizon)
+
+    assert len(unpublished_events) == len(expected_result)
+    assert unpublished_events == expected_result
 
 
 @pytest.mark.asyncio
