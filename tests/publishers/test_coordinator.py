@@ -23,12 +23,15 @@ from tests import today
 
 
 @pytest.fixture()
-def failure_report(mock_publisher_invalid):
+def failure_report(mock_publisher_invalid, event):
     return EventPublicationReport(
         status=PublicationStatus.FAILED,
         reason="some failure",
         publication=EventPublication(
-            publisher=mock_publisher_invalid, formatter=None, event=None, id=UUID(int=1)
+            publisher=mock_publisher_invalid,
+            formatter=None,
+            event=event,
+            id=UUID(int=1),
         ),
     )
 
