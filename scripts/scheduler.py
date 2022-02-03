@@ -7,9 +7,11 @@ It's not intended to be part of the supported code base but just an example on h
 mobilizon-reshare.
 """
 import asyncio
+import os
 from functools import partial
 
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
+from apscheduler.triggers.cron import CronTrigger
 
 from mobilizon_reshare.cli import _safe_execution
 from mobilizon_reshare.cli.commands.start.main import start
@@ -19,13 +21,17 @@ sched = AsyncIOScheduler()
 # Runs "start" from Monday to Friday every 15 mins
 sched.add_job(
     partial(_safe_execution, start),
-    "cron",
-    day_of_week="mon-fri",
-    minute="*/15",
-    hour="10-18",
+    CronTrigger.from_crontab(
+        os.environ.get("MOBILIZON_RESHARE_INTERVAL", "*/15 10-18 * * 1-5")
+    ),
 )
 # Runs "recap" once a week
-sched.add_job(partial(_safe_execution, start), "cron", day_of_week="mon", hour="11")
+sched.add_job(
+    partial(_safe_execution, start),
+    CronTrigger.from_crontab(
+        os.environ.get("MOBILIZON_RESHARE_RECAP_INTERVAL", "5 11 * * 1")
+    ),
+)
 sched.start()
 try:
     asyncio.get_event_loop().run_forever()
