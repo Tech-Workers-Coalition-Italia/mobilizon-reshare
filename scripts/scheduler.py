@@ -14,6 +14,7 @@ from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from apscheduler.triggers.cron import CronTrigger
 
 from mobilizon_reshare.cli import _safe_execution
+from mobilizon_reshare.cli.commands.recap.main import recap
 from mobilizon_reshare.cli.commands.start.main import start
 
 sched = AsyncIOScheduler()
@@ -27,7 +28,7 @@ sched.add_job(
 )
 # Runs "recap" once a week
 sched.add_job(
-    partial(_safe_execution, start),
+    partial(_safe_execution, recap),
     CronTrigger.from_crontab(
         os.environ.get("MOBILIZON_RESHARE_RECAP_INTERVAL", "5 11 * * 1")
     ),
