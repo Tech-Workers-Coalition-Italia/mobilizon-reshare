@@ -4,6 +4,14 @@ The goal of `mobilizon_reshare` is to provide a suite to reshare Mobilizon event
 tool enables an organization to automate their social media strategy in regards
 to events and their promotion. 
 
+# Platforms
+
+`mobilizon-reshare` currently supports the following social platforms:
+
+- Mastodon
+- Twitter
+- Telegram
+- Zulip
 
 # Usage
 
