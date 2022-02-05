@@ -8,6 +8,7 @@ to events and their promotion.
 
 `mobilizon-reshare` currently supports the following social platforms:
 
+- Facebook
 - Mastodon
 - Twitter
 - Telegram
