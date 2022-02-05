@@ -43,7 +43,8 @@ class EventPublicationReport(BasePublicationReport):
         return (
             f"Publication {self.publication.id} failed with status: {self.status}.\n"
             f"Reason: {self.reason}\n"
-            f"Publisher: {self.publication.publisher.name}"
+            f"Publisher: {self.publication.publisher.name}\n"
+            f"Event: {self.publication.event.name}"
         )
 
 
@@ -193,13 +194,15 @@ class RecapCoordinator:
                 recap_publication.publisher.send(message)
                 reports.append(
                     BasePublicationReport(
-                        status=PublicationStatus.COMPLETED, reason=None,
+                        status=PublicationStatus.COMPLETED,
+                        reason=None,
                     )
                 )
             except PublisherError as e:
                 reports.append(
                     BasePublicationReport(
-                        status=PublicationStatus.FAILED, reason=str(e),
+                        status=PublicationStatus.FAILED,
+                        reason=str(e),
                     )
                 )
 
