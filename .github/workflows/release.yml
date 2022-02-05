@@ -25,7 +25,6 @@ jobs:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v2
 
-
       # Runs a single command using the runners shell
       - name: Install GNU Guix
         uses: PromyLOPh/guix-install-action@v1
@@ -57,9 +56,10 @@ jobs:
           name: mobilizon-reshare-docker
 
       - name: Publish to Docker Hub
-        uses: fishinthecalculator/publish-docker-image-action@v0.1.3
+        uses: fishinthecalculator/publish-docker-image-action@v0.1.10
         env:
           IMAGE_TAG: ${{ steps.vars.outputs.tag }}
+          IMAGE_NAME_TAG: mobilizon-reshare-scheduler:latest
         with:
           name: fishinthecalculator/mobilizon-reshare
           username: ${{ secrets.DOCKER_USERNAME }}

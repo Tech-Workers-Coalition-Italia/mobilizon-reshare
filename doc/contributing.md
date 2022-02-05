@@ -21,7 +21,7 @@ $
 
 ### Testing
 
-To run the test suite, run `poetry run pytest` to execute the unit tests.
+To run the test suite, run `scripts/run_pipeline_tests.sh` from the root of the repository.
 
 At the moment no integration test is present and they are executed manually. Reach out to us if you want to
 access the testing environment or you want to help automate the integration tests.
