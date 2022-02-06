@@ -13,7 +13,7 @@ from mobilizon_reshare.models.publication import Publication, PublicationStatus
 from mobilizon_reshare.models.publisher import Publisher
 from mobilizon_reshare.publishers import get_active_publishers
 from mobilizon_reshare.publishers.abstract import EventPublication
-from mobilizon_reshare.publishers.exceptions import EventNotFound
+from mobilizon_reshare.storage.query.exceptions import EventNotFound, DuplicateEvent
 from mobilizon_reshare.storage.query import CONNECTION_NAME, from_model, compute_status
 
 
@@ -144,10 +144,6 @@ async def get_event(event_mobilizon_id: UUID) -> Event:
     )
     if not events:
         raise EventNotFound(f"No event with mobilizon_id {event_mobilizon_id} found.")
-
-    assert events[0] and (
-        len(events) == 1
-    ), "Events' mobilizon ids are supposed to be unique."
 
     return events[0]
 

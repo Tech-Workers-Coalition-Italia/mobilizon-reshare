@@ -5,7 +5,7 @@ from mobilizon_reshare.publishers.coordinator import (
     PublisherCoordinator,
     PublicationFailureNotifiersCoordinator,
 )
-from mobilizon_reshare.publishers.exceptions import EventNotFound
+from mobilizon_reshare.storage.query.exceptions import EventNotFound
 from mobilizon_reshare.storage.query.read import get_failed_publications_for_event
 from mobilizon_reshare.storage.query.write import save_publication_report
 
