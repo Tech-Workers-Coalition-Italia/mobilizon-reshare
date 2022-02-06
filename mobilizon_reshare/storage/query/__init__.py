@@ -7,6 +7,7 @@ import tortoise.timezone
 
 from mobilizon_reshare.event.event import MobilizonEvent, EventPublicationStatus
 from mobilizon_reshare.models.event import Event
+from mobilizon_reshare.models.publication import PublicationStatus, Publication
 
 CONNECTION_NAME = "models" if "pytest" in sys.modules else None
 
@@ -31,7 +32,7 @@ def to_model(event: MobilizonEvent, db_id: Optional[UUID] = None) -> Event:
 
 
 def from_model(event: Event, tz: str = "UTC"):
-    publication_status = MobilizonEvent.compute_status(list(event.publications))
+    publication_status = compute_status(list(event.publications))
     publication_time = {}
 
     for pub in event.publications:
@@ -59,3 +60,20 @@ def from_model(event: Event, tz: str = "UTC"):
             tortoise.timezone.localtime(value=event.last_update_time, timezone=tz)
         ).to("local"),
     )
+
+
+def compute_status(publications: list[Publication]) -> EventPublicationStatus:
+    if not publications:
+        return EventPublicationStatus.WAITING
+
+    unique_statuses: set[PublicationStatus] = set(pub.status for pub in publications)
+
+    if unique_statuses == {
+        PublicationStatus.COMPLETED,
+        PublicationStatus.FAILED,
+    }:
+        return EventPublicationStatus.PARTIAL
+    elif len(unique_statuses) == 1:
+        return EventPublicationStatus[unique_statuses.pop().name]
+
+    raise ValueError(f"Illegal combination of PublicationStatus: {unique_statuses}")

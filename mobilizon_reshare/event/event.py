@@ -1,12 +1,10 @@
 from dataclasses import dataclass, asdict
 from enum import IntEnum
-from typing import Optional, Set
+from typing import Optional
 from uuid import UUID
 
 import arrow
 from jinja2 import Template
-
-from mobilizon_reshare.models.publication import PublicationStatus, Publication
 
 
 class EventPublicationStatus(IntEnum):
@@ -49,22 +47,3 @@ class MobilizonEvent:
 
     def format(self, pattern: Template) -> str:
         return self._fill_template(pattern)
-
-    @staticmethod
-    def compute_status(publications: list[Publication]) -> EventPublicationStatus:
-        if not publications:
-            return EventPublicationStatus.WAITING
-
-        unique_statuses: Set[PublicationStatus] = set(
-            pub.status for pub in publications
-        )
-
-        if unique_statuses == {
-            PublicationStatus.COMPLETED,
-            PublicationStatus.FAILED,
-        }:
-            return EventPublicationStatus.PARTIAL
-        elif len(unique_statuses) == 1:
-            return EventPublicationStatus[unique_statuses.pop().name]
-
-        raise ValueError(f"Illegal combination of PublicationStatus: {unique_statuses}")

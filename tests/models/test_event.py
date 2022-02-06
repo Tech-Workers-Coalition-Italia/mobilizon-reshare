@@ -9,7 +9,7 @@ from mobilizon_reshare.event.event import EventPublicationStatus
 from mobilizon_reshare.event.event import MobilizonEvent
 from mobilizon_reshare.models.event import Event
 from mobilizon_reshare.models.publication import PublicationStatus
-from mobilizon_reshare.storage.query import to_model, from_model
+from mobilizon_reshare.storage.query import to_model, from_model, compute_status
 
 
 @pytest.mark.asyncio
@@ -193,4 +193,4 @@ async def test_mobilizon_event_compute_status_partial(
         )
         await publication.save()
         publications.append(publication)
-    assert MobilizonEvent.compute_status(publications) == expected_result
+    assert compute_status(publications) == expected_result

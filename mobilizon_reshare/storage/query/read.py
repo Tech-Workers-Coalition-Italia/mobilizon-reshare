@@ -14,7 +14,7 @@ from mobilizon_reshare.models.publisher import Publisher
 from mobilizon_reshare.publishers import get_active_publishers
 from mobilizon_reshare.publishers.abstract import EventPublication
 from mobilizon_reshare.publishers.exceptions import EventNotFound
-from mobilizon_reshare.storage.query import CONNECTION_NAME, from_model
+from mobilizon_reshare.storage.query import CONNECTION_NAME, from_model, compute_status
 
 
 async def get_published_events(
@@ -43,7 +43,7 @@ async def events_with_status(
     def _filter_event_with_status(event: Event) -> bool:
         # This computes the status client-side instead of running in the DB. It shouldn't pose a performance problem
         # in the short term, but should be moved to the query if possible.
-        event_status = MobilizonEvent.compute_status(list(event.publications))
+        event_status = compute_status(list(event.publications))
         return event_status in status
 
     query = Event.all()
