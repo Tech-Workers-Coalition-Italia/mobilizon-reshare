@@ -9,6 +9,7 @@ from mobilizon_reshare.event.event import EventPublicationStatus
 from mobilizon_reshare.event.event import MobilizonEvent
 from mobilizon_reshare.models.event import Event
 from mobilizon_reshare.models.publication import PublicationStatus
+from mobilizon_reshare.storage.query import to_model
 
 
 @pytest.mark.asyncio
@@ -89,7 +90,7 @@ async def test_event_sort_by_date(event_model_generator):
 
 @pytest.mark.asyncio
 async def test_mobilizon_event_to_model(event):
-    event_model = event.to_model()
+    event_model = to_model(event)
     await event_model.save()
 
     event_db = await Event.all().first()

@@ -4,6 +4,7 @@ from logging import DEBUG, INFO
 import arrow
 import pytest
 
+from mobilizon_reshare.storage.query import to_model
 from mobilizon_reshare.storage.query.read import get_all_events
 from tests.commands.conftest import simple_event_element
 from mobilizon_reshare.event.event import MobilizonEvent, EventPublicationStatus
@@ -95,7 +96,7 @@ async def test_start_event_from_db(
     event_generator,
 ):
     event = event_generator()
-    event_model = event.to_model()
+    event_model = to_model(event)
     await event_model.save()
 
     with caplog.at_level(DEBUG):
@@ -141,7 +142,7 @@ async def test_start_publisher_failure(
     mock_notifier_config,
 ):
     event = event_generator()
-    event_model = event.to_model()
+    event_model = to_model(event)
     await event_model.save()
 
     with caplog.at_level(DEBUG):
@@ -178,7 +179,7 @@ async def test_start_publisher_failure(
 async def published_event(event_generator):
 
     event = event_generator()
-    event_model = event.to_model()
+    event_model = to_model(event)
     await event_model.save()
     assert await start() is None
     await event_model.refresh_from_db()

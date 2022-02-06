@@ -13,6 +13,7 @@ from mobilizon_reshare.publishers.exceptions import (
     HTTPResponseError,
 )
 from mobilizon_reshare.publishers.platforms.zulip import ZulipFormatter, ZulipPublisher
+from mobilizon_reshare.storage.query import to_model
 from mobilizon_reshare.storage.query.read import build_publications
 
 api_uri = "https://zulip.twc-italia.org/api/v1/"
@@ -108,7 +109,7 @@ async def setup_db(
 @pytest.fixture
 @pytest.mark.asyncio
 async def unsaved_publications(event):
-    await event.to_model().save()
+    await to_model(event).save()
     return await build_publications(event)
 
 

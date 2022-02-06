@@ -22,6 +22,7 @@ from mobilizon_reshare.publishers.abstract import (
     AbstractEventFormatter,
 )
 from mobilizon_reshare.publishers.exceptions import PublisherError, InvalidResponse
+from mobilizon_reshare.storage.query import to_model
 from mobilizon_reshare.storage.query.write import get_publisher_by_name
 from tests import today
 
@@ -113,7 +114,7 @@ def event() -> MobilizonEvent:
 
 @pytest.fixture
 async def stored_event(event):
-    model = event.to_model()
+    model = to_model(event)
     await model.save()
     await model.fetch_related("publications")
     return model

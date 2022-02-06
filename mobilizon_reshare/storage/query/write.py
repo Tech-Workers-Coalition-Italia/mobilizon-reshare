@@ -1,6 +1,5 @@
 import logging
 from typing import Iterable, Optional
-from uuid import UUID
 
 import arrow
 from tortoise.transactions import atomic
@@ -10,7 +9,7 @@ from mobilizon_reshare.models.event import Event
 from mobilizon_reshare.models.publication import Publication
 from mobilizon_reshare.models.publisher import Publisher
 from mobilizon_reshare.publishers.coordinator import PublisherCoordinatorReport
-from mobilizon_reshare.storage.query import CONNECTION_NAME
+from mobilizon_reshare.storage.query import CONNECTION_NAME, to_model
 from mobilizon_reshare.storage.query.read import (
     events_without_publications,
     is_known,
@@ -79,11 +78,13 @@ async def create_unpublished_events(
     for event in events_from_mobilizon:
         # Either an event is unknown
         if not await is_known(event):
-            await event.to_model().save()
+            await to_model(event).save()
         # Or it's known and changed
         elif event.last_update_time > await get_event_last_update_time(event):
-            await event.to_model(await get_event_db_id(event)).save(force_update=True)
-        # Or it's known and unchanged
+            await to_model(event=event, db_id=await get_event_db_id(event)).save(
+                force_update=True
+            )
+        # Or it's known and unchanged, so we do nothing.
 
     return await events_without_publications()
 
