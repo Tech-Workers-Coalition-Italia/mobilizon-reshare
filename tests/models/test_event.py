@@ -9,7 +9,7 @@ from mobilizon_reshare.event.event import EventPublicationStatus
 from mobilizon_reshare.event.event import MobilizonEvent
 from mobilizon_reshare.models.event import Event
 from mobilizon_reshare.models.publication import PublicationStatus
-from mobilizon_reshare.storage.query import to_model
+from mobilizon_reshare.storage.query import to_model, from_model
 
 
 @pytest.mark.asyncio
@@ -138,7 +138,7 @@ async def test_mobilizon_event_from_model(
         .prefetch_related("publications__publisher")
         .first()
     )
-    event = MobilizonEvent.from_model(event=event_db, tz="CET")
+    event = from_model(event=event_db, tz="CET")
 
     begin_date_utc = arrow.Arrow(year=2021, month=1, day=1, hour=11, minute=30)
 

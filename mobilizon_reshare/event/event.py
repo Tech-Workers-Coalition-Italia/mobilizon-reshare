@@ -4,10 +4,8 @@ from typing import Optional, Set
 from uuid import UUID
 
 import arrow
-import tortoise.timezone
 from jinja2 import Template
 
-from mobilizon_reshare.models.event import Event
 from mobilizon_reshare.models.publication import PublicationStatus, Publication
 
 
@@ -70,34 +68,3 @@ class MobilizonEvent:
             return EventPublicationStatus[unique_statuses.pop().name]
 
         raise ValueError(f"Illegal combination of PublicationStatus: {unique_statuses}")
-
-    @staticmethod
-    def from_model(event: Event, tz: str = "UTC"):
-        publication_status = MobilizonEvent.compute_status(list(event.publications))
-        publication_time = {}
-
-        for pub in event.publications:
-            if publication_status != EventPublicationStatus.WAITING:
-                assert pub.timestamp is not None
-                publication_time[pub.publisher.name] = arrow.get(
-                    tortoise.timezone.localtime(value=pub.timestamp, timezone=tz)
-                ).to("local")
-        return MobilizonEvent(
-            name=event.name,
-            description=event.description,
-            begin_datetime=arrow.get(
-                tortoise.timezone.localtime(value=event.begin_datetime, timezone=tz)
-            ).to("local"),
-            end_datetime=arrow.get(
-                tortoise.timezone.localtime(value=event.end_datetime, timezone=tz)
-            ).to("local"),
-            mobilizon_link=event.mobilizon_link,
-            mobilizon_id=event.mobilizon_id,
-            thumbnail_link=event.thumbnail_link,
-            location=event.location,
-            publication_time=publication_time,
-            status=publication_status,
-            last_update_time=arrow.get(
-                tortoise.timezone.localtime(value=event.last_update_time, timezone=tz)
-            ).to("local"),
-        )

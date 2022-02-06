@@ -14,7 +14,7 @@ from mobilizon_reshare.models.publisher import Publisher
 from mobilizon_reshare.publishers import get_active_publishers
 from mobilizon_reshare.publishers.abstract import EventPublication
 from mobilizon_reshare.publishers.exceptions import EventNotFound
-from mobilizon_reshare.storage.query import CONNECTION_NAME
+from mobilizon_reshare.storage.query import CONNECTION_NAME, from_model
 
 
 async def get_published_events(
@@ -49,7 +49,7 @@ async def events_with_status(
     query = Event.all()
 
     return map(
-        MobilizonEvent.from_model,
+        from_model,
         filter(
             _filter_event_with_status,
             await prefetch_event_relations(
@@ -71,7 +71,7 @@ async def get_all_events(
     from_date: Optional[Arrow] = None, to_date: Optional[Arrow] = None,
 ) -> Iterable[MobilizonEvent]:
     return map(
-        MobilizonEvent.from_model,
+        from_model,
         await prefetch_event_relations(
             _add_date_window(Event.all(), "begin_datetime", from_date, to_date)
         ),
@@ -135,7 +135,7 @@ async def events_without_publications(
     events = await prefetch_event_relations(
         _add_date_window(query, "begin_datetime", from_date, to_date)
     )
-    return list(map(MobilizonEvent.from_model, events))
+    return list(map(from_model, events))
 
 
 async def get_event(event_mobilizon_id: UUID) -> Event:
