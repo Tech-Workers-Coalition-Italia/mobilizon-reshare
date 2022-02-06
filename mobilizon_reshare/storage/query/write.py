@@ -14,8 +14,7 @@ from mobilizon_reshare.storage.query.read import (
     events_without_publications,
     is_known,
     get_publisher_by_name,
-    get_event_last_update_time,
-    get_event_db_id,
+    get_event,
 )
 
 
@@ -70,21 +69,23 @@ async def create_unpublished_events(
     events_from_mobilizon: Iterable[MobilizonEvent],
 ) -> list[MobilizonEvent]:
     """
-    Compute the difference between remote and local events and store it.
+    Computes the difference between remote and local events and store it.
 
     Returns the unpublished events merged state.
     """
     # There are three cases:
     for event in events_from_mobilizon:
-        # Either an event is unknown
         if not await is_known(event):
+            # Either an event is unknown
             await to_model(event).save()
-        # Or it's known and changed
-        elif event.last_update_time > await get_event_last_update_time(event):
-            await to_model(event=event, db_id=await get_event_db_id(event)).save(
-                force_update=True
-            )
-        # Or it's known and unchanged, so we do nothing.
+        else:
+            # Or it's known and changed
+            event_model = await get_event(event.mobilizon_id)
+            if event.last_update_time > event_model.last_update_time:
+                await to_model(event=event, db_id=event_model.id).save(
+                    force_update=True
+                )
+            # Or it's known and unchanged, in which case we do nothing.
 
     return await events_without_publications()
 

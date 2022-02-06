@@ -148,16 +148,6 @@ async def get_event(event_mobilizon_id: UUID) -> Event:
     return events[0]
 
 
-async def get_event_last_update_time(event: MobilizonEvent) -> Arrow:
-    event_model = await get_event(event.mobilizon_id)
-    return event_model.last_update_time
-
-
-async def get_event_db_id(event: MobilizonEvent) -> UUID:
-    event_model = await get_event(event.mobilizon_id)
-    return event_model.id
-
-
 async def get_publisher_by_name(name) -> Publisher:
     return await Publisher.filter(name=name).first()
 
