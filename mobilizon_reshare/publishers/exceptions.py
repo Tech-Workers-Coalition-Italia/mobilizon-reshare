@@ -1,44 +1,40 @@
 class PublisherError(Exception):
-    """ Generic publisher error """
+    """Generic publisher error"""
 
     pass
 
 
 class InvalidAttribute(PublisherError):
-    """ Publisher defined with invalid or missing attribute """
+    """Publisher defined with invalid or missing attribute"""
 
 
 class InvalidBot(PublisherError):
-    """ Publisher refers to the wrong service bot """
+    """Publisher refers to the wrong service bot"""
 
 
 class InvalidCredentials(PublisherError):
-    """ Publisher cannot validate credentials """
+    """Publisher cannot validate credentials"""
 
 
 class InvalidEvent(PublisherError):
-    """ Publisher cannot validate events """
+    """Publisher cannot validate events"""
 
 
 class InvalidMessage(PublisherError):
-    """ Publisher cannot validate message """
+    """Publisher cannot validate message"""
 
 
 class InvalidResponse(PublisherError):
-    """ Publisher receives an invalid response from its service """
+    """Publisher receives an invalid response from its service"""
 
 
 class InvalidSettings(PublisherError):
-    """ Publisher settings are either missing or badly configured """
+    """Publisher settings are either missing or badly configured"""
 
 
 class ZulipError(PublisherError):
-    """ Publisher receives an error response from Zulip"""
+    """Publisher receives an error response from Zulip"""
 
 
 class HTTPResponseError(PublisherError):
-    """ Publisher receives a HTTP error"""
-
-
-class EventNotFound(Exception):
-    """ Event is not present in the database """
+    """Publisher receives a HTTP error"""

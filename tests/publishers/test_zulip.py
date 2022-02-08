@@ -13,6 +13,7 @@ from mobilizon_reshare.publishers.exceptions import (
     HTTPResponseError,
 )
 from mobilizon_reshare.publishers.platforms.zulip import ZulipFormatter, ZulipPublisher
+from mobilizon_reshare.storage.query import to_model
 from mobilizon_reshare.storage.query.read import build_publications
 
 api_uri = "https://zulip.twc-italia.org/api/v1/"
@@ -41,7 +42,10 @@ users_me = {
 def mocked_valid_response():
     with responses.RequestsMock() as rsps:
         rsps.add(
-            responses.GET, api_uri + "users/me", json=users_me, status=200,
+            responses.GET,
+            api_uri + "users/me",
+            json=users_me,
+            status=200,
         )
         rsps.add(
             responses.POST,
@@ -68,7 +72,10 @@ def mocked_credential_error_response():
 def mocked_client_error_response():
     with responses.RequestsMock() as rsps:
         rsps.add(
-            responses.GET, api_uri + "users/me", json=users_me, status=200,
+            responses.GET,
+            api_uri + "users/me",
+            json=users_me,
+            status=200,
         )
         rsps.add(
             responses.POST,
@@ -102,7 +109,7 @@ async def setup_db(
 @pytest.fixture
 @pytest.mark.asyncio
 async def unsaved_publications(event):
-    await event.to_model().save()
+    await to_model(event).save()
     return await build_publications(event)
 
 
@@ -115,7 +122,7 @@ async def test_zulip_publisher(mocked_valid_response, setup_db, unsaved_publicat
 
 
 @pytest.mark.asyncio
-async def test_zulip_publishr_failure_invalid_credentials(
+async def test_zulip_publisher_failure_invalid_credentials(
     mocked_credential_error_response, setup_db, unsaved_publications
 ):
     report = PublisherCoordinator(unsaved_publications).run()

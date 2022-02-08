@@ -22,6 +22,7 @@ from mobilizon_reshare.publishers.abstract import (
     AbstractEventFormatter,
 )
 from mobilizon_reshare.publishers.exceptions import PublisherError, InvalidResponse
+from mobilizon_reshare.storage.query import to_model
 from mobilizon_reshare.storage.query.write import get_publisher_by_name
 from tests import today
 
@@ -65,6 +66,7 @@ def event_generator():
         published=False,
         publication_time=None,
         mobilizon_id=UUID(int=12345),
+        last_update_time=arrow.Arrow(year=2021, month=1, day=1, hour=11, minute=30),
     ):
 
         return MobilizonEvent(
@@ -79,6 +81,7 @@ def event_generator():
             status=generate_event_status(published),
             publication_time=publication_time
             or (begin_date.shift(days=-1) if published else None),
+            last_update_time=last_update_time,
         )
 
     return _event_generator
@@ -105,12 +108,13 @@ def event() -> MobilizonEvent:
         mobilizon_id=UUID(int=12345),
         thumbnail_link="http://some_link.com/123.jpg",
         location="location",
+        last_update_time=begin_date,
     )
 
 
 @pytest.fixture
 async def stored_event(event):
-    model = event.to_model()
+    model = to_model(event)
     await model.save()
     await model.fetch_related("publications")
     return model
@@ -155,6 +159,7 @@ def event_model_generator():
             location=f"loc_{idx}",
             begin_datetime=begin_date,
             end_datetime=begin_date + timedelta(hours=2),
+            last_update_time=begin_date,
         )
 
     return _event_model_generator
@@ -231,6 +236,7 @@ async def _generate_events(specification):
                 location=f"loc_{i}",
                 begin_datetime=begin_date,
                 end_datetime=begin_date + timedelta(hours=2),
+                last_update_time=begin_date,
             )
             events.append(event)
             await event.save()

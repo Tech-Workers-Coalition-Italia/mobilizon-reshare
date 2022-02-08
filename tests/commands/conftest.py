@@ -24,6 +24,7 @@ def simple_event_element():
         "title": "test event",
         "url": "https://some_mobilizon/events/1e2e5943-4a5c-497a-b65d-90457b715d7b",
         "uuid": str(uuid.uuid4()),
+        "updatedAt": "2021-05-23T12:15:00Z",
     }
 
 

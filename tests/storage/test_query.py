@@ -13,22 +13,9 @@ from mobilizon_reshare.storage.query.read import (
     events_without_publications,
     build_publications,
 )
-from tests.storage import complete_specification
+from tests.storage import complete_specification, event_0, event_1, event_3
 from tests.storage import result_publication
 from tests import today
-
-event_0 = MobilizonEvent(
-    name="event_0",
-    description="desc_0",
-    mobilizon_id=UUID(int=0),
-    mobilizon_link="moblink_0",
-    thumbnail_link="thumblink_0",
-    location="loc_0",
-    publication_time={},
-    status=EventPublicationStatus.WAITING,
-    begin_datetime=arrow.get(today + timedelta(days=0)),
-    end_datetime=arrow.get(today + timedelta(days=0) + timedelta(hours=2)),
-)
 
 
 @pytest.mark.asyncio
@@ -146,20 +133,7 @@ async def test_event_with_status_window(
             {"event": 2, "publications": [], "publisher": ["zulip"]},
             [
                 event_0,
-                MobilizonEvent(
-                    name="event_1",
-                    description="desc_1",
-                    mobilizon_id=UUID(int=1),
-                    mobilizon_link="moblink_1",
-                    thumbnail_link="thumblink_1",
-                    location="loc_1",
-                    status=EventPublicationStatus.WAITING,
-                    publication_time={},
-                    begin_datetime=arrow.get(today + timedelta(days=1)),
-                    end_datetime=arrow.get(
-                        today + timedelta(days=1) + timedelta(hours=2)
-                    ),
-                ),
+                event_1,
             ],
         ),
         (
@@ -184,20 +158,7 @@ async def test_event_with_status_window(
         (
             complete_specification,
             [
-                MobilizonEvent(
-                    name="event_3",
-                    description="desc_3",
-                    mobilizon_id=UUID(int=3),
-                    mobilizon_link="moblink_3",
-                    thumbnail_link="thumblink_3",
-                    location="loc_3",
-                    status=EventPublicationStatus.WAITING,
-                    publication_time={},
-                    begin_datetime=arrow.get(today + timedelta(days=3)),
-                    end_datetime=arrow.get(
-                        today + timedelta(days=3) + timedelta(hours=2)
-                    ),
-                ),
+                event_3,
             ],
         ),
     ],

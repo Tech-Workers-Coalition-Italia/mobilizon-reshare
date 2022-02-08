@@ -9,10 +9,20 @@ from mobilizon_reshare.models.event import Event
 from mobilizon_reshare.models.publication import Publication
 from mobilizon_reshare.models.publisher import Publisher
 from mobilizon_reshare.publishers.coordinator import PublisherCoordinatorReport
-from mobilizon_reshare.storage.query import CONNECTION_NAME
-from mobilizon_reshare.storage.query.read import events_without_publications
+from mobilizon_reshare.storage.query import CONNECTION_NAME, to_model
+from mobilizon_reshare.storage.query.read import (
+    events_without_publications,
+    is_known,
+    get_publisher_by_name,
+    get_event,
+)
 
 
+async def create_publisher(name: str, account_ref: Optional[str] = None) -> None:
+    await Publisher.create(name=name, account_ref=account_ref)
+
+
+@atomic(CONNECTION_NAME)
 async def upsert_publication(publication_report, event):
 
     publisher = await get_publisher_by_name(
@@ -59,40 +69,33 @@ async def create_unpublished_events(
     events_from_mobilizon: Iterable[MobilizonEvent],
 ) -> list[MobilizonEvent]:
     """
-    Compute the difference between remote and local events and store it.
+    Computes the difference between remote and local events and store it.
 
     Returns the unpublished events merged state.
     """
-    # We store only new events, i.e. events whose mobilizon_id wasn't found in the DB.
-    unpublished_events = await events_without_publications()
-    known_event_mobilizon_ids = set(
-        map(lambda event: event.mobilizon_id, unpublished_events)
-    )
-    new_unpublished_events = list(
-        filter(
-            lambda event: event.mobilizon_id not in known_event_mobilizon_ids,
-            events_from_mobilizon,
-        )
-    )
-
-    for event in new_unpublished_events:
-        await event.to_model().save()
+    # There are three cases:
+    for event in events_from_mobilizon:
+        if not await is_known(event):
+            # Either an event is unknown
+            await to_model(event).save()
+        else:
+            # Or it's known and changed
+            event_model = await get_event(event.mobilizon_id)
+            if event.last_update_time > event_model.last_update_time:
+                await to_model(event=event, db_id=event_model.id).save(
+                    force_update=True
+                )
+            # Or it's known and unchanged, in which case we do nothing.
 
     return await events_without_publications()
 
 
-async def create_publisher(name: str, account_ref: Optional[str] = None) -> None:
-    await Publisher.create(name=name, account_ref=account_ref)
-
-
 @atomic(CONNECTION_NAME)
-async def update_publishers(names: Iterable[str],) -> None:
+async def update_publishers(
+    names: Iterable[str],
+) -> None:
     names = set(names)
     known_publisher_names = set(p.name for p in await Publisher.all())
     for name in names.difference(known_publisher_names):
         logging.info(f"Creating {name} publisher")
         await create_publisher(name)
-
-
-async def get_publisher_by_name(name):
-    return await Publisher.filter(name=name).first()

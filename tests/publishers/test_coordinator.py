@@ -19,6 +19,7 @@ from mobilizon_reshare.publishers.coordinator import (
     PublicationFailureNotifiersCoordinator,
     RecapCoordinator,
 )
+from mobilizon_reshare.storage.query import to_model
 from tests import today
 
 
@@ -88,7 +89,7 @@ async def mock_publications(
 ):
     result = []
     for i in range(num_publications):
-        event = test_event.to_model()
+        event = to_model(test_event)
         await event.save()
         publisher = Publisher(name="telegram")
         await publisher.save()
