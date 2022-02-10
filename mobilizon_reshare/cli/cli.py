@@ -1,7 +1,6 @@
 import functools
 
 import click
-from arrow import Arrow
 from click import pass_context
 
 from mobilizon_reshare.cli import safe_execution
@@ -45,21 +44,17 @@ to_date_option = click.option(
     expose_value=True,
     help="Include only events that begin before this datetime.",
 )
-event_status_option = click.option(
-    "-s",
-    "--status",
+event_status_option = click.argument(
+    "status",
     type=click.Choice(list(status_name_to_enum["event"].keys())),
     default="all",
     expose_value=True,
-    help="Include only events with the given STATUS.",
 )
-publication_status_option = click.option(
-    "-s",
-    "--status",
+publication_status_option = click.argument(
+    "status",
     type=click.Choice(list(status_name_to_enum["publication"].keys())),
     default="all",
     expose_value=True,
-    help="Include only publications with the given STATUS.",
 )
 
 
@@ -91,51 +86,45 @@ def recap():
     safe_execution(recap_main,)
 
 
-@mobilizon_reshare.group(help="List objects in the database with different criteria.")
+@mobilizon_reshare.group(help="Operations that pertain to events")
+def event():
+    pass
+
+
+@mobilizon_reshare.group(help="Operations that pertain to publications")
+def publication():
+    pass
+
+
+@event.command(help="Query for events in the database.", name="inspect")
+@event_status_option
 @from_date_option
 @to_date_option
-@pass_context
-def inspect(ctx, begin, end):
-    ctx.ensure_object(dict)
-    ctx.obj["begin"] = Arrow.fromdatetime(begin) if begin else None
-    ctx.obj["end"] = Arrow.fromdatetime(end) if end else None
+def inspect_event(status, begin, end):
 
-
-@inspect.command(help="Query for events in the database.")
-@event_status_option
-@pass_context
-def event(
-    ctx, status,
-):
-    ctx.ensure_object(dict)
     safe_execution(
         functools.partial(
-            inspect_events,
-            status_name_to_enum["event"][status],
-            frm=ctx.obj["begin"],
-            to=ctx.obj["end"],
+            inspect_events, status_name_to_enum["event"][status], frm=begin, to=end,
         ),
     )
 
 
-@inspect.command(help="Query for publications in the database.")
+@publication.command(help="Query for publications in the database.", name="inspect")
 @publication_status_option
-@pass_context
-def publication(
-    ctx, status,
-):
-    ctx.ensure_object(dict)
+@from_date_option
+@to_date_option
+def inspect_publication(status, begin, end):
     safe_execution(
         functools.partial(
             inspect_publications,
             status_name_to_enum["publication"][status],
-            frm=ctx.obj["begin"],
-            to=ctx.obj["end"],
+            frm=begin,
+            to=end,
         ),
     )
 
 
-@mobilizon_reshare.command(
+@event.command(
     help="Format and print event with EVENT-ID using the publisher's format named "
     "PUBLISHER."
 )

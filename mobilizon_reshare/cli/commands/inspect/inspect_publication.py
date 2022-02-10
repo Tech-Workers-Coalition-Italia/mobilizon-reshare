@@ -38,4 +38,4 @@ async def inspect_publications(
     if publications:
         show_publications(list(publications))
     else:
-        click.echo(f"No publication found with status: {status}")
+        click.echo(f"No publication found with status: {status.name}")

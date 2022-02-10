@@ -52,4 +52,4 @@ async def inspect_events(
     if events:
         show_events(events)
     else:
-        click.echo(f"No event found with status: {status}")
+        click.echo(f"No event found with status: {status.name}")
