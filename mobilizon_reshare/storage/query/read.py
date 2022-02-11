@@ -4,6 +4,7 @@ from typing import Iterable, Optional
 from uuid import UUID
 
 from arrow import Arrow
+from tortoise.exceptions import DoesNotExist
 from tortoise.queryset import QuerySet
 from tortoise.transactions import atomic
 
@@ -13,8 +14,8 @@ from mobilizon_reshare.models.publication import Publication, PublicationStatus
 from mobilizon_reshare.models.publisher import Publisher
 from mobilizon_reshare.publishers import get_active_publishers
 from mobilizon_reshare.publishers.abstract import EventPublication
-from mobilizon_reshare.storage.query.exceptions import EventNotFound, DuplicateEvent
 from mobilizon_reshare.storage.query import CONNECTION_NAME, from_model, compute_status
+from mobilizon_reshare.storage.query.exceptions import EventNotFound
 
 
 async def get_published_events(
@@ -188,3 +189,11 @@ async def get_failed_publications_for_event(
     return list(
         map(partial(EventPublication.from_orm, event=event), failed_publications)
     )
+
+
+@atomic(CONNECTION_NAME)
+async def get_publication(publication_id):
+    try:
+        return await prefetch_publication_relations(Publication.get(id=publication_id))
+    except DoesNotExist:
+        return None
