@@ -14,6 +14,7 @@ from mobilizon_reshare.cli.commands.start.main import main as start_main
 from mobilizon_reshare.config.config import current_version
 from mobilizon_reshare.config.publishers import publisher_names
 from mobilizon_reshare.event.event import EventPublicationStatus
+from mobilizon_reshare.main.retry import retry
 from mobilizon_reshare.models.publication import PublicationStatus
 
 status_name_to_enum = {
@@ -134,6 +135,12 @@ def format(
     event_id, publisher,
 ):
     safe_execution(functools.partial(format_event, event_id, publisher),)
+
+
+@event.command(name="retry", help="Retries all the failed publications")
+@click.argument("event-id", type=click.UUID)
+def retry_event(event_id):
+    safe_execution(functools.partial(retry, event_id),)
 
 
 if __name__ == "__main__":
