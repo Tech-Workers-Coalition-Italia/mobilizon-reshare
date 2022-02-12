@@ -27,7 +27,7 @@ def pretty(publication: Publication):
     )
 
 
-async def inspect_publications(
+async def list_publications(
     status: PublicationStatus = None, frm: Arrow = None, to: Arrow = None
 ):
     if status is None:

@@ -32,20 +32,20 @@ def pretty(event: MobilizonEvent):
     )
 
 
-async def inspect_unpublished_events(frm: Arrow = None, to: Arrow = None):
+async def list_unpublished_events(frm: Arrow = None, to: Arrow = None):
     return select_unpublished_events(
         list(await get_published_events(from_date=frm, to_date=to)),
         list(await events_without_publications(from_date=frm, to_date=to)),
     )
 
 
-async def inspect_events(
+async def list_events(
     status: EventPublicationStatus = None, frm: Arrow = None, to: Arrow = None
 ):
     if status is None:
         events = await get_all_events(from_date=frm, to_date=to)
     elif status == EventPublicationStatus.WAITING:
-        events = await inspect_unpublished_events(frm=frm, to=to)
+        events = await list_unpublished_events(frm=frm, to=to)
     else:
         events = await events_with_status([status], from_date=frm, to_date=to)
 

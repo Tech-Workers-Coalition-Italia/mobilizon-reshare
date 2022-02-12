@@ -5,10 +5,8 @@ from click import pass_context
 
 from mobilizon_reshare.cli import safe_execution
 from mobilizon_reshare.cli.commands.format.format import format_event
-from mobilizon_reshare.cli.commands.inspect.inspect_event import inspect_events
-from mobilizon_reshare.cli.commands.inspect.inspect_publication import (
-    inspect_publications,
-)
+from mobilizon_reshare.cli.commands.list.list_event import list_events
+from mobilizon_reshare.cli.commands.list.list_publication import list_publications
 from mobilizon_reshare.cli.commands.recap.main import main as recap_main
 from mobilizon_reshare.cli.commands.start.main import main as start_main
 from mobilizon_reshare.config.config import current_version
@@ -97,27 +95,27 @@ def publication():
     pass
 
 
-@event.command(help="Query for events in the database.", name="inspect")
+@event.command(help="Query for events in the database.", name="list")
 @event_status_option
 @from_date_option
 @to_date_option
-def event_inspect(status, begin, end):
+def event_list(status, begin, end):
 
     safe_execution(
         functools.partial(
-            inspect_events, status_name_to_enum["event"][status], frm=begin, to=end,
+            list_events, status_name_to_enum["event"][status], frm=begin, to=end,
         ),
     )
 
 
-@publication.command(help="Query for publications in the database.", name="inspect")
+@publication.command(help="Query for publications in the database.", name="list")
 @publication_status_option
 @from_date_option
 @to_date_option
-def publication_inspect(status, begin, end):
+def publication_list(status, begin, end):
     safe_execution(
         functools.partial(
-            inspect_publications,
+            list_publications,
             status_name_to_enum["publication"][status],
             frm=begin,
             to=end,
