@@ -2,6 +2,7 @@ from typing import Optional
 
 import facebook
 import pkg_resources
+from facebook import GraphAPIError
 
 from mobilizon_reshare.event.event import MobilizonEvent
 from mobilizon_reshare.publishers.abstract import (
@@ -61,12 +62,15 @@ class FacebookPlatform(AbstractPlatform):
     def validate_credentials(self):
 
         try:
+            self._log_debug("Validating Facebook credentials")
             self._get_api().get_object(id="me", field="name")
-        except Exception:
+        except GraphAPIError:
             self._log_error(
                 "Invalid Facebook credentials. Authentication Failed",
                 raise_error=InvalidCredentials,
             )
+
+            self._log_debug("Facebook credentials are valid")
 
     def _validate_response(self, response):
         pass

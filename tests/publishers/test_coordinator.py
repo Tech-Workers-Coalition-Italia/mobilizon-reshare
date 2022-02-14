@@ -19,7 +19,7 @@ from mobilizon_reshare.publishers.coordinator import (
     PublicationFailureNotifiersCoordinator,
     RecapCoordinator,
 )
-from mobilizon_reshare.storage.query import to_model
+from mobilizon_reshare.storage.query.event_converter import to_model
 from tests import today
 
 
@@ -109,12 +109,8 @@ async def mock_publications(
 
 @pytest.mark.parametrize("num_publications", [2])
 @pytest.mark.asyncio
-async def test_publication_coordinator_run_success(
-    mock_publications,
-):
-    coordinator = PublisherCoordinator(
-        publications=mock_publications,
-    )
+async def test_publication_coordinator_run_success(mock_publications,):
+    coordinator = PublisherCoordinator(publications=mock_publications,)
     report = coordinator.run()
     assert len(report.reports) == 2
     assert report.successful, "\n".join(map(lambda rep: rep.reason, report.reports))

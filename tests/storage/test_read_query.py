@@ -2,10 +2,8 @@ from uuid import UUID
 
 import pytest
 
-from mobilizon_reshare.storage.query import to_model
-from mobilizon_reshare.storage.query.read import (
-    get_all_events,
-)
+from mobilizon_reshare.storage.query.event_converter import to_model
+from mobilizon_reshare.storage.query.read import get_all_events
 
 
 @pytest.mark.asyncio

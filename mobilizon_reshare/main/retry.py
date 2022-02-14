@@ -27,6 +27,7 @@ async def retry_event_publications(event_id):
 
 
 async def retry_publication(publication_id):
+    # TODO test this function
     publication = await get_publication(publication_id)
     if not publication:
         logger.info(f"Publication {publication_id} not found.")

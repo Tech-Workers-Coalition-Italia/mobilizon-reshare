@@ -1,9 +1,8 @@
 import click
 
-from mobilizon_reshare.event.event import MobilizonEvent
 from mobilizon_reshare.models.event import Event
 from mobilizon_reshare.publishers.platforms.platform_mapping import get_formatter_class
-from mobilizon_reshare.storage.query import from_model
+from mobilizon_reshare.storage.query.event_converter import from_model
 
 
 async def format_event(event_id, publisher_name: str):

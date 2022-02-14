@@ -22,7 +22,7 @@ from mobilizon_reshare.publishers.abstract import (
     AbstractEventFormatter,
 )
 from mobilizon_reshare.publishers.exceptions import PublisherError, InvalidResponse
-from mobilizon_reshare.storage.query import to_model
+from mobilizon_reshare.storage.query.event_converter import to_model
 from mobilizon_reshare.storage.query.write import get_publisher_by_name
 from tests import today
 
@@ -167,9 +167,7 @@ def event_model_generator():
 
 @pytest.fixture()
 def publisher_model_generator():
-    def _publisher_model_generator(
-        idx=1,
-    ):
+    def _publisher_model_generator(idx=1,):
         return Publisher(name=f"publisher_{idx}", account_ref=f"account_ref_{idx}")
 
     return _publisher_model_generator
@@ -310,10 +308,7 @@ def mock_mobilizon_success_answer(mobilizon_answer, mobilizon_url):
     with responses.RequestsMock() as rsps:
 
         rsps.add(
-            responses.POST,
-            mobilizon_url,
-            json=mobilizon_answer,
-            status=200,
+            responses.POST, mobilizon_url, json=mobilizon_answer, status=200,
         )
         yield
 

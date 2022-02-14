@@ -13,7 +13,7 @@ from mobilizon_reshare.publishers.exceptions import (
     HTTPResponseError,
 )
 from mobilizon_reshare.publishers.platforms.zulip import ZulipFormatter, ZulipPublisher
-from mobilizon_reshare.storage.query import to_model
+from mobilizon_reshare.storage.query.event_converter import to_model
 from mobilizon_reshare.storage.query.read import build_publications
 
 api_uri = "https://zulip.twc-italia.org/api/v1/"
@@ -42,10 +42,7 @@ users_me = {
 def mocked_valid_response():
     with responses.RequestsMock() as rsps:
         rsps.add(
-            responses.GET,
-            api_uri + "users/me",
-            json=users_me,
-            status=200,
+            responses.GET, api_uri + "users/me", json=users_me, status=200,
         )
         rsps.add(
             responses.POST,
@@ -72,10 +69,7 @@ def mocked_credential_error_response():
 def mocked_client_error_response():
     with responses.RequestsMock() as rsps:
         rsps.add(
-            responses.GET,
-            api_uri + "users/me",
-            json=users_me,
-            status=200,
+            responses.GET, api_uri + "users/me", json=users_me, status=200,
         )
         rsps.add(
             responses.POST,
