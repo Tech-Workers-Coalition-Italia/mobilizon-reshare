@@ -194,6 +194,9 @@ async def get_failed_publications_for_event(
 @atomic(CONNECTION_NAME)
 async def get_publication(publication_id):
     try:
-        return await prefetch_publication_relations(Publication.get(id=publication_id))
+        publication = await prefetch_publication_relations(
+            Publication.get(id=publication_id)
+        )
+        return EventPublication.from_orm(publication, event=publication.event)
     except DoesNotExist:
         return None
