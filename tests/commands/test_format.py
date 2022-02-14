@@ -7,7 +7,7 @@ from mobilizon_reshare.publishers.platforms.platform_mapping import (
     get_formatter_class,
     name_to_formatter_class,
 )
-from mobilizon_reshare.storage.query import to_model
+from mobilizon_reshare.storage.query.event_converter import to_model
 
 
 @pytest.mark.timezone_sensitive

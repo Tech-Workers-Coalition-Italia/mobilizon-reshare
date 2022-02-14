@@ -4,6 +4,7 @@ from typing import Iterable, Optional
 from uuid import UUID
 
 from arrow import Arrow
+from tortoise.exceptions import DoesNotExist
 from tortoise.queryset import QuerySet
 from tortoise.transactions import atomic
 
@@ -13,8 +14,9 @@ from mobilizon_reshare.models.publication import Publication, PublicationStatus
 from mobilizon_reshare.models.publisher import Publisher
 from mobilizon_reshare.publishers import get_active_publishers
 from mobilizon_reshare.publishers.abstract import EventPublication
-from mobilizon_reshare.storage.query.exceptions import EventNotFound, DuplicateEvent
-from mobilizon_reshare.storage.query import CONNECTION_NAME, from_model, compute_status
+from mobilizon_reshare.storage.query import CONNECTION_NAME
+from mobilizon_reshare.storage.query.event_converter import from_model, compute_status
+from mobilizon_reshare.storage.query.exceptions import EventNotFound
 
 
 async def get_published_events(
@@ -89,11 +91,12 @@ async def prefetch_event_relations(queryset: QuerySet[Event]) -> list[Event]:
 async def prefetch_publication_relations(
     queryset: QuerySet[Publication],
 ) -> list[Publication]:
-    return (
+    publication = (
         await queryset.prefetch_related("publisher", "event")
         .order_by("timestamp")
         .distinct()
     )
+    return publication
 
 
 def _add_date_window(
@@ -188,3 +191,18 @@ async def get_failed_publications_for_event(
     return list(
         map(partial(EventPublication.from_orm, event=event), failed_publications)
     )
+
+
+@atomic(CONNECTION_NAME)
+async def get_publication(publication_id):
+    try:
+        publication = await prefetch_publication_relations(
+            Publication.get(id=publication_id).first()
+        )
+        # TODO: this is redundant but there's some prefetch problem otherwise
+        publication.event = await get_event(publication.event.mobilizon_id)
+        return EventPublication.from_orm(
+            publication, event=from_model(publication.event)
+        )
+    except DoesNotExist:
+        return None

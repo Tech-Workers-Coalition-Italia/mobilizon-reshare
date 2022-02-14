@@ -27,7 +27,7 @@ def pretty(publication: Publication):
     )
 
 
-async def inspect_publications(
+async def list_publications(
     status: PublicationStatus = None, frm: Arrow = None, to: Arrow = None
 ):
     if status is None:
@@ -38,4 +38,4 @@ async def inspect_publications(
     if publications:
         show_publications(list(publications))
     else:
-        click.echo(f"No publication found with status: {status}")
+        click.echo(f"No publication found with status: {status.name}")

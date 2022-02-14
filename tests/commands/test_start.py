@@ -4,7 +4,7 @@ from logging import DEBUG, INFO
 import arrow
 import pytest
 
-from mobilizon_reshare.storage.query import to_model, from_model
+from mobilizon_reshare.storage.query.event_converter import from_model, to_model
 from mobilizon_reshare.storage.query.read import get_all_events
 from tests.commands.conftest import simple_event_element
 from mobilizon_reshare.event.event import EventPublicationStatus
@@ -15,8 +15,7 @@ from mobilizon_reshare.models.publication import PublicationStatus
 
 @pytest.mark.asyncio
 @pytest.mark.parametrize(
-    "elements",
-    [[]],
+    "elements", [[]],
 )
 async def test_start_no_event(
     mock_mobilizon_success_answer, mobilizon_answer, caplog, elements
@@ -75,10 +74,7 @@ async def test_start_new_event(
             assert p.status == PublicationStatus.COMPLETED
 
         # the derived status for the event should be COMPLETED
-        assert (
-            from_model(all_events[0]).status
-            == EventPublicationStatus.COMPLETED
-        )
+        assert from_model(all_events[0]).status == EventPublicationStatus.COMPLETED
 
 
 @pytest.mark.asyncio
@@ -86,8 +82,7 @@ async def test_start_new_event(
     "publisher_class", [pytest.lazy_fixture("mock_publisher_class")]
 )
 @pytest.mark.parametrize(
-    "elements",
-    [[]],
+    "elements", [[]],
 )
 async def test_start_event_from_db(
     mock_mobilizon_success_answer,
@@ -129,8 +124,7 @@ async def test_start_event_from_db(
     "publisher_class", [pytest.lazy_fixture("mock_publisher_invalid_class")]
 )
 @pytest.mark.parametrize(
-    "elements",
-    [[]],
+    "elements", [[]],
 )
 async def test_start_publisher_failure(
     mock_mobilizon_success_answer,
@@ -208,8 +202,7 @@ def second_event_element():
     "publisher_class", [pytest.lazy_fixture("mock_publisher_class")]
 )
 @pytest.mark.parametrize(
-    "elements",
-    [[second_event_element()]],
+    "elements", [[second_event_element()]],
 )
 async def test_start_second_execution(
     mock_mobilizon_success_answer,

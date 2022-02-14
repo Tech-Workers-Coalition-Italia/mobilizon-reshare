@@ -6,7 +6,10 @@ from mobilizon_reshare.publishers.coordinator import (
     PublicationFailureNotifiersCoordinator,
 )
 from mobilizon_reshare.storage.query.exceptions import EventNotFound
-from mobilizon_reshare.storage.query.read import get_failed_publications_for_event
+from mobilizon_reshare.storage.query.read import (
+    get_failed_publications_for_event,
+    get_publication,
+)
 from mobilizon_reshare.storage.query.write import save_publication_report
 
 logger = logging.getLogger(__name__)
@@ -21,6 +24,17 @@ async def retry_event_publications(event_id):
 
     logger.info(f"Found {len(failed_publications)} publications.")
     return PublisherCoordinator(failed_publications).run()
+
+
+async def retry_publication(publication_id):
+    # TODO test this function
+    publication = await get_publication(publication_id)
+    if not publication:
+        logger.info(f"Publication {publication_id} not found.")
+        return
+
+    logger.info(f"Publication {publication_id} found.")
+    return PublisherCoordinator([publication]).run()
 
 
 async def retry(mobilizon_event_id: UUID = None):

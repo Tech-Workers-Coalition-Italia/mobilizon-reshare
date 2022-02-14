@@ -1,20 +1,18 @@
 import functools
 
 import click
-from arrow import Arrow
 from click import pass_context
 
 from mobilizon_reshare.cli import safe_execution
 from mobilizon_reshare.cli.commands.format.format import format_event
-from mobilizon_reshare.cli.commands.inspect.inspect_event import inspect_events
-from mobilizon_reshare.cli.commands.inspect.inspect_publication import (
-    inspect_publications,
-)
+from mobilizon_reshare.cli.commands.list.list_event import list_events
+from mobilizon_reshare.cli.commands.list.list_publication import list_publications
 from mobilizon_reshare.cli.commands.recap.main import main as recap_main
 from mobilizon_reshare.cli.commands.start.main import main as start_main
 from mobilizon_reshare.config.config import current_version
 from mobilizon_reshare.config.publishers import publisher_names
 from mobilizon_reshare.event.event import EventPublicationStatus
+from mobilizon_reshare.main.retry import retry, retry_publication
 from mobilizon_reshare.models.publication import PublicationStatus
 
 status_name_to_enum = {
@@ -45,21 +43,17 @@ to_date_option = click.option(
     expose_value=True,
     help="Include only events that begin before this datetime.",
 )
-event_status_option = click.option(
-    "-s",
-    "--status",
+event_status_option = click.argument(
+    "status",
     type=click.Choice(list(status_name_to_enum["event"].keys())),
     default="all",
     expose_value=True,
-    help="Include only events with the given STATUS.",
 )
-publication_status_option = click.option(
-    "-s",
-    "--status",
+publication_status_option = click.argument(
+    "status",
     type=click.Choice(list(status_name_to_enum["publication"].keys())),
     default="all",
     expose_value=True,
-    help="Include only publications with the given STATUS.",
 )
 
 
@@ -91,51 +85,45 @@ def recap():
     safe_execution(recap_main,)
 
 
-@mobilizon_reshare.group(help="List objects in the database with different criteria.")
+@mobilizon_reshare.group(help="Operations that pertain to events")
+def event():
+    pass
+
+
+@mobilizon_reshare.group(help="Operations that pertain to publications")
+def publication():
+    pass
+
+
+@event.command(help="Query for events in the database.", name="list")
+@event_status_option
 @from_date_option
 @to_date_option
-@pass_context
-def inspect(ctx, begin, end):
-    ctx.ensure_object(dict)
-    ctx.obj["begin"] = Arrow.fromdatetime(begin) if begin else None
-    ctx.obj["end"] = Arrow.fromdatetime(end) if end else None
+def event_list(status, begin, end):
 
-
-@inspect.command(help="Query for events in the database.")
-@event_status_option
-@pass_context
-def event(
-    ctx, status,
-):
-    ctx.ensure_object(dict)
     safe_execution(
         functools.partial(
-            inspect_events,
-            status_name_to_enum["event"][status],
-            frm=ctx.obj["begin"],
-            to=ctx.obj["end"],
+            list_events, status_name_to_enum["event"][status], frm=begin, to=end,
         ),
     )
 
 
-@inspect.command(help="Query for publications in the database.")
+@publication.command(help="Query for publications in the database.", name="list")
 @publication_status_option
-@pass_context
-def publication(
-    ctx, status,
-):
-    ctx.ensure_object(dict)
+@from_date_option
+@to_date_option
+def publication_list(status, begin, end):
     safe_execution(
         functools.partial(
-            inspect_publications,
+            list_publications,
             status_name_to_enum["publication"][status],
-            frm=ctx.obj["begin"],
-            to=ctx.obj["end"],
+            frm=begin,
+            to=end,
         ),
     )
 
 
-@mobilizon_reshare.command(
+@event.command(
     help="Format and print event with EVENT-ID using the publisher's format named "
     "PUBLISHER."
 )
@@ -145,6 +133,18 @@ def format(
     event_id, publisher,
 ):
     safe_execution(functools.partial(format_event, event_id, publisher),)
+
+
+@event.command(name="retry", help="Retries all the failed publications")
+@click.argument("event-id", type=click.UUID)
+def event_retry(event_id):
+    safe_execution(functools.partial(retry, event_id),)
+
+
+@publication.command(name="retry", help="Retries a specific publication")
+@click.argument("publication-id", type=click.UUID)
+def publication_retry(publication_id):
+    safe_execution(functools.partial(retry_publication, publication_id),)
 
 
 if __name__ == "__main__":
