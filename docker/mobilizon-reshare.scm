@@ -82,28 +82,6 @@ the official Facebook JavaScript SDK, which is the canonical way to implement
 Facebook authentication.")
     (license license:asl2.0)))
 
-(define-public python-facebook-sdk.git
-  (let ((version (package-version python-facebook-sdk))
-        (revision "0")
-        (commit "3fa89fec6a20dd070ccf57968c6f89256f237f54"))
-      (package (inherit python-facebook-sdk)
-        (name "python-facebook-sdk.git")
-        (version (git-version version revision commit))
-        (source
-         (origin
-           (method git-fetch)
-           (uri
-            (git-reference
-             (url "https://github.com/mobolic/facebook-sdk")
-             (commit commit)))
-           (file-name (git-file-name name version))
-           (sha256
-            (base32
-             "0vayxkg6p8wdj63qvzr24dj3q7rkyhr925b31z2qv2mnbas01dmg"))))
-        (arguments
-         ;; Tests depend on network access.
-         `(#:tests? #false)))))
-
 (define-public python-ddlparse
   (package
     (name "python-ddlparse")
@@ -311,6 +289,26 @@ simplify testing of asynchronous tornado applications.")
     (description "We have made you a wrapper you can't refuse")
     (license #f)))
 
+(define-public python-requests-2.25
+ (package (inherit python-requests)
+  (version "2.25.1")
+  (source
+   (origin
+     (method url-fetch)
+     (uri (pypi-uri "requests" version))
+     (sha256
+       (base32 "015qflyqsgsz09gnar69s6ga74ivq5kch69s4qxz3904m7a3v5r7"))))))
+
+(define-public python-click-8.0
+ (package (inherit python-click)
+  (version "8.0.3")
+  (source
+   (origin
+     (method url-fetch)
+     (uri (pypi-uri "click" version))
+     (sha256
+       (base32 "0nybbsgaff8ihfh74nhmng6qj74pfpg99njc7ivysphg0lmr63j1"))))))
+
 (define-public mobilizon-reshare.git
   (let ((source-version (with-input-from-file
                             (string-append %source-dir
@@ -336,9 +334,7 @@ simplify testing of asynchronous tornado applications.")
                (setenv "POETRY_VIRTUALENVS_CREATE" "false")
                (invoke "poetry" "build" "-f" "sdist")
                (invoke "bash" "-c"
-                       "tar --wildcards -xvf dist/*-`poetry version -s`.tar.gz -O '*/setup.py' > setup.py")
-               (substitute* "setup.py"
-                 (("'install_requires': install_requires,") ""))))
+                       "tar --wildcards -xvf dist/*-`poetry version -s`.tar.gz -O '*/setup.py' > setup.py")))
            (replace 'check
              (lambda* (#:key tests? inputs outputs #:allow-other-keys)
                (when tests?
@@ -365,12 +361,12 @@ simplify testing of asynchronous tornado applications.")
              python-appdirs
              python-arrow
              python-beautifulsoup4
-             python-click
+             python-click-8.0
              dynaconf
-             python-facebook-sdk.git
+             python-facebook-sdk
              python-jinja2
              python-markdownify
-             python-requests
+             python-requests-2.25
              python-telegram-bot
              python-tweepy
              python-tortoise-orm-0.18.1))
