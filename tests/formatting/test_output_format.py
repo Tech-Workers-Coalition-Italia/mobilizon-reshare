@@ -38,7 +38,7 @@ def event() -> MobilizonEvent:
     [
         [
             "facebook",
-            """#
+            """# 
 
 🕒 01 January, 11:30 - 01 January, 12:30
 
