@@ -5,6 +5,7 @@ import pkg_resources
 from facebook import GraphAPIError
 
 from mobilizon_reshare.event.event import MobilizonEvent
+from mobilizon_reshare.formatting.description import html_to_plaintext
 from mobilizon_reshare.publishers.abstract import (
     AbstractPlatform,
     AbstractEventFormatter,
@@ -37,6 +38,11 @@ class FacebookFormatter(AbstractEventFormatter):
 
     def _validate_message(self, message) -> None:
         pass
+
+    def _preprocess_event(self, event: MobilizonEvent):
+        event.description = html_to_plaintext(event.description)
+        event.name = html_to_plaintext(event.name)
+        return event
 
 
 class FacebookPlatform(AbstractPlatform):
