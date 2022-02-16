@@ -1,6 +1,6 @@
 <strong>{{ name }}</strong>
 
-🕒 {{ begin_datetime.format('DD MMMM, HH:mm') }} - {{ end_datetime.format('DD MMMM, HH:mm') }}
+🕒 {{ begin_datetime.to('local').format('DD MMMM, HH:mm') }} - {{ end_datetime.to('local').format('DD MMMM, HH:mm') }}
 {% if location %}📍 {{ location }}{% endif %}
 
 {{ description }}
