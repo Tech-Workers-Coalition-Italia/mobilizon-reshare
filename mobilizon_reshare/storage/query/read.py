@@ -15,7 +15,11 @@ from mobilizon_reshare.models.publisher import Publisher
 from mobilizon_reshare.publishers import get_active_publishers
 from mobilizon_reshare.publishers.abstract import EventPublication
 from mobilizon_reshare.storage.query import CONNECTION_NAME
-from mobilizon_reshare.storage.query.event_converter import from_model, compute_status
+from mobilizon_reshare.storage.query.converter import (
+    event_from_model,
+    compute_event_status,
+    publication_from_orm,
+)
 from mobilizon_reshare.storage.query.exceptions import EventNotFound
 
 
@@ -45,13 +49,13 @@ async def events_with_status(
     def _filter_event_with_status(event: Event) -> bool:
         # This computes the status client-side instead of running in the DB. It shouldn't pose a performance problem
         # in the short term, but should be moved to the query if possible.
-        event_status = compute_status(list(event.publications))
+        event_status = compute_event_status(list(event.publications))
         return event_status in status
 
     query = Event.all()
 
     return map(
-        from_model,
+        event_from_model,
         filter(
             _filter_event_with_status,
             await prefetch_event_relations(
@@ -63,7 +67,7 @@ async def events_with_status(
 
 async def get_all_publications(
     from_date: Optional[Arrow] = None, to_date: Optional[Arrow] = None,
-) -> Iterable[Publication]:
+) -> Iterable[EventPublication]:
     return await prefetch_publication_relations(
         _add_date_window(Publication.all(), "timestamp", from_date, to_date)
     )
@@ -73,7 +77,7 @@ async def get_all_events(
     from_date: Optional[Arrow] = None, to_date: Optional[Arrow] = None,
 ) -> Iterable[MobilizonEvent]:
     return map(
-        from_model,
+        event_from_model,
         await prefetch_event_relations(
             _add_date_window(Event.all(), "begin_datetime", from_date, to_date)
         ),
@@ -118,7 +122,7 @@ async def publications_with_status(
     event_mobilizon_id: Optional[UUID] = None,
     from_date: Optional[Arrow] = None,
     to_date: Optional[Arrow] = None,
-) -> Iterable[Publication]:
+) -> Iterable[EventPublication]:
     query = Publication.filter(status=status)
 
     if event_mobilizon_id:
@@ -138,7 +142,7 @@ async def events_without_publications(
     events = await prefetch_event_relations(
         _add_date_window(query, "begin_datetime", from_date, to_date)
     )
-    return list(map(from_model, events))
+    return list(map(event_from_model, events))
 
 
 async def get_event(event_mobilizon_id: UUID) -> Event:
@@ -170,9 +174,7 @@ async def build_publications(event: MobilizonEvent) -> list[EventPublication]:
         await event_model.build_publication_by_publisher_name(name)
         for name in get_active_publishers()
     ]
-    return list(
-        EventPublication.from_orm(m, dataclasses.replace(event)) for m in models
-    )
+    return list(publication_from_orm(m, dataclasses.replace(event)) for m in models)
 
 
 @atomic(CONNECTION_NAME)
@@ -188,9 +190,7 @@ async def get_failed_publications_for_event(
     )
     for p in failed_publications:
         await p.fetch_related("publisher")
-    return list(
-        map(partial(EventPublication.from_orm, event=event), failed_publications)
-    )
+    return list(map(partial(publication_from_orm, event=event), failed_publications))
 
 
 @atomic(CONNECTION_NAME)
@@ -201,8 +201,6 @@ async def get_publication(publication_id):
         )
         # TODO: this is redundant but there's some prefetch problem otherwise
         publication.event = await get_event(publication.event.mobilizon_id)
-        return EventPublication.from_orm(
-            publication, event=from_model(publication.event)
-        )
+        return publication_from_orm(event=event_from_model(publication.event))
     except DoesNotExist:
         return None

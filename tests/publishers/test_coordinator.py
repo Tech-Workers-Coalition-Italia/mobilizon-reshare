@@ -19,7 +19,10 @@ from mobilizon_reshare.publishers.coordinator import (
     PublicationFailureNotifiersCoordinator,
     RecapCoordinator,
 )
-from mobilizon_reshare.storage.query.event_converter import to_model
+from mobilizon_reshare.storage.query.converter import (
+    event_to_model,
+    publication_from_orm,
+)
 from tests import today
 
 
@@ -89,7 +92,7 @@ async def mock_publications(
 ):
     result = []
     for i in range(num_publications):
-        event = to_model(test_event)
+        event = event_to_model(test_event)
         await event.save()
         publisher = Publisher(name="telegram")
         await publisher.save()
@@ -100,7 +103,7 @@ async def mock_publications(
             timestamp=today + timedelta(hours=i),
             reason=None,
         )
-        publication = EventPublication.from_orm(publication, test_event)
+        publication = publication_from_orm(publication, test_event)
         publication.publisher = mock_publisher_valid
         publication.formatter = mock_formatter_valid
         result.append(publication)
@@ -109,8 +112,12 @@ async def mock_publications(
 
 @pytest.mark.parametrize("num_publications", [2])
 @pytest.mark.asyncio
-async def test_publication_coordinator_run_success(mock_publications,):
-    coordinator = PublisherCoordinator(publications=mock_publications,)
+async def test_publication_coordinator_run_success(
+    mock_publications,
+):
+    coordinator = PublisherCoordinator(
+        publications=mock_publications,
+    )
     report = coordinator.run()
     assert len(report.reports) == 2
     assert report.successful, "\n".join(map(lambda rep: rep.reason, report.reports))

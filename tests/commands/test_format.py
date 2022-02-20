@@ -7,13 +7,13 @@ from mobilizon_reshare.publishers.platforms.platform_mapping import (
     get_formatter_class,
     name_to_formatter_class,
 )
-from mobilizon_reshare.storage.query.event_converter import to_model
+from mobilizon_reshare.storage.query.converter import event_to_model
 
 
 @pytest.mark.parametrize("publisher_name", name_to_formatter_class.keys())
 @pytest.mark.asyncio
 async def test_format_event(runner, event, capsys, publisher_name):
-    event_model = to_model(event)
+    event_model = event_to_model(event)
     await event_model.save()
     await format_event(
         event_id=str(event_model.mobilizon_id), publisher_name=publisher_name

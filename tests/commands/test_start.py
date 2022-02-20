@@ -4,7 +4,7 @@ from logging import DEBUG, INFO
 import arrow
 import pytest
 
-from mobilizon_reshare.storage.query.event_converter import from_model, to_model
+from mobilizon_reshare.storage.query.converter import event_from_model, event_to_model
 from mobilizon_reshare.storage.query.read import get_all_events
 from tests.commands.conftest import simple_event_element
 from mobilizon_reshare.event.event import EventPublicationStatus
@@ -74,7 +74,7 @@ async def test_start_new_event(
             assert p.status == PublicationStatus.COMPLETED
 
         # the derived status for the event should be COMPLETED
-        assert from_model(all_events[0]).status == EventPublicationStatus.COMPLETED
+        assert event_from_model(all_events[0]).status == EventPublicationStatus.COMPLETED
 
 
 @pytest.mark.asyncio
@@ -93,7 +93,7 @@ async def test_start_event_from_db(
     event_generator,
 ):
     event = event_generator()
-    event_model = to_model(event)
+    event_model = event_to_model(event)
     await event_model.save()
 
     with caplog.at_level(DEBUG):
@@ -116,7 +116,7 @@ async def test_start_event_from_db(
             assert p.status == PublicationStatus.COMPLETED
 
         # the derived status for the event should be COMPLETED
-        assert from_model(event_model).status == EventPublicationStatus.COMPLETED
+        assert event_from_model(event_model).status == EventPublicationStatus.COMPLETED
 
 
 @pytest.mark.asyncio
@@ -136,7 +136,7 @@ async def test_start_publisher_failure(
     mock_notifier_config,
 ):
     event = event_generator()
-    event_model = to_model(event)
+    event_model = event_to_model(event)
     await event_model.save()
 
     with caplog.at_level(DEBUG):
@@ -163,14 +163,14 @@ async def test_start_publisher_failure(
             for _ in range(2)
         ]  # 2 publications failed * 2 notifiers
         # the derived status for the event should be FAILED
-        assert from_model(event_model).status == EventPublicationStatus.FAILED
+        assert event_from_model(event_model).status == EventPublicationStatus.FAILED
 
 
 @pytest.fixture
 async def published_event(event_generator):
 
     event = event_generator()
-    event_model = to_model(event)
+    event_model = event_to_model(event)
     await event_model.save()
     assert await start() is None
     await event_model.refresh_from_db()
