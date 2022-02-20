@@ -1,2 +1,4 @@
 #!/bin/bash
-poetry run pdoc --html --skip-errors --output-dir api-documentation mobilizon_reshare
+export SECRETS_FOR_DYNACONF="mobilizon_reshare/.secrets.toml"
+
+poetry run pdoc --force --html --output-dir api-documentation mobilizon_reshare
