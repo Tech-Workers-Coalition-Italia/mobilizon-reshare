@@ -23,14 +23,14 @@ sched = AsyncIOScheduler()
 sched.add_job(
     partial(_safe_execution, start),
     CronTrigger.from_crontab(
-        os.environ.get("MOBILIZON_RESHARE_INTERVAL", "*/15 10-18 * * 1-5")
+        os.environ.get("MOBILIZON_RESHARE_INTERVAL", "*/15 10-18 * * 0-4")
     ),
 )
 # Runs "recap" once a week
 sched.add_job(
     partial(_safe_execution, recap),
     CronTrigger.from_crontab(
-        os.environ.get("MOBILIZON_RESHARE_RECAP_INTERVAL", "5 11 * * 1")
+        os.environ.get("MOBILIZON_RESHARE_RECAP_INTERVAL", "5 11 * * 0")
     ),
 )
 sched.start()
