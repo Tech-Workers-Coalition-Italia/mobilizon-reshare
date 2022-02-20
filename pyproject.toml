@@ -24,6 +24,7 @@ tweepy = "~4.1"
 facebook-sdk = "~3.1"
 aerich = "~0.6"
 python-telegram-bot = "~13.10"
+pdoc3 = "^0.10.0"
 
 [tool.poetry.dev-dependencies]
 responses = "~0.13"
