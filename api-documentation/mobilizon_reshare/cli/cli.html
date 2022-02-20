@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
 <meta name="generator" content="pdoc 0.10.0" />
-<title>mobilizon_reshare.storage API documentation</title>
+<title>mobilizon_reshare.cli.cli API documentation</title>
 <meta name="description" content="" />
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/typography.min.css" integrity="sha256-7l/o7C8jubJiy74VsKTidCy1yBkRtiUGbVkYBylBqUg=" crossorigin>
@@ -19,26 +19,190 @@
 <main>
 <article id="content">
 <header>
-<h1 class="title">Module <code>mobilizon_reshare.storage</code></h1>
+<h1 class="title">Module <code>mobilizon_reshare.cli.cli</code></h1>
 </header>
 <section id="section-intro">
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">import functools
+
+import click
+from click import pass_context
+
+from mobilizon_reshare.cli import safe_execution
+from mobilizon_reshare.cli.commands.format.format import format_event
+from mobilizon_reshare.cli.commands.list.list_event import list_events
+from mobilizon_reshare.cli.commands.list.list_publication import list_publications
+from mobilizon_reshare.cli.commands.recap.main import main as recap_main
+from mobilizon_reshare.cli.commands.start.main import main as start_main
+from mobilizon_reshare.config.config import current_version
+from mobilizon_reshare.config.publishers import publisher_names
+from mobilizon_reshare.event.event import EventPublicationStatus
+from mobilizon_reshare.main.retry import retry, retry_publication
+from mobilizon_reshare.models.publication import PublicationStatus
+
+status_name_to_enum = {
+    &#34;event&#34;: {
+        &#34;waiting&#34;: EventPublicationStatus.WAITING,
+        &#34;completed&#34;: EventPublicationStatus.COMPLETED,
+        &#34;failed&#34;: EventPublicationStatus.FAILED,
+        &#34;partial&#34;: EventPublicationStatus.PARTIAL,
+        &#34;all&#34;: None,
+    },
+    &#34;publication&#34;: {
+        &#34;completed&#34;: PublicationStatus.COMPLETED,
+        &#34;failed&#34;: PublicationStatus.FAILED,
+        &#34;all&#34;: None,
+    },
+}
+from_date_option = click.option(
+    &#34;-b&#34;,
+    &#34;--begin&#34;,
+    type=click.DateTime(),
+    expose_value=True,
+    help=&#34;Include only events that begin after this datetime.&#34;,
+)
+to_date_option = click.option(
+    &#34;-e&#34;,
+    &#34;--end&#34;,
+    type=click.DateTime(),
+    expose_value=True,
+    help=&#34;Include only events that begin before this datetime.&#34;,
+)
+event_status_option = click.argument(
+    &#34;status&#34;,
+    type=click.Choice(list(status_name_to_enum[&#34;event&#34;].keys())),
+    default=&#34;all&#34;,
+    expose_value=True,
+)
+publication_status_option = click.argument(
+    &#34;status&#34;,
+    type=click.Choice(list(status_name_to_enum[&#34;publication&#34;].keys())),
+    default=&#34;all&#34;,
+    expose_value=True,
+)
+
+
+def print_version(ctx, param, value):
+    if not value or ctx.resilient_parsing:
+        return
+    click.echo(current_version())
+    ctx.exit()
+
+
+@click.group()
+@click.option(
+    &#34;--version&#34;, is_flag=True, callback=print_version, expose_value=False, is_eager=True
+)
+@pass_context
+def mobilizon_reshare(obj):
+    pass
+
+
+@mobilizon_reshare.command(help=&#34;Synchronize and publish events.&#34;)
+@pass_context
+def start(ctx,):
+    ctx.ensure_object(dict)
+    safe_execution(start_main,)
+
+
+@mobilizon_reshare.command(help=&#34;Publish a recap of already published events.&#34;)
+def recap():
+    safe_execution(recap_main,)
+
+
+@mobilizon_reshare.group(help=&#34;Operations that pertain to events&#34;)
+def event():
+    pass
+
+
+@mobilizon_reshare.group(help=&#34;Operations that pertain to publications&#34;)
+def publication():
+    pass
+
+
+@event.command(help=&#34;Query for events in the database.&#34;, name=&#34;list&#34;)
+@event_status_option
+@from_date_option
+@to_date_option
+def event_list(status, begin, end):
+
+    safe_execution(
+        functools.partial(
+            list_events, status_name_to_enum[&#34;event&#34;][status], frm=begin, to=end,
+        ),
+    )
+
+
+@publication.command(help=&#34;Query for publications in the database.&#34;, name=&#34;list&#34;)
+@publication_status_option
+@from_date_option
+@to_date_option
+def publication_list(status, begin, end):
+    safe_execution(
+        functools.partial(
+            list_publications,
+            status_name_to_enum[&#34;publication&#34;][status],
+            frm=begin,
+            to=end,
+        ),
+    )
+
+
+@event.command(
+    help=&#34;Format and print event with EVENT-ID using the publisher&#39;s format named &#34;
+    &#34;PUBLISHER.&#34;
+)
+@click.argument(&#34;event-id&#34;, type=click.UUID)
+@click.argument(&#34;publisher&#34;, type=click.Choice(publisher_names))
+def format(
+    event_id, publisher,
+):
+    safe_execution(functools.partial(format_event, event_id, publisher),)
+
+
+@event.command(name=&#34;retry&#34;, help=&#34;Retries all the failed publications&#34;)
+@click.argument(&#34;event-id&#34;, type=click.UUID)
+def event_retry(event_id):
+    safe_execution(functools.partial(retry, event_id),)
+
+
+@publication.command(name=&#34;retry&#34;, help=&#34;Retries a specific publication&#34;)
+@click.argument(&#34;publication-id&#34;, type=click.UUID)
+def publication_retry(publication_id):
+    safe_execution(functools.partial(retry_publication, publication_id),)
+
+
+if __name__ == &#34;__main__&#34;:
+    mobilizon_reshare(obj={})</code></pre>
+</details>
 </section>
 <section>
-<h2 class="section-title" id="header-submodules">Sub-modules</h2>
+</section>
+<section>
+</section>
+<section>
+<h2 class="section-title" id="header-functions">Functions</h2>
 <dl>
-<dt><code class="name"><a title="mobilizon_reshare.storage.db" href="db.html">mobilizon_reshare.storage.db</a></code></dt>
+<dt id="mobilizon_reshare.cli.cli.print_version"><code class="name flex">
+<span>def <span class="ident">print_version</span></span>(<span>ctx, param, value)</span>
+</code></dt>
 <dd>
 <div class="desc"></div>
-</dd>
-<dt><code class="name"><a title="mobilizon_reshare.storage.query" href="query/index.html">mobilizon_reshare.storage.query</a></code></dt>
-<dd>
-<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def print_version(ctx, param, value):
+    if not value or ctx.resilient_parsing:
+        return
+    click.echo(current_version())
+    ctx.exit()</code></pre>
+</details>
 </dd>
 </dl>
-</section>
-<section>
-</section>
-<section>
 </section>
 <section>
 </section>
@@ -51,13 +215,12 @@
 <ul id="index">
 <li><h3>Super-module</h3>
 <ul>
-<li><code><a title="mobilizon_reshare" href="../index.html">mobilizon_reshare</a></code></li>
+<li><code><a title="mobilizon_reshare.cli" href="index.html">mobilizon_reshare.cli</a></code></li>
 </ul>
 </li>
-<li><h3><a href="#header-submodules">Sub-modules</a></h3>
-<ul>
-<li><code><a title="mobilizon_reshare.storage.db" href="db.html">mobilizon_reshare.storage.db</a></code></li>
-<li><code><a title="mobilizon_reshare.storage.query" href="query/index.html">mobilizon_reshare.storage.query</a></code></li>
+<li><h3><a href="#header-functions">Functions</a></h3>
+<ul class="">
+<li><code><a title="mobilizon_reshare.cli.cli.print_version" href="#mobilizon_reshare.cli.cli.print_version">print_version</a></code></li>
 </ul>
 </li>
 </ul>
