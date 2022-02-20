@@ -7,24 +7,27 @@ import pytest
 from mobilizon_reshare.event.event import MobilizonEvent
 from mobilizon_reshare.publishers.platforms.platform_mapping import get_formatter_class
 
+begin_date = arrow.get(
+    datetime(
+        year=2021,
+        month=1,
+        day=1,
+        hour=11,
+        minute=30,
+        tzinfo=timezone(timedelta(hours=1)),
+    )
+).to("local")
+
+end_date = begin_date.shift(hours=1)
+
 
 @pytest.fixture()
 def event() -> MobilizonEvent:
-    begin_date = arrow.get(
-        datetime(
-            year=2021,
-            month=1,
-            day=1,
-            hour=11,
-            minute=30,
-            tzinfo=timezone(timedelta(hours=1)),
-        )
-    )
     return MobilizonEvent(
         name="test event",
         description="<p>description of the event</p>",
         begin_datetime=begin_date,
-        end_datetime=begin_date.shift(hours=1),
+        end_datetime=end_date,
         mobilizon_link="http://some_link.com/123",
         mobilizon_id=UUID(int=12345),
         thumbnail_link="http://some_link.com/123.jpg",
@@ -38,9 +41,9 @@ def event() -> MobilizonEvent:
     [
         [
             "facebook",
-            """# 
+            f"""#
 
-🕒 01 January, 11:30 - 01 January, 12:30
+🕒 01 January, {begin_date.format('HH:mm')} - 01 January, {end_date.format('HH:mm')}
 
 
 📍 location
@@ -53,9 +56,9 @@ Link: http://some_link.com/123
         ],
         [
             "telegram",
-            """<strong>test event</strong>
+            f"""<strong>test event</strong>
 
-🕒 01 January, 11:30 - 01 January, 12:30
+🕒 01 January, {begin_date.format('HH:mm')} - 01 January, {end_date.format('HH:mm')}
 📍 location
 
 description of the event
