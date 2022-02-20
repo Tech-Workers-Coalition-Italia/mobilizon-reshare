@@ -24,7 +24,7 @@ to publish an event, with the minimization of human effort as its first priority
 
 ## Installation
 
-`mobilizon_reshare` is distributed through Pypi and [DockerHub](https://hub.docker.com/r/fishinthecalculator/mobilizon-reshare). Use
+`mobilizon_reshare` is distributed through [Pypi](https://pypi.org/project/mobilizon-reshare/) and [DockerHub](https://hub.docker.com/r/fishinthecalculator/mobilizon-reshare). Use
 
 ```shell
 $ pip install mobilizon-reshare
@@ -37,7 +37,7 @@ commands and their description.
 
 ### Guix package
 
-If you run the Guix System you can install `mobilizon_reshare` by running:
+If you run the Guix package manager you can install `mobilizon_reshare` from the root of the repository by running:
 
 ``` shell
 $ guix install -L . mobilizon-reshare.git
