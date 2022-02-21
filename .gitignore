@@ -185,5 +185,5 @@ docker-image.tar.gz
 # test run script
 test_run.sh
 
-# directory where pdoc3 documents resides
-api-documentation/
+# directory where sphinx documents resides
+api-documentation/build/
