@@ -10,7 +10,6 @@ from mobilizon_reshare.publishers.platforms.platform_mapping import (
 from mobilizon_reshare.storage.query.event_converter import to_model
 
 
-@pytest.mark.timezone_sensitive
 @pytest.mark.parametrize("publisher_name", name_to_formatter_class.keys())
 @pytest.mark.asyncio
 async def test_format_event(runner, event, capsys, publisher_name):
@@ -26,7 +25,6 @@ async def test_format_event(runner, event, capsys, publisher_name):
     )
 
 
-@pytest.mark.timezone_sensitive
 @pytest.mark.asyncio
 async def test_format_event_missing(runner, capsys):
     event_id = uuid.uuid4()

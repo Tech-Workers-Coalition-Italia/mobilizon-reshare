@@ -1,28 +1,28 @@
-from typing import List
-
 from bs4 import BeautifulSoup, Tag
 import markdownify
 
 
-def get_bottom_paragraphs(soup: BeautifulSoup) -> List[Tag]:
+def get_bottom_paragraphs(soup: BeautifulSoup) -> list[Tag]:
     return [d for d in soup.findAll("p") if not d.find("p")]
 
 
-def html_to_plaintext(content):
+def html_to_plaintext(content) -> str:
     """
-    Transform a HTML in a plaintext sting that can be more easily processed by the publishers.
+    Transform a HTML in a plaintext string that can be more easily processed by the publishers.
 
     :param content:
     :return:
     """
     # TODO: support links and quotes
     soup = BeautifulSoup(content)
-    return "\n".join(
-        " ".join(tag.stripped_strings) for tag in get_bottom_paragraphs(soup)
-    )
+    p_list = get_bottom_paragraphs(soup)
+    if p_list:
+        return "\n".join(" ".join(tag.stripped_strings) for tag in p_list)
+    else:
+        return soup.text
 
 
-def html_to_markdown(content):
+def html_to_markdown(content) -> str:
     markdown = markdownify.markdownify(content)
     escaped_markdown = markdown.replace(">", "\\>")
     return escaped_markdown.strip()
