@@ -189,3 +189,4 @@ test_run.sh
 api_documentation/source/*
 !api_documentation/source/conf.py
 !api_documentation/source/index.rst
+!api_documentation/source/_static/
