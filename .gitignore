@@ -186,6 +186,6 @@ docker-image.tar.gz
 test_run.sh
 
 # directory where sphinx documents resides
-#api-documentation/source/*
-#!api-documentation/source/conf.py
-#!api-documentation/source/index.rst
+api-documentation/source/*
+!api-documentation/source/conf.py
+!api-documentation/source/index.rst
