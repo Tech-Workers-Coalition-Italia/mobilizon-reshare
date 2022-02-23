@@ -32,6 +32,10 @@ asynctest = "~0.13"
 pytest = "~6.2"
 pytest-cov = "~2.8"
 pytest-lazy-fixture = "~0.6"
+Sphinx = "~4.4"
+sphinxcontrib-napoleon = "~0.7"
+sphinx-material = "~0.0"
+sphinx-autodoc-typehints = "~1.17"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
@@ -39,3 +43,4 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poetry.scripts]
 mobilizon-reshare="mobilizon_reshare.cli.cli:mobilizon_reshare"
+
