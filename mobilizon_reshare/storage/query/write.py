@@ -10,7 +10,7 @@ from mobilizon_reshare.models.publication import Publication
 from mobilizon_reshare.models.publisher import Publisher
 from mobilizon_reshare.publishers.coordinator import PublisherCoordinatorReport
 from mobilizon_reshare.storage.query import CONNECTION_NAME
-from mobilizon_reshare.storage.query.event_converter import to_model
+from mobilizon_reshare.storage.query.converter import event_to_model
 from mobilizon_reshare.storage.query.read import (
     events_without_publications,
     is_known,
@@ -78,12 +78,12 @@ async def create_unpublished_events(
     for event in events_from_mobilizon:
         if not await is_known(event):
             # Either an event is unknown
-            await to_model(event).save()
+            await event_to_model(event).save()
         else:
             # Or it's known and changed
             event_model = await get_event(event.mobilizon_id)
             if event.last_update_time > event_model.last_update_time:
-                await to_model(event=event, db_id=event_model.id).save(
+                await event_to_model(event=event, db_id=event_model.id).save(
                     force_update=True
                 )
             # Or it's known and unchanged, in which case we do nothing.

@@ -7,11 +7,12 @@ import tortoise.timezone
 from mobilizon_reshare.event.event import EventPublicationStatus, MobilizonEvent
 from mobilizon_reshare.models.event import Event
 from mobilizon_reshare.models.publication import Publication, PublicationStatus
+from mobilizon_reshare.publishers.abstract import EventPublication
 
 
-def from_model(event: Event, tz: str = "UTC"):
+def event_from_model(event: Event, tz: str = "UTC"):
 
-    publication_status = compute_status(list(event.publications))
+    publication_status = compute_event_status(list(event.publications))
     publication_time = {}
 
     for pub in event.publications:
@@ -41,7 +42,7 @@ def from_model(event: Event, tz: str = "UTC"):
     )
 
 
-def to_model(event: MobilizonEvent, db_id: Optional[UUID] = None) -> Event:
+def event_to_model(event: MobilizonEvent, db_id: Optional[UUID] = None) -> Event:
     kwargs = {
         "name": event.name,
         "description": event.description,
@@ -60,7 +61,7 @@ def to_model(event: MobilizonEvent, db_id: Optional[UUID] = None) -> Event:
     return Event(**kwargs)
 
 
-def compute_status(publications: list[Publication]) -> EventPublicationStatus:
+def compute_event_status(publications: list[Publication]) -> EventPublicationStatus:
     if not publications:
         return EventPublicationStatus.WAITING
 
@@ -75,3 +76,20 @@ def compute_status(publications: list[Publication]) -> EventPublicationStatus:
         return EventPublicationStatus[unique_statuses.pop().name]
 
     raise ValueError(f"Illegal combination of PublicationStatus: {unique_statuses}")
+
+
+def publication_from_orm(model: Publication, event: MobilizonEvent):
+    # imported here to avoid circular dependencies
+    from mobilizon_reshare.publishers.platforms.platform_mapping import (
+        get_publisher_class,
+        get_formatter_class,
+    )
+
+    publisher = get_publisher_class(model.publisher.name)()
+    formatter = get_formatter_class(model.publisher.name)()
+    return EventPublication(
+        publisher,
+        formatter,
+        event,
+        model.id,
+    )

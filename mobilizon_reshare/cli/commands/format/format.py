@@ -2,7 +2,7 @@ import click
 
 from mobilizon_reshare.models.event import Event
 from mobilizon_reshare.publishers.platforms.platform_mapping import get_formatter_class
-from mobilizon_reshare.storage.query.event_converter import from_model
+from mobilizon_reshare.storage.query.converter import event_from_model
 
 
 async def format_event(event_id, publisher_name: str):
@@ -12,6 +12,6 @@ async def format_event(event_id, publisher_name: str):
     if not event:
         click.echo(f"Event with mobilizon_id {event_id} not found.")
         return
-    event = from_model(event)
+    event = event_from_model(event)
     message = get_formatter_class(publisher_name)().get_message_from_event(event)
     click.echo(message)
