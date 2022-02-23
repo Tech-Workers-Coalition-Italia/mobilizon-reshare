@@ -11,7 +11,6 @@ from mobilizon_reshare.publishers.abstract import (
 )
 from mobilizon_reshare.publishers.exceptions import (
     InvalidCredentials,
-    InvalidEvent,
     PublisherError,
     InvalidMessage,
 )
@@ -33,9 +32,7 @@ class TwitterFormatter(AbstractEventFormatter):
     )
 
     def _validate_event(self, event: MobilizonEvent) -> None:
-        text = event.description
-        if not (text and text.strip()):
-            self._log_error("No text was found", raise_error=InvalidEvent)
+        pass  # pragma: no cover
 
     def _validate_message(self, message) -> None:
         # TODO this is not precise. It should count the characters according to Twitter's logic but
@@ -76,7 +73,7 @@ class TwitterPlatform(AbstractPlatform):
             )
 
     def _validate_response(self, res: Status) -> dict:
-        pass
+        pass  # pragma: no cover
 
 
 class TwitterPublisher(TwitterPlatform):
