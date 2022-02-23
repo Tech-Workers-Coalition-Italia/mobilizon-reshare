@@ -13,6 +13,8 @@ from mobilizon_reshare.publishers.abstract import (
 from mobilizon_reshare.publishers.exceptions import (
     InvalidCredentials,
     InvalidEvent,
+    InvalidMessage,
+    PublisherError,
 )
 
 
@@ -37,7 +39,8 @@ class FacebookFormatter(AbstractEventFormatter):
             self._log_error("No text was found", raise_error=InvalidEvent)
 
     def _validate_message(self, message) -> None:
-        pass
+        if len(message) >= 63200:
+            self._log_error("Message is too long", raise_error=InvalidMessage)
 
     def _preprocess_event(self, event: MobilizonEvent):
         event.description = html_to_plaintext(event.description)
@@ -52,18 +55,23 @@ class FacebookPlatform(AbstractPlatform):
 
     name = "facebook"
 
-    def _get_api(self):
+    def _get_api(self) -> facebook.GraphAPI:
         return facebook.GraphAPI(
             access_token=self.conf["page_access_token"], version="8.0"
         )
 
     def _send(self, message: str, event: Optional[MobilizonEvent] = None):
-        self._get_api().put_object(
-            parent_object="me",
-            connection_name="feed",
-            message=message,
-            link=event.mobilizon_link if event else None,
-        )
+        try:
+            self._get_api().put_object(
+                parent_object="me",
+                connection_name="feed",
+                message=message,
+                link=event.mobilizon_link if event else None,
+            )
+        except GraphAPIError:
+            self._log_error(
+                "Facebook send failed", raise_error=PublisherError,
+            )
 
     def validate_credentials(self):
 
@@ -76,7 +84,7 @@ class FacebookPlatform(AbstractPlatform):
                 raise_error=InvalidCredentials,
             )
 
-            self._log_debug("Facebook credentials are valid")
+        self._log_debug("Facebook credentials are valid")
 
     def _validate_response(self, response):
         pass
