@@ -1,3 +1,4 @@
+import re
 from typing import Optional
 
 import pkg_resources
@@ -60,6 +61,8 @@ class TelegramFormatter(AbstractEventFormatter):
         for tag in html.findAll(["h1", "h2", "h3"]):
             if tag.text:  # only if they are not empty
                 tag.name = "b"
+                tag.insert_after("\n")
+                tag.insert_before("\n")
             else:
                 tag.decompose()
         # removing lists
@@ -72,7 +75,8 @@ class TelegramFormatter(AbstractEventFormatter):
         # cleaning html trailing whitespace
         for tag in html.findAll("a"):
             tag["href"] = tag["href"].replace(" ", "").strip().lstrip()
-        return str(html)
+        s = str(html)
+        return re.sub(r"\n{2,}", "\n\n", s).strip()  # remove multiple newlines
 
 
 class TelegramPlatform(AbstractPlatform):
