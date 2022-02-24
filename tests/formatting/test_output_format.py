@@ -25,7 +25,7 @@ end_date = begin_date.shift(hours=1)
 def event() -> MobilizonEvent:
     return MobilizonEvent(
         name="test event",
-        description="<p>description of the event</p>",
+        description="<p><h1>description of the event</h1></p>",
         begin_datetime=begin_date,
         end_datetime=end_date,
         mobilizon_link="http://some_link.com/123",
@@ -61,7 +61,7 @@ Link: http://some_link.com/123
 🕒 01 January, {begin_date.format('HH:mm')} - 01 January, {end_date.format('HH:mm')}
 📍 location
 
-description of the event
+<b>description of the event</b>
 
 <a href="http://some_link.com/123">Link</a>""",
         ],
