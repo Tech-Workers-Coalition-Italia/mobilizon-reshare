@@ -37,7 +37,7 @@ async def retry_publication(publication_id):
     return PublisherCoordinator([publication]).run()
 
 
-async def retry(mobilizon_event_id: UUID = None):
+async def retry_event(mobilizon_event_id: UUID = None):
     if mobilizon_event_id is None:
         raise NotImplementedError(
             "Autonomous retry not implemented yet, please specify an event_id"

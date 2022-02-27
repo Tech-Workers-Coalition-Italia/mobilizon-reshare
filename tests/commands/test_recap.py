@@ -2,7 +2,7 @@ from logging import DEBUG
 
 import pytest
 
-from mobilizon_reshare.main.recap import recap
+from mobilizon_reshare.cli.commands.recap.main import recap
 from mobilizon_reshare.models.publication import PublicationStatus
 
 spec = {

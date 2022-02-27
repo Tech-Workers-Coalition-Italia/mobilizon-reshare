@@ -1,7 +1,7 @@
 from mobilizon_reshare.main.start import start
 
 
-async def main():
+async def start_command():
     """
     STUB
     :return:
