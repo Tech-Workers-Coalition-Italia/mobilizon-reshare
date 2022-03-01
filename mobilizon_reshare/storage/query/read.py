@@ -119,16 +119,10 @@ def _add_date_window(
 @atomic(CONNECTION_NAME)
 async def publications_with_status(
     status: PublicationStatus,
-    event_mobilizon_id: Optional[UUID] = None,
     from_date: Optional[Arrow] = None,
     to_date: Optional[Arrow] = None,
 ) -> Iterable[Publication]:
     query = Publication.filter(status=status)
-
-    if event_mobilizon_id:
-        query = query.prefetch_related("event").filter(
-            event__mobilizon_id=event_mobilizon_id
-        )
 
     return await prefetch_publication_relations(
         _add_date_window(query, "timestamp", from_date, to_date)
