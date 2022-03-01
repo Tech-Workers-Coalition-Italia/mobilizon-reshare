@@ -190,7 +190,10 @@ async def get_failed_publications_for_event(
     )
     for p in failed_publications:
         await p.fetch_related("publisher")
-    return list(map(partial(publication_from_orm, event=event), failed_publications))
+    mobilizon_event = event_from_model(event)
+    return list(
+        map(partial(publication_from_orm, event=mobilizon_event), failed_publications)
+    )
 
 
 @atomic(CONNECTION_NAME)
