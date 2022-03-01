@@ -1,4 +1,5 @@
 import pytest
+from arrow import arrow
 
 from mobilizon_reshare.cli.commands.list.list_event import list_events
 from mobilizon_reshare.cli.commands.list.list_publication import list_publications
@@ -57,6 +58,32 @@ async def test_list_publications(capsys, generate_models):
         "COMPLETED    zulip       00000000-0000-0000-0000-000000000001",
         "00000000-0000-0000-0000-000000000001    2021-06-06T04:00:00+00:00           "
         "FAILED       zulip       00000000-0000-0000-0000-000000000002",
+    ]
+
+
+@pytest.mark.asyncio
+async def test_list_publications_from_window(capsys, generate_models):
+    await generate_models(spec)
+    await list_publications(
+        frm=arrow.Arrow(year=2021, month=6, day=6, hour=3, minute=30)
+    )
+    output = capsys.readouterr()
+    assert clean_output(output) == [
+        "00000000-0000-0000-0000-000000000001    2021-06-06T04:00:00+00:00           "
+        "FAILED       zulip       00000000-0000-0000-0000-000000000002",
+    ]
+
+
+@pytest.mark.asyncio
+async def test_list_publications_to_window(capsys, generate_models):
+    await generate_models(spec)
+    await list_publications(
+        to=arrow.Arrow(year=2021, month=6, day=6, hour=3, minute=30)
+    )
+    output = capsys.readouterr()
+    assert clean_output(output) == [
+        "00000000-0000-0000-0000-000000000000    2021-06-06T03:00:00+00:00           "
+        "COMPLETED    zulip       00000000-0000-0000-0000-000000000001",
     ]
 
 

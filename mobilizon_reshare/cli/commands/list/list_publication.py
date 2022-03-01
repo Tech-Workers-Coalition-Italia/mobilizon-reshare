@@ -1,4 +1,5 @@
-from typing import Iterable
+from datetime import datetime
+from typing import Iterable, Optional
 
 import click
 from arrow import Arrow
@@ -28,8 +29,13 @@ def pretty(publication: Publication):
 
 
 async def list_publications(
-    status: PublicationStatus = None, frm: Arrow = None, to: Arrow = None
+    status: PublicationStatus = None,
+    frm: Optional[datetime] = None,
+    to: Optional[datetime] = None,
 ):
+
+    frm = Arrow.fromdatetime(frm) if frm else None
+    to = Arrow.fromdatetime(to) if to else None
     if status is None:
         publications = await get_all_publications(from_date=frm, to_date=to)
     else:
