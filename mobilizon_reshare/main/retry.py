@@ -1,9 +1,11 @@
 import logging
+from typing import Optional
 from uuid import UUID
 
 from mobilizon_reshare.publishers.coordinator import (
     PublisherCoordinator,
     PublicationFailureNotifiersCoordinator,
+    PublisherCoordinatorReport,
 )
 from mobilizon_reshare.storage.query.exceptions import EventNotFound
 from mobilizon_reshare.storage.query.read import (
@@ -26,7 +28,7 @@ async def retry_event_publications(event_id):
     return PublisherCoordinator(failed_publications).run()
 
 
-async def retry_publication(publication_id):
+async def retry_publication(publication_id) -> Optional[PublisherCoordinatorReport]:
     # TODO test this function
     publication = await get_publication(publication_id)
     if not publication:
@@ -37,7 +39,9 @@ async def retry_publication(publication_id):
     return PublisherCoordinator([publication]).run()
 
 
-async def retry_event(mobilizon_event_id: UUID = None):
+async def retry_event(
+    mobilizon_event_id: UUID = None,
+) -> Optional[PublisherCoordinatorReport]:
     if mobilizon_event_id is None:
         raise NotImplementedError(
             "Autonomous retry not implemented yet, please specify an event_id"

@@ -122,8 +122,7 @@ class PublisherCoordinator:
         for publication in self.publications:
             reasons = []
             reasons = self._safe_run(
-                reasons,
-                publication.publisher.validate_credentials,
+                reasons, publication.publisher.validate_credentials,
             )
             reasons = self._safe_run(
                 reasons, publication.formatter.validate_event, publication.event
@@ -176,6 +175,12 @@ class PublicationFailureNotifiersCoordinator(AbstractNotifiersCoordinator):
             self.send_to_all()
 
 
+class PublicationFailureLoggerCoordinator(PublicationFailureNotifiersCoordinator):
+    def notify_failure(self):
+        if self.report.status == PublicationStatus.FAILED:
+            logger.error(self.report.get_failure_message())
+
+
 class RecapCoordinator:
     def __init__(self, recap_publications: List[RecapPublication]):
         self.recap_publications = recap_publications
@@ -194,15 +199,13 @@ class RecapCoordinator:
                 recap_publication.publisher.send(message)
                 reports.append(
                     BasePublicationReport(
-                        status=PublicationStatus.COMPLETED,
-                        reason=None,
+                        status=PublicationStatus.COMPLETED, reason=None,
                     )
                 )
             except PublisherError as e:
                 reports.append(
                     BasePublicationReport(
-                        status=PublicationStatus.FAILED,
-                        reason=str(e),
+                        status=PublicationStatus.FAILED, reason=str(e),
                     )
                 )
 

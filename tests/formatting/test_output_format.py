@@ -42,7 +42,7 @@ def event() -> MobilizonEvent:
     [
         [
             "facebook",
-            f"""# test event
+            f"""test event
 
 🕒 01 January, {begin_date.format('HH:mm')} - 01 January, {end_date.format('HH:mm')}
 

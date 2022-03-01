@@ -204,6 +204,8 @@ async def get_publication(publication_id):
         )
         # TODO: this is redundant but there's some prefetch problem otherwise
         publication.event = await get_event(publication.event.mobilizon_id)
-        return publication_from_orm(event=event_from_model(publication.event))
+        return publication_from_orm(
+            event=event_from_model(publication.event), model=publication
+        )
     except DoesNotExist:
         return None
