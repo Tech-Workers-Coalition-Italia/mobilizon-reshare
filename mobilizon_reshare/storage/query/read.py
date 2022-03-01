@@ -122,7 +122,7 @@ async def publications_with_status(
     event_mobilizon_id: Optional[UUID] = None,
     from_date: Optional[Arrow] = None,
     to_date: Optional[Arrow] = None,
-) -> Iterable[EventPublication]:
+) -> Iterable[Publication]:
     query = Publication.filter(status=status)
 
     if event_mobilizon_id:
@@ -180,7 +180,7 @@ async def build_publications(event: MobilizonEvent) -> list[EventPublication]:
 @atomic(CONNECTION_NAME)
 async def get_failed_publications_for_event(
     event_mobilizon_id: UUID,
-) -> list[MobilizonEvent]:
+) -> list[EventPublication]:
     event = await get_event(event_mobilizon_id)
     failed_publications = list(
         filter(

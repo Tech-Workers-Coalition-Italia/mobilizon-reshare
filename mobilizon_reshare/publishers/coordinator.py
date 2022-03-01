@@ -77,7 +77,7 @@ class PublisherCoordinator:
 
         return self._post()
 
-    def _post(self):
+    def _post(self) -> PublisherCoordinatorReport:
         reports = []
 
         for publication in self.publications:

@@ -36,7 +36,9 @@ async def retry_publication(publication_id) -> Optional[PublisherCoordinatorRepo
         return
 
     logger.info(f"Publication {publication_id} found.")
-    return PublisherCoordinator([publication]).run()
+    reports = PublisherCoordinator([publication]).run()
+
+    await save_publication_report(reports)
 
 
 async def retry_event(

@@ -113,7 +113,7 @@ def event() -> MobilizonEvent:
 
 
 @pytest.fixture
-async def stored_event(event):
+async def stored_event(event) -> Event:
     model = event_to_model(event)
     await model.save()
     await model.fetch_related("publications")
@@ -372,7 +372,7 @@ async def event_with_failed_publication(
 
 
 @pytest.fixture
-async def failed_publication(stored_event):
+async def failed_publication(stored_event) -> Publication:
 
     p = Publication(
         event=stored_event,
