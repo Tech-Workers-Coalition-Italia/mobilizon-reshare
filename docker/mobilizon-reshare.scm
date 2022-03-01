@@ -332,8 +332,7 @@ simplify testing of asynchronous tornado applications.")
                           #:select? (git-predicate %source-dir)))
       (build-system python-build-system)
       (arguments
-       `(#:tests? #f
-         #:phases
+       `(#:phases
          (modify-phases %standard-phases
            (add-after 'unpack 'generate-setup.py
              (lambda* (#:key inputs outputs #:allow-other-keys)
