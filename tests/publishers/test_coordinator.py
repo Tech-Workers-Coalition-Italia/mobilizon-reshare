@@ -178,7 +178,7 @@ async def test_notifier_coordinator_error(
     )
     with caplog.at_level(logging.CRITICAL):
         coordinator.notify_failure()
-        assert "Notifier failed to send" in caplog.text
+        assert "Failed to send" in caplog.text
         assert failure_report.get_failure_message() in caplog.text
     # 4 = 2 reports * 2 notifiers
     assert mock_send.call_count == 2
