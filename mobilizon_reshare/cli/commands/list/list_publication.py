@@ -36,6 +36,11 @@ async def list_publications(
         publications = await publications_with_status(status, from_date=frm, to_date=to)
 
     if publications:
-        show_publications(list(publications))
+        show_publications(publications)
     else:
-        click.echo(f"No publication found with status: {status.name}")
+        message = (
+            f"No publication found with status: {status.name}"
+            if status is not None
+            else "No publication found"
+        )
+        click.echo(message)

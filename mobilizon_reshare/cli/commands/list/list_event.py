@@ -50,8 +50,13 @@ async def list_events(
         events = await list_unpublished_events(frm=frm, to=to)
     else:
         events = await events_with_status([status], from_date=frm, to_date=to)
-
+    events = list(events)
     if events:
         show_events(events)
     else:
-        click.echo(f"No event found with status: {status.name}")
+        message = (
+            f"No event found with status: {status.name}"
+            if status is not None
+            else "No event found"
+        )
+        click.echo(message)
