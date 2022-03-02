@@ -51,7 +51,7 @@ def failure_report(mock_publisher_invalid, event):
 )
 def test_publication_report_successful(statuses, successful):
     reports = []
-    for i, status in enumerate(statuses):
+    for _, status in enumerate(statuses):
         reports.append(
             EventPublicationReport(reason=None, publication=None, status=status)
         )
@@ -112,12 +112,8 @@ async def mock_publications(
 
 @pytest.mark.parametrize("num_publications", [2])
 @pytest.mark.asyncio
-async def test_publication_coordinator_run_success(
-    mock_publications,
-):
-    coordinator = PublisherCoordinator(
-        publications=mock_publications,
-    )
+async def test_publication_coordinator_run_success(mock_publications,):
+    coordinator = PublisherCoordinator(publications=mock_publications,)
     report = coordinator.run()
     assert len(report.reports) == 2
     assert report.successful, "\n".join(map(lambda rep: rep.reason, report.reports))

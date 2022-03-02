@@ -3,6 +3,7 @@ import logging
 import traceback
 from logging.config import dictConfig
 from pathlib import Path
+import sys
 
 from mobilizon_reshare.config.config import get_settings
 from mobilizon_reshare.storage.db import tear_down, MoReDB
@@ -38,4 +39,4 @@ async def _safe_execution(f):
 
 def safe_execution(f):
     code = asyncio.run(_safe_execution(f))
-    exit(code)
+    sys.exit(code)

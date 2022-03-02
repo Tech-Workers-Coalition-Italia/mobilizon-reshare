@@ -18,8 +18,8 @@ def html_to_plaintext(content) -> str:
     p_list = get_bottom_paragraphs(soup)
     if p_list:
         return "\n".join(" ".join(tag.stripped_strings) for tag in p_list)
-    else:
-        return soup.text
+
+    return soup.text
 
 
 def html_to_markdown(content) -> str:

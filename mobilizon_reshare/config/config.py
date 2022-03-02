@@ -36,7 +36,7 @@ def current_version() -> str:
         return fp.read()
 
 
-def get_settings_files_paths():
+def get_settings_files_paths() -> Optional[str]:
 
     dirs = AppDirs(appname="mobilizon-reshare", version=current_version())
     bundled_settings_path = pkg_resources.resource_filename(
@@ -111,7 +111,7 @@ def build_and_validate_settings():
 # better in the future.
 
 
-class CustomConfig(object):
+class CustomConfig:
     @classmethod
     def get_instance(cls):
         if not hasattr(cls, "_instance") or cls._instance is None:

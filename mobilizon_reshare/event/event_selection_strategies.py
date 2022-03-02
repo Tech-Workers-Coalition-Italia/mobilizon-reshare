@@ -19,8 +19,7 @@ class EventSelectionStrategy(ABC):
         selected = self._select(published_events, unpublished_events)
         if selected:
             return selected[0]
-        else:
-            return None
+        return None
 
     @abstractmethod
     def _select(

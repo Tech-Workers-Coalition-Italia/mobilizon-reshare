@@ -32,8 +32,8 @@ with importlib.resources.path(
     os.environ["SECRETS_FOR_DYNACONF"] = str(bundled_secrets_path)
 
 
-def generate_publication_status(published):
-    return PublicationStatus.COMPLETED if published else PublicationStatus.WAITING
+def generate_publication_status(published) -> PublicationStatus:
+    return PublicationStatus.COMPLETED if published else PublicationStatus.FAILED
 
 
 def generate_event_status(published):
@@ -49,7 +49,7 @@ def generate_notification_status(published):
 
 
 @pytest.fixture(scope="session", autouse=True)
-def set_dynaconf_environment(request) -> None:
+def set_dynaconf_environment() -> None:
     os.environ["ENV_FOR_DYNACONF"] = "testing"
     os.environ["FORCE_ENV_FOR_DYNACONF"] = "testing"
 

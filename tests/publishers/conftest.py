@@ -84,16 +84,14 @@ def mock_publisher_invalid_response(message_collector):
 
 @pytest.fixture()
 async def mock_active_publishers_config(monkeypatch):
-    p = Publisher(name="zulip")
-    await p.save()
+    publisher = Publisher(name="zulip")
+    await publisher.save()
 
     def _mock_active_pub():
         return ["zulip"]
 
     monkeypatch.setattr(
-        mobilizon_reshare.storage.query.read,
-        "get_active_publishers",
-        _mock_active_pub
+        mobilizon_reshare.storage.query.read, "get_active_publishers", _mock_active_pub
     )
 
-    return p
+    return publisher
