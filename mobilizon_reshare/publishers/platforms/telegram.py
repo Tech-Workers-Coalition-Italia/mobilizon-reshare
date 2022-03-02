@@ -1,3 +1,4 @@
+import re
 from typing import Optional
 
 import pkg_resources
@@ -46,7 +47,11 @@ class TelegramFormatter(AbstractEventFormatter):
             self._log_error("Message is too long", raise_error=InvalidMessage)
 
     def _preprocess_message(self, message: str) -> str:
-
+        """
+        This function converts HTML5 to Telegram's HTML dialect
+        :param message: a HTML5 string
+        :return: a HTML string compatible with Telegram
+        """
         html = BeautifulSoup(message, "html.parser")
         # replacing paragraphs
         for tag in html.findAll(["p", "br"]):
@@ -70,7 +75,8 @@ class TelegramFormatter(AbstractEventFormatter):
         # cleaning html trailing whitespace
         for tag in html.findAll("a"):
             tag["href"] = tag["href"].replace(" ", "").strip().lstrip()
-        return str(html)
+        s = str(html)
+        return re.sub(r"\n{2,}", "\n\n", s).strip()  # remove multiple newlines
 
 
 class TelegramPlatform(AbstractPlatform):
