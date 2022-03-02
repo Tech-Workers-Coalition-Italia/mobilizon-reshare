@@ -1,5 +1,5 @@
 import uuid
-from logging import INFO
+from logging import INFO, ERROR
 
 import pytest
 
@@ -17,7 +17,7 @@ async def test_retry_decision():
     "publisher_class", [pytest.lazy_fixture("mock_publisher_class")]
 )
 @pytest.mark.asyncio
-async def test_retry(
+async def test_retry_event(
     event_with_failed_publication,
     mock_publisher_config,
     message_collector,
@@ -34,7 +34,7 @@ async def test_retry(
     "publisher_class", [pytest.lazy_fixture("mock_publisher_class")]
 )
 @pytest.mark.asyncio
-async def test_retry_no_publications(
+async def test_retry_event_no_publications(
     stored_event, mock_publisher_config, message_collector, caplog
 ):
     with caplog.at_level(INFO):
@@ -47,7 +47,9 @@ async def test_retry_no_publications(
     "publisher_class", [pytest.lazy_fixture("mock_publisher_class")]
 )
 @pytest.mark.asyncio
-async def test_retry_missing_event(mock_publisher_config, message_collector, caplog):
+async def test_retry_event_missing_event(
+    mock_publisher_config, message_collector, caplog
+):
     event_id = uuid.uuid4()
     with caplog.at_level(INFO):
         await retry_event(event_id)
@@ -60,7 +62,7 @@ async def test_retry_missing_event(mock_publisher_config, message_collector, cap
     "publisher_class", [pytest.lazy_fixture("mock_publisher_class")]
 )
 @pytest.mark.asyncio
-async def test_retry_mixed_publications(
+async def test_retry_event_mixed_publications(
     event_with_failed_publication,
     mock_publisher_config,
     message_collector,
@@ -111,3 +113,46 @@ async def test_retry_publication_missing(
         await retry_publication(publication_id)
         assert f"Publication {publication_id} not found.\n" in caplog.text
     assert len(message_collector) == 0
+
+
+@pytest.mark.parametrize(
+    "publisher_class", [pytest.lazy_fixture("mock_publisher_invalid_class")]
+)
+@pytest.mark.asyncio
+async def test_event_retry_failure(
+    event_with_failed_publication,
+    mock_publisher_config,
+    failed_publication: Publication,
+    caplog,
+):
+
+    with caplog.at_level(ERROR):
+        await retry_event(event_with_failed_publication.mobilizon_id)
+        assert (
+            f"Publication {failed_publication.id} failed with status: 0.\nReason: credentials error"
+            in caplog.text
+        )
+
+    p = await Publication.filter(id=failed_publication.id).first()
+    assert p.status == PublicationStatus.FAILED, p.id
+
+
+@pytest.mark.parametrize(
+    "publisher_class", [pytest.lazy_fixture("mock_publisher_invalid_class")]
+)
+@pytest.mark.asyncio
+async def test_publication_retry_failure(
+    event_with_failed_publication,
+    mock_publisher_config,
+    failed_publication: Publication,
+    caplog,
+):
+
+    with caplog.at_level(ERROR):
+        await retry_publication(failed_publication.id)
+        assert (
+            f"Publication {failed_publication.id} failed with status: 0.\nReason: credentials error"
+            in caplog.text
+        )
+    p = await Publication.filter(id=failed_publication.id).first()
+    assert p.status == PublicationStatus.FAILED, p.id

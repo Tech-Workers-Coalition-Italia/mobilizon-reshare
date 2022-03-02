@@ -163,6 +163,10 @@ class AbstractNotifiersCoordinator(AbstractCoordinator):
 
 
 class PublicationFailureNotifiersCoordinator(AbstractNotifiersCoordinator):
+    """
+    Sends a notification of a failure report to the active platforms
+    """
+
     def __init__(self, report: BasePublicationReport, platforms=None):
         self.report = report
         super(PublicationFailureNotifiersCoordinator, self).__init__(
@@ -176,6 +180,10 @@ class PublicationFailureNotifiersCoordinator(AbstractNotifiersCoordinator):
 
 
 class PublicationFailureLoggerCoordinator(PublicationFailureNotifiersCoordinator):
+    """
+    Logs a report to console
+    """
+
     def notify_failure(self):
         if self.report.status == PublicationStatus.FAILED:
             logger.error(self.report.get_failure_message())

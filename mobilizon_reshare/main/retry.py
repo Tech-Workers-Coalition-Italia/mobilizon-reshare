@@ -4,8 +4,8 @@ from uuid import UUID
 
 from mobilizon_reshare.publishers.coordinator import (
     PublisherCoordinator,
-    PublicationFailureNotifiersCoordinator,
     PublisherCoordinatorReport,
+    PublicationFailureLoggerCoordinator,
 )
 from mobilizon_reshare.storage.query.exceptions import EventNotFound
 from mobilizon_reshare.storage.query.read import (
@@ -40,6 +40,10 @@ async def retry_publication(publication_id) -> Optional[PublisherCoordinatorRepo
 
     await save_publication_report(reports)
 
+    for report in reports.reports:
+        if not report.succesful:
+            PublicationFailureLoggerCoordinator(report,).notify_failure()
+
 
 async def retry_event(
     mobilizon_event_id: UUID = None,
@@ -60,4 +64,4 @@ async def retry_event(
     await save_publication_report(reports)
     for report in reports.reports:
         if not report.succesful:
-            PublicationFailureNotifiersCoordinator(report,).notify_failure()
+            PublicationFailureLoggerCoordinator(report,).notify_failure()
