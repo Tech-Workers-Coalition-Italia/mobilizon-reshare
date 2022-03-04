@@ -39,7 +39,7 @@ def generate_publication_status(published):
 
 @pytest.fixture(autouse=True)
 def set_timezone():
-    os.environ["TZ"] = "Europe/Rome"
+    os.environ["TZ"] = "Coordinated Universal Time"
     time.tzset()
 
 
