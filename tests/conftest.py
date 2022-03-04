@@ -2,6 +2,7 @@ import importlib.resources
 import os
 from collections import UserList
 from datetime import datetime, timedelta, timezone
+import time
 from typing import Union
 from uuid import UUID
 
@@ -30,6 +31,12 @@ with importlib.resources.path(
     mobilizon_reshare, ".secrets.toml"
 ) as bundled_secrets_path:
     os.environ["SECRETS_FOR_DYNACONF"] = str(bundled_secrets_path)
+
+
+@pytest.fixture(autouse=True)
+def set_timezone():
+    os.environ["TZ"] = "Europe/Rome"
+    time.tzset()
 
 
 def generate_publication_status(published) -> PublicationStatus:
