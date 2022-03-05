@@ -3,6 +3,7 @@
   #:use-module (guix gexp)
   #:use-module (guix git-download)
   #:use-module (guix packages)
+  #:use-module (guix transformations)
   #:use-module (guix utils)
   #:use-module ((guix licenses) #:prefix license:)
   #:use-module (guix build-system python)
@@ -309,6 +310,12 @@ simplify testing of asynchronous tornado applications.")
      (sha256
        (base32 "0nybbsgaff8ihfh74nhmng6qj74pfpg99njc7ivysphg0lmr63j1"))))))
 
+(define click-8-instead-of-click-7
+  (package-input-rewriting/spec `(("python-click" . ,(const python-click-8.0)))))
+
+(define requests-2.25-instead-of-requests-2.26
+  (package-input-rewriting/spec `(("python-requests" . ,(const python-requests-2.25)))))
+
 (define-public mobilizon-reshare.git
   (let ((source-version (with-input-from-file
                             (string-append %source-dir
@@ -356,19 +363,19 @@ simplify testing of asynchronous tornado applications.")
              python-pytest-lazy-fixture
              python-responses))
       (propagated-inputs
-       (list python-aerich
+       (list (click-8-instead-of-click-7 python-aerich)
              python-aiosqlite
              python-appdirs
              python-arrow
              python-beautifulsoup4
              python-click-8.0
-             dynaconf
-             python-facebook-sdk
+             (click-8-instead-of-click-7 dynaconf)
+             (requests-2.25-instead-of-requests-2.26 python-facebook-sdk)
              python-jinja2
              python-markdownify
              python-requests-2.25
              python-telegram-bot
-             python-tweepy
+             (requests-2.25-instead-of-requests-2.26 python-tweepy)
              python-tortoise-orm-0.18.1))
       (home-page
        "https://github.com/Tech-Workers-Coalition-Italia/mobilizon-reshare")

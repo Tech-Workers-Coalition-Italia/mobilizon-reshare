@@ -33,14 +33,14 @@ with importlib.resources.path(
     os.environ["SECRETS_FOR_DYNACONF"] = str(bundled_secrets_path)
 
 
-@pytest.fixture(autouse=True)
-def set_timezone():
-    os.environ["TZ"] = "Europe/Rome"
-    time.tzset()
-
-
 def generate_publication_status(published) -> PublicationStatus:
     return PublicationStatus.COMPLETED if published else PublicationStatus.FAILED
+
+
+@pytest.fixture(autouse=True)
+def set_timezone():
+    os.environ["TZ"] = "Coordinated Universal Time"
+    time.tzset()
 
 
 def generate_event_status(published):
