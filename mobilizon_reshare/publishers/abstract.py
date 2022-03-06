@@ -5,7 +5,6 @@ from dataclasses import dataclass
 from typing import List, Optional
 from uuid import UUID
 
-import arrow
 from dynaconf.utils.boxing import DynaBox
 from jinja2 import Environment, FileSystemLoader, Template
 
@@ -131,6 +130,7 @@ class AbstractEventFormatter(LoggerMixin, ConfLoaderMixin):
         self._validate_event(event)
         self._validate_message(self.get_message_from_event(event))
 
+    @abstractmethod
     def _preprocess_event(self, event):
         """
         Allows publishers to preprocess events before feeding them to the template

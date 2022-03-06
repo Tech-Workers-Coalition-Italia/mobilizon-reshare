@@ -56,9 +56,7 @@ class FacebookPlatform(AbstractPlatform):
     name = "facebook"
 
     def _get_api(self) -> facebook.GraphAPI:
-        return facebook.GraphAPI(
-            access_token=self.conf["page_access_token"], version="8.0"
-        )
+        return facebook.GraphAPI(access_token=self.conf["page_access_token"])
 
     def _send(self, message: str, event: Optional[MobilizonEvent] = None):
         try:

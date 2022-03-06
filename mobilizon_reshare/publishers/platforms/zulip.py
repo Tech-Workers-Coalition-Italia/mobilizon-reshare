@@ -61,18 +61,6 @@ class ZulipPlatform(AbstractPlatform):
     api_uri = "api/v1/"
     name = "zulip"
 
-    def _send_private(
-        self, message: str, event: Optional[MobilizonEvent] = None
-    ) -> Response:
-        """
-        Send private messages
-        """
-        return requests.post(
-            url=urljoin(self.conf.instance, self.api_uri) + "messages",
-            auth=HTTPBasicAuth(self.conf.bot_email, self.conf.bot_token),
-            data={"type": "private", "to": f"[{self.user_id}]", "content": message},
-        )
-
     def _send(self, message: str, event: Optional[MobilizonEvent] = None) -> Response:
         """
         Send stream messages
@@ -110,18 +98,18 @@ class ZulipPlatform(AbstractPlatform):
                 raise_error=InvalidBot,
             )
 
-    def _validate_response(self, res: Response) -> dict:
+    def _validate_response(self, response: Response) -> dict:
         try:
-            res.raise_for_status()
+            response.raise_for_status()
         except requests.exceptions.HTTPError as e:
-            self._log_debug(str(res))
+            self._log_debug(str(response))
             self._log_error(
                 str(e), raise_error=HTTPResponseError,
             )
 
         # See https://zulip.com/api/rest-error-handling
         try:
-            data = res.json()
+            data = response.json()
         except Exception as e:
             self._log_error(
                 f"Server returned invalid json data: {str(e)}",
@@ -130,7 +118,7 @@ class ZulipPlatform(AbstractPlatform):
 
         if data["result"] == "error":
             self._log_error(
-                f"{res.status_code} Error - {data['msg']}", raise_error=ZulipError,
+                f"{response.status_code} Error - {data['msg']}", raise_error=ZulipError,
             )
 
         return data

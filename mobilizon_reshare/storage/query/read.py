@@ -119,16 +119,10 @@ def _add_date_window(
 @atomic(CONNECTION_NAME)
 async def publications_with_status(
     status: PublicationStatus,
-    event_mobilizon_id: Optional[UUID] = None,
     from_date: Optional[Arrow] = None,
     to_date: Optional[Arrow] = None,
-) -> Iterable[EventPublication]:
+) -> Iterable[Publication]:
     query = Publication.filter(status=status)
-
-    if event_mobilizon_id:
-        query = query.prefetch_related("event").filter(
-            event__mobilizon_id=event_mobilizon_id
-        )
 
     return await prefetch_publication_relations(
         _add_date_window(query, "timestamp", from_date, to_date)
@@ -180,7 +174,7 @@ async def build_publications(event: MobilizonEvent) -> list[EventPublication]:
 @atomic(CONNECTION_NAME)
 async def get_failed_publications_for_event(
     event_mobilizon_id: UUID,
-) -> list[MobilizonEvent]:
+) -> list[EventPublication]:
     event = await get_event(event_mobilizon_id)
     failed_publications = list(
         filter(
@@ -190,7 +184,10 @@ async def get_failed_publications_for_event(
     )
     for p in failed_publications:
         await p.fetch_related("publisher")
-    return list(map(partial(publication_from_orm, event=event), failed_publications))
+    mobilizon_event = event_from_model(event)
+    return list(
+        map(partial(publication_from_orm, event=mobilizon_event), failed_publications)
+    )
 
 
 @atomic(CONNECTION_NAME)
@@ -201,6 +198,8 @@ async def get_publication(publication_id):
         )
         # TODO: this is redundant but there's some prefetch problem otherwise
         publication.event = await get_event(publication.event.mobilizon_id)
-        return publication_from_orm(event=event_from_model(publication.event))
+        return publication_from_orm(
+            event=event_from_model(publication.event), model=publication
+        )
     except DoesNotExist:
         return None

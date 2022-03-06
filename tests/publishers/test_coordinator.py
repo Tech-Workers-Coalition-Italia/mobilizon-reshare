@@ -51,7 +51,7 @@ def failure_report(mock_publisher_invalid, event):
 )
 def test_publication_report_successful(statuses, successful):
     reports = []
-    for i, status in enumerate(statuses):
+    for _, status in enumerate(statuses):
         reports.append(
             EventPublicationReport(reason=None, publication=None, status=status)
         )
@@ -112,12 +112,8 @@ async def mock_publications(
 
 @pytest.mark.parametrize("num_publications", [2])
 @pytest.mark.asyncio
-async def test_publication_coordinator_run_success(
-    mock_publications,
-):
-    coordinator = PublisherCoordinator(
-        publications=mock_publications,
-    )
+async def test_publication_coordinator_run_success(mock_publications,):
+    coordinator = PublisherCoordinator(publications=mock_publications,)
     report = coordinator.run()
     assert len(report.reports) == 2
     assert report.successful, "\n".join(map(lambda rep: rep.reason, report.reports))
@@ -182,7 +178,7 @@ async def test_notifier_coordinator_error(
     )
     with caplog.at_level(logging.CRITICAL):
         coordinator.notify_failure()
-        assert "Notifier failed to send" in caplog.text
+        assert "Failed to send" in caplog.text
         assert failure_report.get_failure_message() in caplog.text
     # 4 = 2 reports * 2 notifiers
     assert mock_send.call_count == 2

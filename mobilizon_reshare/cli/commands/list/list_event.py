@@ -1,4 +1,5 @@
-from typing import Iterable
+from datetime import datetime
+from typing import Iterable, Optional
 
 import click
 from arrow import Arrow
@@ -42,8 +43,13 @@ async def list_unpublished_events(frm: Arrow = None, to: Arrow = None):
 
 
 async def list_events(
-    status: EventPublicationStatus = None, frm: Arrow = None, to: Arrow = None
+    status: EventPublicationStatus = None,
+    frm: Optional[datetime] = None,
+    to: Optional[datetime] = None,
 ):
+
+    frm = Arrow.fromdatetime(frm) if frm else None
+    to = Arrow.fromdatetime(to) if to else None
     if status is None:
         events = await get_all_events(from_date=frm, to_date=to)
     elif status == EventPublicationStatus.WAITING:

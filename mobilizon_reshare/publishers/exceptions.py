@@ -1,8 +1,6 @@
 class PublisherError(Exception):
     """Generic publisher error"""
 
-    pass
-
 
 class InvalidAttribute(PublisherError):
     """Publisher defined with invalid or missing attribute"""

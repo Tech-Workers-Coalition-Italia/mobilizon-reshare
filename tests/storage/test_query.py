@@ -1,10 +1,9 @@
 from datetime import timedelta
-from uuid import UUID
 
 import arrow
 import pytest
 
-from mobilizon_reshare.event.event import MobilizonEvent, EventPublicationStatus
+from mobilizon_reshare.event.event import EventPublicationStatus
 from mobilizon_reshare.models.publication import PublicationStatus
 from mobilizon_reshare.storage.query.read import (
     get_published_events,
@@ -13,9 +12,9 @@ from mobilizon_reshare.storage.query.read import (
     events_without_publications,
     build_publications,
 )
+from tests import today
 from tests.storage import complete_specification, event_0, event_1, event_3
 from tests.storage import result_publication
-from tests import today
 
 
 @pytest.mark.asyncio
@@ -54,19 +53,11 @@ async def test_get_published_events(generate_models):
     ],
 )
 async def test_publications_with_status(
-    status,
-    mobilizon_id,
-    from_date,
-    to_date,
-    expected_result,
-    generate_models,
+    status, mobilizon_id, from_date, to_date, expected_result, generate_models,
 ):
     await generate_models(complete_specification)
     publications = await publications_with_status(
-        status=status,
-        event_mobilizon_id=mobilizon_id,
-        from_date=from_date,
-        to_date=to_date,
+        status=status, from_date=from_date, to_date=to_date,
     )
 
     assert publications == expected_result
@@ -129,13 +120,7 @@ async def test_event_with_status_window(
 @pytest.mark.parametrize(
     "spec, expected_events",
     [
-        (
-            {"event": 2, "publications": [], "publisher": ["zulip"]},
-            [
-                event_0,
-                event_1,
-            ],
-        ),
+        ({"event": 2, "publications": [], "publisher": ["zulip"]}, [event_0, event_1],),
         (
             {
                 "event": 3,
@@ -155,12 +140,7 @@ async def test_event_with_status_window(
             },
             [event_0],
         ),
-        (
-            complete_specification,
-            [
-                event_3,
-            ],
-        ),
+        (complete_specification, [event_3],),
     ],
 )
 async def test_events_without_publications(spec, expected_events, generate_models):
@@ -174,12 +154,7 @@ async def test_events_without_publications(spec, expected_events, generate_model
 @pytest.mark.parametrize(
     "mock_active_publishers, spec, event, n_publications",
     [
-        (
-            [],
-            {"event": 2, "publications": [], "publisher": ["zulip"]},
-            event_0,
-            0,
-        ),
+        ([], {"event": 2, "publications": [], "publisher": ["zulip"]}, event_0, 0,),
         (
             ["zulip"],
             {"event": 2, "publications": [], "publisher": ["zulip"]},

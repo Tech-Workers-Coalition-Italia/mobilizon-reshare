@@ -1,4 +1,5 @@
 import logging
+from abc import abstractmethod, ABC
 from dataclasses import dataclass
 from typing import List, Optional
 
@@ -77,7 +78,7 @@ class PublisherCoordinator:
 
         return self._post()
 
-    def _post(self):
+    def _post(self) -> PublisherCoordinatorReport:
         reports = []
 
         for publication in self.publications:
@@ -122,8 +123,7 @@ class PublisherCoordinator:
         for publication in self.publications:
             reasons = []
             reasons = self._safe_run(
-                reasons,
-                publication.publisher.validate_credentials,
+                reasons, publication.publisher.validate_credentials,
             )
             reasons = self._safe_run(
                 reasons, publication.formatter.validate_event, publication.event
@@ -141,7 +141,7 @@ class PublisherCoordinator:
         return errors
 
 
-class AbstractCoordinator:
+class Sender:
     def __init__(self, message: str, platforms: List[AbstractPlatform] = None):
         self.message = message
         self.platforms = platforms
@@ -151,29 +151,41 @@ class AbstractCoordinator:
             try:
                 platform.send(self.message)
             except Exception as e:
-                logger.critical(f"Notifier failed to send message:\n{self.message}")
+                logger.critical(f"Failed to send message:\n{self.message}")
                 logger.exception(e)
 
 
-class AbstractNotifiersCoordinator(AbstractCoordinator):
-    def __init__(self, message: str, notifiers: List[AbstractPlatform] = None):
-        platforms = notifiers or [
+class AbstractNotifiersCoordinator(ABC):
+    def __init__(self, report, notifiers: List[AbstractPlatform] = None):
+        self.platforms = notifiers or [
             get_notifier_class(notifier)() for notifier in get_active_notifiers()
         ]
-        super(AbstractNotifiersCoordinator, self).__init__(message, platforms)
+        self.report = report
+
+    @abstractmethod
+    def notify_failure(self):
+        pass
 
 
 class PublicationFailureNotifiersCoordinator(AbstractNotifiersCoordinator):
-    def __init__(self, report: BasePublicationReport, platforms=None):
-        self.report = report
-        super(PublicationFailureNotifiersCoordinator, self).__init__(
-            message=report.get_failure_message(), notifiers=platforms
-        )
+    """
+    Sends a notification of a failure report to the active platforms
+    """
 
     def notify_failure(self):
         logger.info("Sending failure notifications")
         if self.report.status == PublicationStatus.FAILED:
-            self.send_to_all()
+            Sender(self.report.get_failure_message(), self.platforms).send_to_all()
+
+
+class PublicationFailureLoggerCoordinator(PublicationFailureNotifiersCoordinator):
+    """
+    Logs a report to console
+    """
+
+    def notify_failure(self):
+        if self.report.status == PublicationStatus.FAILED:
+            logger.error(self.report.get_failure_message())
 
 
 class RecapCoordinator:
@@ -194,15 +206,13 @@ class RecapCoordinator:
                 recap_publication.publisher.send(message)
                 reports.append(
                     BasePublicationReport(
-                        status=PublicationStatus.COMPLETED,
-                        reason=None,
+                        status=PublicationStatus.COMPLETED, reason=None,
                     )
                 )
             except PublisherError as e:
                 reports.append(
                     BasePublicationReport(
-                        status=PublicationStatus.FAILED,
-                        reason=str(e),
+                        status=PublicationStatus.FAILED, reason=str(e),
                     )
                 )
 

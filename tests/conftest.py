@@ -33,8 +33,8 @@ with importlib.resources.path(
     os.environ["SECRETS_FOR_DYNACONF"] = str(bundled_secrets_path)
 
 
-def generate_publication_status(published):
-    return PublicationStatus.COMPLETED if published else PublicationStatus.WAITING
+def generate_publication_status(published) -> PublicationStatus:
+    return PublicationStatus.COMPLETED if published else PublicationStatus.FAILED
 
 
 @pytest.fixture(autouse=True)
@@ -56,7 +56,7 @@ def generate_notification_status(published):
 
 
 @pytest.fixture(scope="session", autouse=True)
-def set_dynaconf_environment(request) -> None:
+def set_dynaconf_environment() -> None:
     os.environ["ENV_FOR_DYNACONF"] = "testing"
     os.environ["FORCE_ENV_FOR_DYNACONF"] = "testing"
 
@@ -120,7 +120,7 @@ def event() -> MobilizonEvent:
 
 
 @pytest.fixture
-async def stored_event(event):
+async def stored_event(event) -> Event:
     model = event_to_model(event)
     await model.save()
     await model.fetch_related("publications")
@@ -379,7 +379,7 @@ async def event_with_failed_publication(
 
 
 @pytest.fixture
-async def failed_publication(stored_event):
+async def failed_publication(stored_event) -> Publication:
 
     p = Publication(
         event=stored_event,

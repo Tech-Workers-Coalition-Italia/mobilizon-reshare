@@ -13,11 +13,10 @@ end_date = begin_date.shift(hours=1)
 
 
 @pytest.fixture()
-def event() -> MobilizonEvent:
-    return MobilizonEvent(
+def event_to_format() -> MobilizonEvent:
+    event = MobilizonEvent(
         name="test event",
         description="<p><h1>description of the event</h1><h1>another header</h1></p>",
-        # "<ul><li>element</li></ul>",
         begin_datetime=begin_date,
         end_datetime=end_date,
         mobilizon_link="http://some_link.com/123",
@@ -26,6 +25,8 @@ def event() -> MobilizonEvent:
         location="location",
         last_update_time=begin_date,
     )
+    print("in fix", event.description, id(event))
+    return event
 
 
 @pytest.mark.parametrize(
@@ -33,7 +34,7 @@ def event() -> MobilizonEvent:
     [
         [
             "facebook",
-            f"""# test event
+            f"""test event
 
 🕒 01 January, {begin_date.format('HH:mm')} - 01 January, {end_date.format('HH:mm')}
 
@@ -61,8 +62,12 @@ Link: http://some_link.com/123
         ],
     ],
 )
-def test_output_format(event, publisher_name, expected_output):
+def test_output_format(
+    event_to_format: MobilizonEvent, publisher_name, expected_output
+):
     assert (
-        get_formatter_class(publisher_name)().get_message_from_event(event).strip()
+        get_formatter_class(publisher_name)()
+        .get_message_from_event(event_to_format)
+        .strip()
         == expected_output.strip()
     )
