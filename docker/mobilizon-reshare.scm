@@ -338,7 +338,7 @@ simplify testing of asynchronous tornado applications.")
              python-facebook-sdk
              python-jinja2
              python-markdownify
-             python-requests-2.25
+             python-requests
              python-telegram-bot
              python-tweepy
              python-tortoise-orm-0.18.1))
