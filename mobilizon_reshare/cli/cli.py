@@ -10,6 +10,7 @@ from mobilizon_reshare.cli.commands.list.list_publication import list_publicatio
 from mobilizon_reshare.cli.commands.recap.main import recap_command as recap_main
 from mobilizon_reshare.cli.commands.start.main import start_command as start_main
 from mobilizon_reshare.cli.commands.pull.main import pull_command as pull_main
+from mobilizon_reshare.cli.commands.publish.main import publish_command as publish_main
 from mobilizon_reshare.config.config import current_version
 from mobilizon_reshare.config.publishers import publisher_names
 from mobilizon_reshare.event.event import EventPublicationStatus
@@ -94,6 +95,11 @@ def pull():
     safe_execution(pull_main,)
 
 
+@mobilizon_reshare.command(help="Select an event and publish it.")
+def publish():
+    safe_execution(publish_main,)
+
+
 @mobilizon_reshare.group(help="Operations that pertain to events")
 def event():
     pass
@@ -139,21 +145,28 @@ def publication_list(status, begin, end):
 @click.argument("event-id", type=click.UUID)
 @click.argument("publisher", type=click.Choice(publisher_names))
 def format(
-    event_id, publisher,
+    event_id,
+    publisher,
 ):
-    safe_execution(functools.partial(format_event, event_id, publisher),)
+    safe_execution(
+        functools.partial(format_event, event_id, publisher),
+    )
 
 
 @event.command(name="retry", help="Retries all the failed publications")
 @click.argument("event-id", type=click.UUID)
 def event_retry(event_id):
-    safe_execution(functools.partial(retry_event_command, event_id),)
+    safe_execution(
+        functools.partial(retry_event_command, event_id),
+    )
 
 
 @publication.command(name="retry", help="Retries a specific publication")
 @click.argument("publication-id", type=click.UUID)
 def publication_retry(publication_id):
-    safe_execution(functools.partial(retry_publication_command, publication_id),)
+    safe_execution(
+        functools.partial(retry_publication_command, publication_id),
+    )
 
 
 if __name__ == "__main__":
