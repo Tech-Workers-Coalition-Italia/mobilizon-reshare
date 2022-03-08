@@ -1,0 +1,22 @@
+import logging.config
+
+from mobilizon_reshare.event.event import MobilizonEvent
+from mobilizon_reshare.mobilizon.events import get_mobilizon_future_events
+
+from mobilizon_reshare.storage.query.write import (
+    create_unpublished_events,
+)
+
+logger = logging.getLogger(__name__)
+
+
+async def pull() -> list[MobilizonEvent]:
+    """
+    Fetches the latest events from Mobilizon and stores them.
+    :return:
+    """
+
+    # Pull future events from Mobilizon
+    future_events = get_mobilizon_future_events()
+    # Store in the DB only the ones we didn't know about
+    return await create_unpublished_events(future_events)

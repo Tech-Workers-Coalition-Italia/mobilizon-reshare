@@ -9,6 +9,7 @@ from mobilizon_reshare.cli.commands.list.list_event import list_events
 from mobilizon_reshare.cli.commands.list.list_publication import list_publications
 from mobilizon_reshare.cli.commands.recap.main import recap_command as recap_main
 from mobilizon_reshare.cli.commands.start.main import start_command as start_main
+from mobilizon_reshare.cli.commands.pull.main import pull_command as pull_main
 from mobilizon_reshare.config.config import current_version
 from mobilizon_reshare.config.publishers import publisher_names
 from mobilizon_reshare.event.event import EventPublicationStatus
@@ -86,6 +87,11 @@ def start(ctx,):
 @mobilizon_reshare.command(help="Publish a recap of already published events.")
 def recap():
     safe_execution(recap_main,)
+
+
+@mobilizon_reshare.command(help="Fetch the latest events from Mobilizon and store them.")
+def pull():
+    safe_execution(pull_main,)
 
 
 @mobilizon_reshare.group(help="Operations that pertain to events")
