@@ -258,16 +258,6 @@ simplify testing of asynchronous tornado applications.")
     (description "We have made you a wrapper you can't refuse")
     (license #f)))
 
-(define-public python-requests-2.25
- (package (inherit python-requests)
-  (version "2.25.1")
-  (source
-   (origin
-     (method url-fetch)
-     (uri (pypi-uri "requests" version))
-     (sha256
-       (base32 "015qflyqsgsz09gnar69s6ga74ivq5kch69s4qxz3904m7a3v5r7"))))))
-
 (define-public python-click-8.0
  (package (inherit python-click)
   (version "8.0.3")
