@@ -45,4 +45,3 @@ async def publish(events: Optional[list[MobilizonEvent]] = None):
         return reports
     else:
         logger.info("No event to publish found")
-        return []

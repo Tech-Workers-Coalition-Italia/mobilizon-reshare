@@ -12,5 +12,4 @@ async def start():
     :return:
     """
     events = await pull()
-    reports = await publish(events)
-    return 0 if reports and reports.successful else 1
+    return await publish(events)

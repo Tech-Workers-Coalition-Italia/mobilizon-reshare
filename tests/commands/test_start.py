@@ -43,7 +43,7 @@ async def test_start_new_event(
 ):
     with caplog.at_level(DEBUG):
         # calling the start command
-        assert await start() is None
+        assert await start() is not None
 
         # since the mobilizon_answer contains at least one result, one event to publish must be found and published
         # by the publisher coordinator
@@ -98,7 +98,7 @@ async def test_start_event_from_db(
 
     with caplog.at_level(DEBUG):
         # calling the start command
-        assert await start() is None
+        assert await start() is not None
 
         # since the db contains at least one event, this has to be picked and published
         assert "Event to publish found" in caplog.text
@@ -141,7 +141,7 @@ async def test_start_publisher_failure(
 
     with caplog.at_level(DEBUG):
         # calling the start command
-        assert await start() is None
+        assert await start() is not None
 
         # since the db contains at least one event, this has to be picked and published
 
@@ -172,7 +172,7 @@ async def published_event(event_generator):
     event = event_generator()
     event_model = event_to_model(event)
     await event_model.save()
-    assert await start() is None
+    assert await start() is not None
     await event_model.refresh_from_db()
     await event_model.fetch_related("publications")
     for pub in event_model.publications:
@@ -220,7 +220,7 @@ async def test_start_second_execution(
 
     with caplog.at_level(INFO):
         # calling the start command
-        assert await start() is None
+        assert await start() is not None
 
         # verify that the second event gets published
         assert "Event to publish found" in caplog.text
