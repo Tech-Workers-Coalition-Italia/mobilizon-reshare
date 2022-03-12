@@ -30,38 +30,6 @@
              "https://wiki.coopcycle.org/en:license"
              "Coopyleft License")))
 
-(define-public python-tweepy
-  (package
-    (name "python-tweepy")
-    (version "4.1.0")
-    (source
-     (origin
-       (method git-fetch)
-       (uri
-        (git-reference
-         (url "https://github.com/tweepy/tweepy")
-         (commit (string-append "v" version))))
-       (file-name (git-file-name name version))
-       (sha256
-        (base32
-         "1c0paxc38i5jq8i20f9xwv966sap4nnhgnbdxg3611pllnzg5wdv"))))
-    (build-system python-build-system)
-    (arguments
-     `(#:phases
-       (modify-phases %standard-phases
-         (replace 'check
-           (lambda* (#:key tests? #:allow-other-keys)
-             (when tests?
-               (invoke "python" "-m" "unittest")))))))
-    (propagated-inputs
-     (list python-aiohttp python-requests python-requests-oauthlib))
-    (native-inputs
-     (list python-coveralls python-tox python-vcrpy))
-    (home-page "https://www.tweepy.org/")
-    (synopsis "Twitter library for Python")
-    (description "Twitter library for Python")
-    (license license:expat)))
-
 (define-public python-facebook-sdk
   (package
     (name "python-facebook-sdk")
@@ -290,16 +258,6 @@ simplify testing of asynchronous tornado applications.")
     (description "We have made you a wrapper you can't refuse")
     (license #f)))
 
-(define-public python-requests-2.25
- (package (inherit python-requests)
-  (version "2.25.1")
-  (source
-   (origin
-     (method url-fetch)
-     (uri (pypi-uri "requests" version))
-     (sha256
-       (base32 "015qflyqsgsz09gnar69s6ga74ivq5kch69s4qxz3904m7a3v5r7"))))))
-
 (define-public python-click-8.0
  (package (inherit python-click)
   (version "8.0.3")
@@ -312,9 +270,6 @@ simplify testing of asynchronous tornado applications.")
 
 (define click-8-instead-of-click-7
   (package-input-rewriting/spec `(("python-click" . ,(const python-click-8.0)))))
-
-(define requests-2.25-instead-of-requests-2.26
-  (package-input-rewriting/spec `(("python-requests" . ,(const python-requests-2.25)))))
 
 (define-public mobilizon-reshare.git
   (let ((source-version (with-input-from-file
@@ -370,12 +325,12 @@ simplify testing of asynchronous tornado applications.")
              python-beautifulsoup4
              python-click-8.0
              (click-8-instead-of-click-7 dynaconf)
-             (requests-2.25-instead-of-requests-2.26 python-facebook-sdk)
+             python-facebook-sdk
              python-jinja2
              python-markdownify
-             python-requests-2.25
+             python-requests
              python-telegram-bot
-             (requests-2.25-instead-of-requests-2.26 python-tweepy)
+             python-tweepy
              python-tortoise-orm-0.18.1))
       (home-page
        "https://github.com/Tech-Workers-Coalition-Italia/mobilizon-reshare")
