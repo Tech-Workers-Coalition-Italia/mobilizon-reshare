@@ -78,26 +78,40 @@ def mobilizon_reshare(obj):
     pass
 
 
-@mobilizon_reshare.command(help="Synchronize and publish events.")
+@mobilizon_reshare.command(
+    help="Synchronize and publish events. It is equivalent to running consecutively pull and then publish."
+)
 @pass_context
-def start(ctx,):
+def start(
+    ctx,
+):
     ctx.ensure_object(dict)
-    safe_execution(start_main,)
+    safe_execution(
+        start_main,
+    )
 
 
 @mobilizon_reshare.command(help="Publish a recap of already published events.")
 def recap():
-    safe_execution(recap_main,)
+    safe_execution(
+        recap_main,
+    )
 
 
-@mobilizon_reshare.command(help="Fetch the latest events from Mobilizon and store them.")
+@mobilizon_reshare.command(
+    help="Fetch the latest events from Mobilizon and store them."
+)
 def pull():
-    safe_execution(pull_main,)
+    safe_execution(
+        pull_main,
+    )
 
 
 @mobilizon_reshare.command(help="Select an event and publish it.")
 def publish():
-    safe_execution(publish_main,)
+    safe_execution(
+        publish_main,
+    )
 
 
 @mobilizon_reshare.group(help="Operations that pertain to events")
@@ -118,7 +132,10 @@ def event_list(status, begin, end):
 
     safe_execution(
         functools.partial(
-            list_events, status_name_to_enum["event"][status], frm=begin, to=end,
+            list_events,
+            status_name_to_enum["event"][status],
+            frm=begin,
+            to=end,
         ),
     )
 
