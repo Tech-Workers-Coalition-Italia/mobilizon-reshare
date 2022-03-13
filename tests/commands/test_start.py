@@ -6,7 +6,7 @@ import pytest
 
 from mobilizon_reshare.storage.query.converter import event_from_model, event_to_model
 from mobilizon_reshare.storage.query.read import get_all_events
-from tests.commands.conftest import simple_event_element
+from tests.commands.conftest import simple_event_element, second_event_element
 from mobilizon_reshare.event.event import EventPublicationStatus
 from mobilizon_reshare.main.start import start
 from mobilizon_reshare.models.event import Event
@@ -179,22 +179,6 @@ async def published_event(event_generator):
         pub.timestamp = arrow.now().shift(days=-2).datetime
         await pub.save()
     return event_model
-
-
-def second_event_element():
-    return {
-        "beginsOn": "2021-05-23T12:15:00Z",
-        "description": "description of the second event",
-        "endsOn": "2021-05-23T15:15:00Z",
-        "onlineAddress": None,
-        "options": {"showEndTime": True, "showStartTime": True},
-        "physicalAddress": None,
-        "picture": None,
-        "title": "test event",
-        "url": "https://some_mobilizon/events/1e2e5943-4a5c-497a-b65d-90457b715d7b",
-        "uuid": str(uuid.uuid4()),
-        "updatedAt": "2021-05-23T12:15:00Z",
-    }
 
 
 @pytest.mark.asyncio

@@ -28,6 +28,22 @@ def simple_event_element():
     }
 
 
+def second_event_element():
+    return {
+        "beginsOn": "2021-06-07T05:00:00Z",
+        "description": "desc_1",
+        "endsOn": "2021-06-07T07:00:00Z",
+        "onlineAddress": None,
+        "options": {"showEndTime": True, "showStartTime": True},
+        "physicalAddress": "loc_1",
+        "picture": "https://example.org/thumblink_1",
+        "title": "event_1",
+        "url": "https://example.org/moblink_1",
+        "uuid": str(uuid.UUID(int=1)),
+        "updatedAt": "2021-06-07T05:00:00Z",
+    }
+
+
 @pytest.fixture
 def mobilizon_answer(elements):
     return {"data": {"group": {"organizedEvents": {"elements": elements}}}}
