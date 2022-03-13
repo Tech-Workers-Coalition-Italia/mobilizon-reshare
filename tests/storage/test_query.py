@@ -13,7 +13,8 @@ from mobilizon_reshare.storage.query.read import (
     build_publications,
 )
 from tests import today
-from tests.storage import complete_specification, event_0, event_1, event_3
+from tests.storage import complete_specification
+from tests.conftest import event_0, event_1, event_3
 from tests.storage import result_publication
 
 

@@ -20,14 +20,8 @@ from mobilizon_reshare.storage.query.write import (
 )
 from tests.storage import (
     complete_specification,
-    event_0,
-    event_1,
-    event_2,
-    event_3,
-    event_3_updated,
-    event_6,
 )
-
+from tests.conftest import event_6, event_0, event_1, event_2, event_3, event_3_updated
 
 two_publishers_specification = {"publisher": ["telegram", "twitter"]}
 
