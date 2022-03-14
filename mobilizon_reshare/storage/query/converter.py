@@ -10,7 +10,7 @@ from mobilizon_reshare.models.publication import Publication, PublicationStatus
 from mobilizon_reshare.publishers.abstract import EventPublication
 
 
-def event_from_model(event: Event, tz: str = "UTC"):
+def event_from_model(event: Event):
 
     publication_status = compute_event_status(list(event.publications))
     publication_time = {}
@@ -18,27 +18,19 @@ def event_from_model(event: Event, tz: str = "UTC"):
     for pub in event.publications:
         if publication_status != EventPublicationStatus.WAITING:
             assert pub.timestamp is not None
-            publication_time[pub.publisher.name] = arrow.get(
-                tortoise.timezone.localtime(value=pub.timestamp, timezone=tz)
-            ).to("local")
+            publication_time[pub.publisher.name] = arrow.get(pub.timestamp).to("local")
     return MobilizonEvent(
         name=event.name,
         description=event.description,
-        begin_datetime=arrow.get(
-            tortoise.timezone.localtime(value=event.begin_datetime, timezone=tz)
-        ).to("local"),
-        end_datetime=arrow.get(
-            tortoise.timezone.localtime(value=event.end_datetime, timezone=tz)
-        ).to("local"),
+        begin_datetime=arrow.get(event.begin_datetime).to("local"),
+        end_datetime=arrow.get(event.end_datetime).to("local"),
         mobilizon_link=event.mobilizon_link,
         mobilizon_id=event.mobilizon_id,
         thumbnail_link=event.thumbnail_link,
         location=event.location,
         publication_time=publication_time,
         status=publication_status,
-        last_update_time=arrow.get(
-            tortoise.timezone.localtime(value=event.last_update_time, timezone=tz)
-        ).to("local"),
+        last_update_time=arrow.get(event.last_update_time).to("local"),
     )
 
 

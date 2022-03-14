@@ -141,7 +141,7 @@ async def test_mobilizon_event_from_model(
         .prefetch_related("publications__publisher")
         .first()
     )
-    event = event_from_model(event=event_db, tz="CET")
+    event = event_from_model(event=event_db)
 
     begin_date_utc = arrow.Arrow(year=2021, month=1, day=1, hour=11, minute=30)
 
@@ -152,7 +152,7 @@ async def test_mobilizon_event_from_model(
     assert event.mobilizon_link == "moblink_1"
     assert event.mobilizon_id == UUID(int=1)
     assert event.thumbnail_link == "thumblink_1"
-    assert event.location == "loc_1"
+    assert event.location == ", loc_1, "
     assert event.publication_time[publisher_model.name] == publication.timestamp
     assert event.status == EventPublicationStatus.PARTIAL
 

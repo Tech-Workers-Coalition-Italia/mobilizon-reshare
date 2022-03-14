@@ -10,6 +10,7 @@ from mobilizon_reshare.models.publisher import Publisher
 import mobilizon_reshare.main.recap
 from mobilizon_reshare.publishers import coordinator
 from tests import today
+from tests.conftest import event_1, event_0
 
 
 def simple_event_element():
@@ -28,19 +29,35 @@ def simple_event_element():
     }
 
 
-def second_event_element():
+def first_event_element():
     return {
-        "beginsOn": "2021-06-07T05:00:00Z",
-        "description": "desc_1",
-        "endsOn": "2021-06-07T07:00:00Z",
+        "beginsOn": event_0.begin_datetime.isoformat(),
+        "description": "desc_0",
+        "endsOn": event_0.end_datetime.isoformat(),
         "onlineAddress": None,
         "options": {"showEndTime": True, "showStartTime": True},
-        "physicalAddress": "loc_1",
-        "picture": "https://example.org/thumblink_1",
+        "physicalAddress": {"description": "", "locality": "loc_0", "region": ""},
+        "picture": {"url": "https://example.org/thumblink_0"},
+        "title": "event_0",
+        "url": "https://example.org/moblink_0",
+        "uuid": str(uuid.UUID(int=0)),
+        "updatedAt": event_0.last_update_time.isoformat(),
+    }
+
+
+def second_event_element():
+    return {
+        "beginsOn": event_1.begin_datetime.isoformat(),
+        "description": "desc_1",
+        "endsOn": event_1.end_datetime.isoformat(),
+        "onlineAddress": None,
+        "options": {"showEndTime": True, "showStartTime": True},
+        "physicalAddress": {"description": "", "locality": "loc_1", "region": ""},
+        "picture": {"url": "https://example.org/thumblink_1"},
         "title": "event_1",
         "url": "https://example.org/moblink_1",
         "uuid": str(uuid.UUID(int=1)),
-        "updatedAt": "2021-06-07T05:00:00Z",
+        "updatedAt": event_1.last_update_time.isoformat(),
     }
 
 

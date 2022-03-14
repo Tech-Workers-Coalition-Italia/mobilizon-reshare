@@ -18,7 +18,7 @@ async def pull() -> list[MobilizonEvent]:
 
     # Pull future events from Mobilizon
     future_events = get_mobilizon_future_events()
-    logger.info(f"Pulled {len(future_events)} from Mobilizon.")
+    logger.info(f"Pulled {len(future_events)} events from Mobilizon.")
     # Store in the DB only the ones we didn't know about
     events = await create_unpublished_events(future_events)
     logger.debug(f"There are now {len(events)} unpublished events.")
