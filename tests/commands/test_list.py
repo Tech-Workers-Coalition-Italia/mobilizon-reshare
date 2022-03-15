@@ -29,11 +29,11 @@ async def test_list_events(capsys, generate_models):
     output = capsys.readouterr()
     assert clean_output(output) == [
         "event_0                    WAITING   00000000-0000-0000-0000-000000000000"
-        "    2021-06-06T05:00:00+00:00    2021-06-06T07:00:00+00:00",
+        "    2021-06-06T03:00:00+00:00    2021-06-06T05:00:00+00:00",
         "event_1                   COMPLETED  00000000-0000-0000-0000-000000000001"
-        "    2021-06-07T05:00:00+00:00    2021-06-07T07:00:00+00:00",
+        "    2021-06-07T03:00:00+00:00    2021-06-07T05:00:00+00:00",
         "event_2                    FAILED    00000000-0000-0000-0000-000000000002"
-        "    2021-06-08T05:00:00+00:00    2021-06-08T07:00:00+00:00",
+        "    2021-06-08T03:00:00+00:00    2021-06-08T05:00:00+00:00",
     ]
 
 
@@ -44,7 +44,7 @@ async def test_list_events_with_status(capsys, generate_models):
     output = capsys.readouterr()
     assert clean_output(output) == [
         "event_0                    WAITING   00000000-0000-0000-0000-000000000000"
-        "    2021-06-06T05:00:00+00:00    2021-06-06T07:00:00+00:00"
+        "    2021-06-06T03:00:00+00:00    2021-06-06T05:00:00+00:00"
     ]
 
 
@@ -54,9 +54,9 @@ async def test_list_publications(capsys, generate_models):
     await list_publications()
     output = capsys.readouterr()
     assert clean_output(output) == [
-        "00000000-0000-0000-0000-000000000000    2021-06-06T05:00:00+00:00           "
+        "00000000-0000-0000-0000-000000000000    2021-06-06T03:00:00+00:00           "
         "COMPLETED    zulip       00000000-0000-0000-0000-000000000001",
-        "00000000-0000-0000-0000-000000000001    2021-06-06T06:00:00+00:00           "
+        "00000000-0000-0000-0000-000000000001    2021-06-06T04:00:00+00:00           "
         "FAILED       zulip       00000000-0000-0000-0000-000000000002",
     ]
 
@@ -65,11 +65,11 @@ async def test_list_publications(capsys, generate_models):
 async def test_list_publications_from_window(capsys, generate_models):
     await generate_models(spec)
     await list_publications(
-        frm=arrow.Arrow(year=2021, month=6, day=6, hour=5, minute=30).datetime
+        frm=arrow.Arrow(year=2021, month=6, day=6, hour=3, minute=30).datetime
     )
     output = capsys.readouterr()
     assert clean_output(output) == [
-        "00000000-0000-0000-0000-000000000001    2021-06-06T06:00:00+00:00           "
+        "00000000-0000-0000-0000-000000000001    2021-06-06T04:00:00+00:00           "
         "FAILED       zulip       00000000-0000-0000-0000-000000000002",
     ]
 
@@ -78,11 +78,11 @@ async def test_list_publications_from_window(capsys, generate_models):
 async def test_list_publications_to_window(capsys, generate_models):
     await generate_models(spec)
     await list_publications(
-        to=arrow.Arrow(year=2021, month=6, day=6, hour=5, minute=30).datetime
+        to=arrow.Arrow(year=2021, month=6, day=6, hour=3, minute=30).datetime
     )
     output = capsys.readouterr()
     assert clean_output(output) == [
-        "00000000-0000-0000-0000-000000000000    2021-06-06T05:00:00+00:00           "
+        "00000000-0000-0000-0000-000000000000    2021-06-06T03:00:00+00:00           "
         "COMPLETED    zulip       00000000-0000-0000-0000-000000000001",
     ]
 
@@ -93,7 +93,7 @@ async def test_list_publications_with_status(capsys, generate_models):
     await list_publications(status=PublicationStatus.FAILED)
     output = capsys.readouterr()
     assert clean_output(output) == [
-        "00000000-0000-0000-0000-000000000001    2021-06-06T06:00:00+00:00           "
+        "00000000-0000-0000-0000-000000000001    2021-06-06T04:00:00+00:00           "
         "FAILED       zulip       00000000-0000-0000-0000-000000000002"
     ]
 

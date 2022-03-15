@@ -6,5 +6,5 @@ today = datetime(
     day=6,
     hour=5,
     minute=0,
-    tzinfo=timezone(timedelta(hours=0)),
+    tzinfo=timezone(timedelta(hours=2)),
 )
