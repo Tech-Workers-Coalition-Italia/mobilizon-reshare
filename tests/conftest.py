@@ -399,6 +399,19 @@ def mock_mobilizon_success_answer(mobilizon_answer, mobilizon_url):
         yield
 
 
+@responses.activate
+@pytest.fixture
+def mock_multiple_success_answer(multiple_answers, mobilizon_url):
+    with responses.RequestsMock() as rsps:
+
+        for answer in multiple_answers:
+            rsps.add(
+                responses.POST, mobilizon_url, json=answer, status=200,
+            )
+
+        yield
+
+
 @pytest.fixture
 def mock_formatter_class():
     class MockFormatter(AbstractEventFormatter):

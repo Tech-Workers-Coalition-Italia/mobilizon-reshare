@@ -67,6 +67,14 @@ def mobilizon_answer(elements):
 
 
 @pytest.fixture
+def multiple_answers(multiple_elements: list[list[dict]]):
+    return [
+        {"data": {"group": {"organizedEvents": {"elements": elements}}}}
+        for elements in multiple_elements
+    ]
+
+
+@pytest.fixture
 async def mock_now(monkeypatch):
     def _mock_now():
         return arrow.get(today)
