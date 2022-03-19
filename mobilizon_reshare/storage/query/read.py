@@ -66,7 +66,8 @@ async def events_with_status(
 
 
 async def get_all_publications(
-    from_date: Optional[Arrow] = None, to_date: Optional[Arrow] = None,
+    from_date: Optional[Arrow] = None,
+    to_date: Optional[Arrow] = None,
 ) -> Iterable[EventPublication]:
     return await prefetch_publication_relations(
         _add_date_window(Publication.all(), "timestamp", from_date, to_date)
@@ -74,14 +75,15 @@ async def get_all_publications(
 
 
 async def get_all_events(
-    from_date: Optional[Arrow] = None, to_date: Optional[Arrow] = None,
-) -> Iterable[MobilizonEvent]:
-    return map(
-        event_from_model,
-        await prefetch_event_relations(
+    from_date: Optional[Arrow] = None,
+    to_date: Optional[Arrow] = None,
+) -> list[MobilizonEvent]:
+    return [
+        event_from_model(event)
+        for event in await prefetch_event_relations(
             _add_date_window(Event.all(), "begin_datetime", from_date, to_date)
-        ),
-    )
+        )
+    ]
 
 
 async def prefetch_event_relations(queryset: QuerySet[Event]) -> list[Event]:
@@ -130,13 +132,14 @@ async def publications_with_status(
 
 
 async def events_without_publications(
-    from_date: Optional[Arrow] = None, to_date: Optional[Arrow] = None,
+    from_date: Optional[Arrow] = None,
+    to_date: Optional[Arrow] = None,
 ) -> list[MobilizonEvent]:
     query = Event.filter(publications__id=None)
     events = await prefetch_event_relations(
         _add_date_window(query, "begin_datetime", from_date, to_date)
     )
-    return list(map(event_from_model, events))
+    return [event_from_model(event) for event in events]
 
 
 async def get_event(event_mobilizon_id: UUID) -> Event:
@@ -168,7 +171,7 @@ async def build_publications(event: MobilizonEvent) -> list[EventPublication]:
         await event_model.build_publication_by_publisher_name(name)
         for name in get_active_publishers()
     ]
-    return list(publication_from_orm(m, dataclasses.replace(event)) for m in models)
+    return [publication_from_orm(m, dataclasses.replace(event)) for m in models]
 
 
 @atomic(CONNECTION_NAME)
