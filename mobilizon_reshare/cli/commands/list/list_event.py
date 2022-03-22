@@ -43,7 +43,7 @@ async def list_unpublished_events(frm: Arrow = None, to: Arrow = None):
 
 
 async def list_events(
-    status: EventPublicationStatus = None,
+    status: Optional[EventPublicationStatus] = None,
     frm: Optional[datetime] = None,
     to: Optional[datetime] = None,
 ):

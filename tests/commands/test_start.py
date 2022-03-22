@@ -1,16 +1,16 @@
-import uuid
 from logging import DEBUG, INFO
 
-import arrow
 import pytest
 
 from mobilizon_reshare.storage.query.converter import event_from_model, event_to_model
 from mobilizon_reshare.storage.query.read import get_all_events
-from tests.commands.conftest import simple_event_element
+from tests.commands.conftest import simple_event_element, second_event_element
 from mobilizon_reshare.event.event import EventPublicationStatus
 from mobilizon_reshare.main.start import start
 from mobilizon_reshare.models.event import Event
 from mobilizon_reshare.models.publication import PublicationStatus
+
+one_published_event_specification = {"event": 1, "publications": [{"event_idx": 0, "publisher_idx": 0, "status": PublicationStatus.COMPLETED}], "publisher": ["telegram", "twitter", "mastodon", "zulip"]}
 
 
 @pytest.mark.asyncio
@@ -43,7 +43,7 @@ async def test_start_new_event(
 ):
     with caplog.at_level(DEBUG):
         # calling the start command
-        assert await start() is None
+        assert await start() is not None
 
         # since the mobilizon_answer contains at least one result, one event to publish must be found and published
         # by the publisher coordinator
@@ -98,7 +98,7 @@ async def test_start_event_from_db(
 
     with caplog.at_level(DEBUG):
         # calling the start command
-        assert await start() is None
+        assert await start() is not None
 
         # since the db contains at least one event, this has to be picked and published
         assert "Event to publish found" in caplog.text
@@ -141,7 +141,7 @@ async def test_start_publisher_failure(
 
     with caplog.at_level(DEBUG):
         # calling the start command
-        assert await start() is None
+        assert await start() is not None
 
         # since the db contains at least one event, this has to be picked and published
 
@@ -166,37 +166,6 @@ async def test_start_publisher_failure(
         assert event_from_model(event_model).status == EventPublicationStatus.FAILED
 
 
-@pytest.fixture
-async def published_event(event_generator):
-
-    event = event_generator()
-    event_model = event_to_model(event)
-    await event_model.save()
-    assert await start() is None
-    await event_model.refresh_from_db()
-    await event_model.fetch_related("publications")
-    for pub in event_model.publications:
-        pub.timestamp = arrow.now().shift(days=-2).datetime
-        await pub.save()
-    return event_model
-
-
-def second_event_element():
-    return {
-        "beginsOn": "2021-05-23T12:15:00Z",
-        "description": "description of the second event",
-        "endsOn": "2021-05-23T15:15:00Z",
-        "onlineAddress": None,
-        "options": {"showEndTime": True, "showStartTime": True},
-        "physicalAddress": None,
-        "picture": None,
-        "title": "test event",
-        "url": "https://some_mobilizon/events/1e2e5943-4a5c-497a-b65d-90457b715d7b",
-        "uuid": str(uuid.uuid4()),
-        "updatedAt": "2021-05-23T12:15:00Z",
-    }
-
-
 @pytest.mark.asyncio
 @pytest.mark.parametrize(
     "publisher_class", [pytest.lazy_fixture("mock_publisher_class")]
@@ -210,22 +179,21 @@ async def test_start_second_execution(
     caplog,
     mock_publisher_config,
     message_collector,
-    event_generator,
-    published_event,
+    generate_models
 ):
-    # the fixture published_event provides an existing event in the db
+    await generate_models(one_published_event_specification)
 
     # I clean the message collector
     message_collector.data = []
 
     with caplog.at_level(INFO):
         # calling the start command
-        assert await start() is None
+        assert await start() is not None
 
         # verify that the second event gets published
         assert "Event to publish found" in caplog.text
         assert message_collector == [
-            "test event|description of the second event",
+            "event_1|desc_1",
         ]
         # I verify that the db event and the new event coming from mobilizon are both in the db
         assert len(list(await get_all_events())) == 2

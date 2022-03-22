@@ -9,6 +9,6 @@
     (map cadr (package-direct-inputs mobilizon-reshare.git))
     (map specification->package+output
        '("git-cal" "man-db" "texinfo"
-         "python-pre-commit"
+         "python-pre-commit" "cloc"
          "ripgrep" "python-semver"
          "fd" "docker-compose"))))

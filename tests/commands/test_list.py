@@ -65,7 +65,7 @@ async def test_list_publications(capsys, generate_models):
 async def test_list_publications_from_window(capsys, generate_models):
     await generate_models(spec)
     await list_publications(
-        frm=arrow.Arrow(year=2021, month=6, day=6, hour=3, minute=30)
+        frm=arrow.Arrow(year=2021, month=6, day=6, hour=3, minute=30).datetime
     )
     output = capsys.readouterr()
     assert clean_output(output) == [
@@ -78,7 +78,7 @@ async def test_list_publications_from_window(capsys, generate_models):
 async def test_list_publications_to_window(capsys, generate_models):
     await generate_models(spec)
     await list_publications(
-        to=arrow.Arrow(year=2021, month=6, day=6, hour=3, minute=30)
+        to=arrow.Arrow(year=2021, month=6, day=6, hour=3, minute=30).datetime
     )
     output = capsys.readouterr()
     assert clean_output(output) == [

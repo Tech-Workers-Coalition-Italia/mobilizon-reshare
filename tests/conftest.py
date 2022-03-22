@@ -163,7 +163,7 @@ def event_model_generator():
             mobilizon_id=UUID(int=idx),
             mobilizon_link=f"moblink_{idx}",
             thumbnail_link=f"thumblink_{idx}",
-            location=f"loc_{idx}",
+            location=f", loc_{idx}, ",
             begin_datetime=begin_date,
             end_datetime=begin_date + timedelta(hours=2),
             last_update_time=begin_date,
@@ -236,9 +236,9 @@ async def _generate_events(specification):
                 name=f"event_{i}",
                 description=f"desc_{i}",
                 mobilizon_id=UUID(int=i),
-                mobilizon_link=f"moblink_{i}",
-                thumbnail_link=f"thumblink_{i}",
-                location=f"loc_{i}",
+                mobilizon_link=f"https://example.org/moblink_{i}",
+                thumbnail_link=f"https://example.org/thumblink_{i}",
+                location=f", loc_{i}, ",
                 begin_datetime=begin_date,
                 end_datetime=begin_date + timedelta(hours=2),
                 last_update_time=begin_date,
@@ -270,6 +270,85 @@ def generate_models():
         await _generate_publications(events, publishers, specification)
 
     return _generate_models
+
+
+event_0 = MobilizonEvent(
+    name="event_0",
+    description="desc_0",
+    mobilizon_id=UUID(int=0),
+    mobilizon_link="https://example.org/moblink_0",
+    thumbnail_link="https://example.org/thumblink_0",
+    location=", loc_0, ",
+    status=EventPublicationStatus.WAITING,
+    begin_datetime=arrow.get(today),
+    end_datetime=arrow.get(today + timedelta(hours=2)),
+    last_update_time=arrow.get(today),
+)
+
+event_1 = MobilizonEvent(
+    name="event_1",
+    description="desc_1",
+    mobilizon_id=UUID(int=1),
+    mobilizon_link="https://example.org/moblink_1",
+    thumbnail_link="https://example.org/thumblink_1",
+    location=", loc_1, ",
+    status=EventPublicationStatus.WAITING,
+    begin_datetime=arrow.get(today + timedelta(days=1)),
+    end_datetime=arrow.get(today + timedelta(days=1) + timedelta(hours=2)),
+    last_update_time=arrow.get(today + timedelta(days=1)),
+)
+
+event_2 = MobilizonEvent(
+    name="event_2",
+    description="desc_2",
+    mobilizon_id=UUID(int=2),
+    mobilizon_link="https://example.org/moblink_2",
+    thumbnail_link="https://example.org/thumblink_2",
+    location=", loc_2, ",
+    status=EventPublicationStatus.WAITING,
+    begin_datetime=arrow.get(today + timedelta(days=2)),
+    end_datetime=arrow.get(today + timedelta(days=2) + timedelta(hours=2)),
+    last_update_time=arrow.get(today + timedelta(days=2)),
+)
+
+event_3 = MobilizonEvent(
+    name="event_3",
+    description="desc_3",
+    mobilizon_id=UUID(int=3),
+    mobilizon_link="https://example.org/moblink_3",
+    thumbnail_link="https://example.org/thumblink_3",
+    location=", loc_3, ",
+    status=EventPublicationStatus.WAITING,
+    begin_datetime=arrow.get(today + timedelta(days=3)),
+    end_datetime=arrow.get(today + timedelta(days=3) + timedelta(hours=2)),
+    last_update_time=arrow.get(today + timedelta(days=3)),
+)
+
+event_3_updated = MobilizonEvent(
+    name="event_3",
+    description="desc_3",
+    mobilizon_id=UUID(int=3),
+    mobilizon_link="https://example.org/moblink_3",
+    thumbnail_link="https://example.org/thumblink_3",
+    location=", loc_6, ",
+    status=EventPublicationStatus.WAITING,
+    begin_datetime=arrow.get(today + timedelta(days=3)),
+    end_datetime=arrow.get(today + timedelta(days=3) + timedelta(hours=2)),
+    last_update_time=arrow.get(today + timedelta(days=4)),
+)
+
+event_6 = MobilizonEvent(
+    name="event_6",
+    description="desc_6",
+    mobilizon_id=UUID(int=6),
+    mobilizon_link="https://example.org/moblink_6",
+    thumbnail_link="https://example.org/thumblink_6",
+    location=", loc_6, ",
+    status=EventPublicationStatus.WAITING,
+    begin_datetime=arrow.get(today + timedelta(days=6)),
+    end_datetime=arrow.get(today + timedelta(days=6) + timedelta(hours=2)),
+    last_update_time=arrow.get(today + timedelta(days=6)),
+)
 
 
 @pytest.fixture()
@@ -317,6 +396,19 @@ def mock_mobilizon_success_answer(mobilizon_answer, mobilizon_url):
         rsps.add(
             responses.POST, mobilizon_url, json=mobilizon_answer, status=200,
         )
+        yield
+
+
+@responses.activate
+@pytest.fixture
+def mock_multiple_success_answer(multiple_answers, mobilizon_url):
+    with responses.RequestsMock() as rsps:
+
+        for answer in multiple_answers:
+            rsps.add(
+                responses.POST, mobilizon_url, json=answer, status=200,
+            )
+
         yield
 
 
