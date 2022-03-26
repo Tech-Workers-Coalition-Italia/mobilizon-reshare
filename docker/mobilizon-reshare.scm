@@ -217,47 +217,6 @@ simplify testing of asynchronous tornado applications.")
     (description "In-process task scheduler with Cron-like capabilities")
     (license license:expat)))
 
-(define-public python-apscheduler-for-telegram-bot
-  (package (inherit python-apscheduler)
-   (version "3.6.3")
-   (source
-     (origin
-       (method url-fetch)
-       (uri (pypi-uri "APScheduler" version))
-       (sha256
-         (base32 "0i72qpqgrgq6bb9vwsac46m7bqb6mq92g5nf2gydmfvgxng25d9v"))))))
-
-(define-public python-telegram-bot
-  (package
-    (name "python-telegram-bot")
-    (version "13.10")
-    (source
-      (origin
-        (method url-fetch)
-        (uri (pypi-uri "python-telegram-bot" version))
-        (sha256
-          (base32 "0ghyq044s0zi67hxwxdjjfvh37wr86pi5kmpq7harx11311mbifj"))))
-    (build-system python-build-system)
-    (arguments
-     ;; FIXME: Most tests require network access. Some of them can
-     ;; be run from the git repository but many still fail due
-     ;; to vendoring of a seemingly heavily patched urllib3.
-     `(#:tests? #f))
-    (native-inputs
-     (list python-beautifulsoup4
-           python-pytest
-           python-flaky))
-    (propagated-inputs
-      (list python-apscheduler-for-telegram-bot
-            python-cachetools
-            python-certifi
-            python-pytz
-            python-tornado-6))
-    (home-page "https://python-telegram-bot.org/")
-    (synopsis "We have made you a wrapper you can't refuse")
-    (description "We have made you a wrapper you can't refuse")
-    (license #f)))
-
 (define-public python-click-8.0
  (package (inherit python-click)
   (version "8.0.3")
@@ -329,7 +288,6 @@ simplify testing of asynchronous tornado applications.")
              python-jinja2
              python-markdownify
              python-requests
-             python-telegram-bot
              python-tweepy
              python-tortoise-orm-0.18.1))
       (home-page

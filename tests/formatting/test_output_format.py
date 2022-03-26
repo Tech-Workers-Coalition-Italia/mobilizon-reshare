@@ -7,7 +7,15 @@ import pytest
 from mobilizon_reshare.event.event import MobilizonEvent
 from mobilizon_reshare.publishers.platforms.platform_mapping import get_formatter_class
 
-begin_date = arrow.get(datetime(year=2021, month=1, day=1, hour=11, minute=30,))
+begin_date = arrow.get(
+    datetime(
+        year=2021,
+        month=1,
+        day=1,
+        hour=11,
+        minute=30,
+    )
+)
 
 end_date = begin_date.shift(hours=1)
 
@@ -44,7 +52,7 @@ def event_to_format() -> MobilizonEvent:
 
 description of the event another header
 
-Link: http://some_link.com/123
+🔗 Link: http://some_link.com/123
 """,
         ],
         [
@@ -58,7 +66,7 @@ Link: http://some_link.com/123
 
 <b>another header</b>
 
-<a href="http://some_link.com/123">Link</a>""",
+🔗 <a href="http://some_link.com/123">Link</a>""",
         ],
     ],
 )

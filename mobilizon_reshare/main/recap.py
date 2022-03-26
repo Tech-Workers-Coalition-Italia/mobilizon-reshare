@@ -29,7 +29,7 @@ async def select_events_to_recap() -> List[MobilizonEvent]:
 
 
 async def recap() -> Optional[BaseCoordinatorReport]:
-    # I want to recap only the events that have been succesfully published and that haven't happened yet
+    # I want to recap only the events that have been successfully published and that haven't happened yet
     events_to_recap = await select_events_to_recap()
 
     if events_to_recap:
