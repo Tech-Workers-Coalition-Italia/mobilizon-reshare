@@ -20,6 +20,9 @@ base_validators = [
     # url of the main Mobilizon instance to download events from
     Validator("source.mobilizon.url", must_exist=True, is_type_of=str),
     Validator("source.mobilizon.group", must_exist=True, is_type_of=str),
+    Validator("db_path", must_exist=True, is_type_of=str),
+    Validator("locale", must_exist=True, is_type_of=str),
+    Validator("log_dir", must_exist=True, is_type_of=str),
 ]
 
 activeness_validators = [

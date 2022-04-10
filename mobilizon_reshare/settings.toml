@@ -1,10 +1,9 @@
 [default]
-debug = true
-default = true
 local_state_dir = "/var/mobilizon_reshare"
 log_dir = "/var/log/mobilizon_reshare"
 db_name = "events.db"
 db_path = "@format {this.local_state_dir}/{this.db_name}"
+locale= "en-us"
 
 [default.source.mobilizon]
 url="https://some_mobilizon"
