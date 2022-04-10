@@ -246,28 +246,31 @@ simplify testing of asynchronous tornado applications.")
                           #:select? (git-predicate %source-dir)))
       (build-system python-build-system)
       (arguments
-       `(#:phases
-         (modify-phases %standard-phases
-           (add-after 'unpack 'generate-setup.py
-             (lambda* (#:key inputs outputs #:allow-other-keys)
-               ;; This is a hack needed to get poetry's
-               ;; setup.py.
-               (setenv "POETRY_VIRTUALENVS_CREATE" "false")
-               (invoke "poetry" "build" "-f" "sdist")
-               (invoke "bash" "-c"
-                       "tar --wildcards -xvf dist/*-`poetry version -s`.tar.gz -O '*/setup.py' > setup.py")))
-           (replace 'check
-             (lambda* (#:key tests? inputs outputs #:allow-other-keys)
-               (when tests?
-                 (setenv "POETRY_VIRTUALENVS_CREATE" "false")
-                 (invoke "./scripts/run_pipeline_tests.sh"))))
-           (add-before 'sanity-check 'set-dummy-config
-             (lambda _
-               ;; This is needed to prevent the tool from
-               ;; crashing at startup during the sanity check.
-               (setenv "SECRETS_FOR_DYNACONF"
-                       (string-append (getcwd)
-                                      "/mobilizon_reshare/.secrets.toml")))))))
+       (list #:phases
+             #~(modify-phases %standard-phases
+                 (add-after 'unpack 'generate-setup.py
+                   (lambda _
+                     ;; This is a hack needed to get poetry's
+                     ;; setup.py.
+                     (setenv "POETRY_VIRTUALENVS_CREATE" "false")
+                     (invoke "poetry" "build" "-f" "sdist")
+                     (invoke "bash" "-c"
+                             "tar --wildcards -xvf dist/*-`poetry version -s`.tar.gz -O '*/setup.py' > setup.py")))
+                 (replace 'check
+                   (lambda* (#:key tests? #:allow-other-keys)
+                     (when tests?
+                       (setenv "POETRY_VIRTUALENVS_CREATE" "false")
+                       (invoke "./scripts/run_pipeline_tests.sh"))))
+                 (add-after 'install 'install-completion-scripts
+                   (lambda _
+                     (copy-recursively "etc" (string-append #$output "/etc"))))
+                 (add-before 'sanity-check 'set-dummy-config
+                   (lambda _
+                     ;; This is needed to prevent the tool from
+                     ;; crashing at startup during the sanity check.
+                     (setenv "SECRETS_FOR_DYNACONF"
+                             (string-append (getcwd)
+                                            "/mobilizon_reshare/.secrets.toml")))))))
       (native-inputs
        (list python-iniconfig
              poetry
