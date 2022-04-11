@@ -6,6 +6,8 @@ from uuid import UUID
 import arrow
 from jinja2 import Template
 
+from mobilizon_reshare.config.config import get_settings
+
 
 class EventPublicationStatus(IntEnum):
     WAITING = 1
@@ -43,7 +45,8 @@ class MobilizonEvent:
             ]
 
     def _fill_template(self, pattern: Template) -> str:
-        return pattern.render(**asdict(self))
+        config = get_settings()
+        return pattern.render(locale=config["locale"], **asdict(self))
 
     def format(self, pattern: Template) -> str:
         return self._fill_template(pattern)
