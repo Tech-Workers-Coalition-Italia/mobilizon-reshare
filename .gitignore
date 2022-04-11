@@ -177,7 +177,6 @@ fabric.properties
 .idea
 */local_testing.toml
 .direnv/
-etc/
 var/
 docker-image.tar.gz
 .guix-root
