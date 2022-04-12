@@ -46,19 +46,46 @@ to_date_option = click.option(
     "--end",
     type=click.DateTime(),
     expose_value=True,
-    help="Include only events that begin before this datetime.",
+    help="Include only events that end before this datetime.",
 )
-event_status_option = click.argument(
+event_status_argument = click.argument(
     "status",
     type=click.Choice(list(status_name_to_enum["event"].keys())),
     default="all",
     expose_value=True,
 )
-publication_status_option = click.argument(
+publication_status_argument = click.argument(
     "status",
     type=click.Choice(list(status_name_to_enum["publication"].keys())),
     default="all",
     expose_value=True,
+)
+event_uuid_option = click.option(
+    "-E",
+    "--event",
+    type=click.UUID,
+    expose_value=True,
+    help="Publish the given event.",
+)
+publication_uuid_option = click.option(
+    "-P",
+    "--publication",
+    type=click.UUID,
+    expose_value=True,
+    help="Publish the given publication.",
+)
+platform_name_option = click.option(
+    "-p",
+    "--platform",
+    type=str,
+    expose_value=True,
+    help="Publish to the given platform. This makes sense only for events.",
+)
+list_supported_option = click.option(
+    "--list-platforms",
+    is_flag=True,
+    default=False,
+    help="Print all supported platforms.",
 )
 
 
@@ -99,7 +126,8 @@ def recap():
 
 
 @mobilizon_reshare.command(
-    help="Fetch the latest events from Mobilizon and store them."
+    help="Fetch the latest events from Mobilizon, store them if they are unknown, "
+    "update them if they are known and changed."
 )
 def pull():
     safe_execution(
@@ -107,10 +135,17 @@ def pull():
     )
 
 
-@mobilizon_reshare.command(help="Select an event and publish it.")
-def publish():
+@mobilizon_reshare.command(
+    help="If no arguments are provided, select an event with the current configured strategy"
+    " and publish it to all active platforms."
+)
+@event_uuid_option
+@publication_uuid_option
+@platform_name_option
+@list_supported_option
+def publish(event, publication, platform, list_platforms):
     safe_execution(
-        publish_main,
+        functools.partial(publish_main, event, publication, platform, list_platforms),
     )
 
 
@@ -125,7 +160,7 @@ def publication():
 
 
 @event.command(help="Query for events in the database.", name="list")
-@event_status_option
+@event_status_argument
 @from_date_option
 @to_date_option
 def event_list(status, begin, end):
@@ -141,7 +176,7 @@ def event_list(status, begin, end):
 
 
 @publication.command(help="Query for publications in the database.", name="list")
-@publication_status_option
+@publication_status_argument
 @from_date_option
 @to_date_option
 def publication_list(status, begin, end):

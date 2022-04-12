@@ -4,7 +4,6 @@ import responses
 
 from mobilizon_reshare.config.config import get_settings
 from mobilizon_reshare.models.publication import PublicationStatus
-from mobilizon_reshare.models.publisher import Publisher
 from mobilizon_reshare.publishers.coordinator import PublisherCoordinator
 from mobilizon_reshare.publishers.exceptions import (
     InvalidEvent,
@@ -14,8 +13,15 @@ from mobilizon_reshare.publishers.exceptions import (
 )
 from mobilizon_reshare.publishers.platforms.zulip import ZulipFormatter, ZulipPublisher
 from mobilizon_reshare.storage.query.converter import event_to_model
-from mobilizon_reshare.storage.query.read import build_publications
+from mobilizon_reshare.storage.query.read import build_publications, get_all_publishers
 
+one_publication_specification = {
+    "event": 1,
+    "publications": [
+        {"event_idx": 0, "publisher_idx": 0, "status": PublicationStatus.COMPLETED},
+    ],
+    "publisher": ["zulip"],
+}
 api_uri = "https://zulip.twc-italia.org/api/v1/"
 users_me = {
     "result": "success",
@@ -83,7 +89,7 @@ def mocked_client_error_response():
 @pytest.fixture
 @pytest.mark.asyncio
 async def setup_db(
-    mock_active_publishers_config, event_model_generator, publication_model_generator
+    generate_models
 ):
     settings = get_settings()
     settings["publisher"]["zulip"][
@@ -91,20 +97,15 @@ async def setup_db(
     ] = "giacomotest2-bot@zulip.twc-italia.org"
     settings["publisher"]["zulip"]["instance"] = "https://zulip.twc-italia.org"
 
-    publisher = await Publisher.filter(name="zulip").first()
-    event = event_model_generator()
-    await event.save()
-    publication = publication_model_generator(
-        event_id=event.id, publisher_id=publisher.id
-    )
-    await publication.save()
+    await generate_models(one_publication_specification)
 
 
 @pytest.fixture
 @pytest.mark.asyncio
-async def unsaved_publications(event):
+async def unsaved_publications(setup_db, event):
     await event_to_model(event).save()
-    return await build_publications(event)
+    publishers = [p.name for p in await get_all_publishers()]
+    return await build_publications(event, publishers)
 
 
 @pytest.mark.asyncio

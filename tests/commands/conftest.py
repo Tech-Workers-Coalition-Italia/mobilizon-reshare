@@ -111,7 +111,7 @@ async def mock_publisher_config(monkeypatch, publisher_class, mock_formatter_cla
     )
 
     monkeypatch.setattr(
-        mobilizon_reshare.storage.query.read, "get_active_publishers", _mock_active_pub
+        mobilizon_reshare.main.publish, "get_active_publishers", _mock_active_pub
     )
 
     monkeypatch.setattr(

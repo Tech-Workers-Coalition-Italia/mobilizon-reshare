@@ -93,7 +93,7 @@ def select_unpublished_events(
 
 def select_event_to_publish(
     published_events: List[MobilizonEvent], unpublished_events: List[MobilizonEvent],
-):
+) -> Optional[MobilizonEvent]:
 
     strategy = STRATEGY_NAME_TO_STRATEGY_CLASS[
         get_settings()["selection"]["strategy"]

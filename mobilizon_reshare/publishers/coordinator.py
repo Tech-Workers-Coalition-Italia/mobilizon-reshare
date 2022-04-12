@@ -156,7 +156,7 @@ class Sender:
 
 
 class AbstractNotifiersCoordinator(ABC):
-    def __init__(self, report, notifiers: List[AbstractPlatform] = None):
+    def __init__(self, report: EventPublicationReport, notifiers: List[AbstractPlatform] = None):
         self.platforms = notifiers or [
             get_notifier_class(notifier)() for notifier in get_active_notifiers()
         ]
