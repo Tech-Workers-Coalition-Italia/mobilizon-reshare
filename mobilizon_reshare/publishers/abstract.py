@@ -108,6 +108,16 @@ class AbstractPlatform(ABC, LoggerMixin, ConfLoaderMixin):
 
 
 class AbstractEventFormatter(LoggerMixin, ConfLoaderMixin):
+    @property
+    @abstractmethod
+    def default_template_path(self):
+        raise
+
+    @property
+    @abstractmethod
+    def default_recap_template_path(self):
+        raise
+
     @abstractmethod
     def _validate_event(self, event: MobilizonEvent) -> None:
         """

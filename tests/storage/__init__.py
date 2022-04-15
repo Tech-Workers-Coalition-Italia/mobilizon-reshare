@@ -5,7 +5,7 @@ from mobilizon_reshare.models.publication import Publication
 from mobilizon_reshare.models.publication import PublicationStatus
 from tests import today
 
-complete_specification = {
+complete_specification: dict = {
     "event": 4,
     "publications": [
         {"event_idx": 0, "publisher_idx": 0, "status": PublicationStatus.COMPLETED},

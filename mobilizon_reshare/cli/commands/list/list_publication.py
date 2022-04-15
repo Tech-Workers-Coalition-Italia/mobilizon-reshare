@@ -34,12 +34,14 @@ async def list_publications(
     to: Optional[datetime] = None,
 ):
 
-    frm = Arrow.fromdatetime(frm) if frm else None
-    to = Arrow.fromdatetime(to) if to else None
+    frm_arrow = Arrow.fromdatetime(frm) if frm else None
+    to_arrow = Arrow.fromdatetime(to) if to else None
     if status is None:
-        publications = await get_all_publications(from_date=frm, to_date=to)
+        publications = await get_all_publications(from_date=frm_arrow, to_date=to_arrow)
     else:
-        publications = await publications_with_status(status, from_date=frm, to_date=to)
+        publications = await publications_with_status(
+            status, from_date=frm_arrow, to_date=to_arrow
+        )
 
     if publications:
         show_publications(publications)

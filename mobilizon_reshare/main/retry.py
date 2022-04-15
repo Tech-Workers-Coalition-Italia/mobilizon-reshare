@@ -33,7 +33,7 @@ async def retry_publication(publication_id) -> Optional[PublisherCoordinatorRepo
     publication = await get_publication(publication_id)
     if not publication:
         logger.info(f"Publication {publication_id} not found.")
-        return
+        return None
 
     logger.info(f"Publication {publication_id} found.")
     reports = PublisherCoordinator([publication]).run()

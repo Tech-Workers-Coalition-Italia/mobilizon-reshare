@@ -48,14 +48,16 @@ async def list_events(
     to: Optional[datetime] = None,
 ):
 
-    frm = Arrow.fromdatetime(frm) if frm else None
-    to = Arrow.fromdatetime(to) if to else None
+    frm_arrow = Arrow.fromdatetime(frm) if frm else None
+    to_arrow = Arrow.fromdatetime(to) if to else None
     if status is None:
-        events = await get_all_events(from_date=frm, to_date=to)
+        events = await get_all_events(from_date=frm_arrow, to_date=to_arrow)
     elif status == EventPublicationStatus.WAITING:
-        events = await list_unpublished_events(frm=frm, to=to)
+        events = await list_unpublished_events(frm=frm_arrow, to=to_arrow)
     else:
-        events = await events_with_status([status], from_date=frm, to_date=to)
+        events = await events_with_status(
+            [status], from_date=frm_arrow, to_date=to_arrow
+        )
     events = list(events)
     if events:
         show_events(events)
