@@ -92,7 +92,7 @@ release-new-version() {
   [ "$verbose" = "1" ] && echo "Committing ${pyproject_toml}, ${completion_dir}, ${docker_compose_yml} and ${version_file}"
   [ "$dryrun" = "0" ] && git add "$docker_compose_yml" \
                                  "${pyproject_toml}" \
-                                 "${completion_dir}"
+                                 "${completion_dir}" \
                                  "${version_file}" && \
                          git commit -m "Release v${next}."
 
