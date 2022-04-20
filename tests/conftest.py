@@ -174,7 +174,9 @@ def event_model_generator():
 
 @pytest.fixture()
 def publisher_model_generator():
-    def _publisher_model_generator(idx=1,):
+    def _publisher_model_generator(
+        idx=1,
+    ):
         return Publisher(name=f"publisher_{idx}", account_ref=f"account_ref_{idx}")
 
     return _publisher_model_generator
@@ -378,6 +380,23 @@ def mock_publisher_class(message_collector):
 
 
 @pytest.fixture
+def mock_zulip_publisher_class(message_collector):
+    class MockPublisher(AbstractPlatform):
+        name = "zulip"
+
+        def _send(self, message, event):
+            message_collector.append(message)
+
+        def _validate_response(self, response):
+            pass
+
+        def validate_credentials(self) -> None:
+            pass
+
+    return MockPublisher
+
+
+@pytest.fixture
 def mock_publisher_valid(message_collector, mock_publisher_class):
 
     return mock_publisher_class()
@@ -394,7 +413,10 @@ def mock_mobilizon_success_answer(mobilizon_answer, mobilizon_url):
     with responses.RequestsMock() as rsps:
 
         rsps.add(
-            responses.POST, mobilizon_url, json=mobilizon_answer, status=200,
+            responses.POST,
+            mobilizon_url,
+            json=mobilizon_answer,
+            status=200,
         )
         yield
 
@@ -406,7 +428,10 @@ def mock_multiple_success_answer(multiple_answers, mobilizon_url):
 
         for answer in multiple_answers:
             rsps.add(
-                responses.POST, mobilizon_url, json=answer, status=200,
+                responses.POST,
+                mobilizon_url,
+                json=answer,
+                status=200,
             )
 
         yield

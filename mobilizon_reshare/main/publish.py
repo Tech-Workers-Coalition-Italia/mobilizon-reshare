@@ -4,6 +4,7 @@ from typing import Optional
 from mobilizon_reshare.event.event import MobilizonEvent
 from mobilizon_reshare.event.event_selection_strategies import select_event_to_publish
 from mobilizon_reshare.publishers import get_active_publishers
+from mobilizon_reshare.publishers.abstract import EventPublication
 from mobilizon_reshare.publishers.coordinator import (
     PublicationFailureNotifiersCoordinator,
     PublisherCoordinatorReport,
@@ -19,7 +20,9 @@ from mobilizon_reshare.storage.query.write import save_publication_report
 logger = logging.getLogger(__name__)
 
 
-async def publish_publications(publications) -> PublisherCoordinatorReport:
+async def publish_publications(
+    publications: list[EventPublication],
+) -> PublisherCoordinatorReport:
     report = PublisherCoordinator(publications).run()
 
     await save_publication_report(report)

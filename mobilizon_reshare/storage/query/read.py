@@ -1,4 +1,3 @@
-import dataclasses
 from functools import partial
 from typing import Iterable, Optional
 from uuid import UUID
@@ -67,7 +66,7 @@ async def events_with_status(
 async def get_all_publications(
     from_date: Optional[Arrow] = None,
     to_date: Optional[Arrow] = None,
-) -> Iterable[EventPublication]:
+) -> Iterable[Publication]:
     return await prefetch_publication_relations(
         _add_date_window(Publication.all(), "timestamp", from_date, to_date)
     )
@@ -180,7 +179,7 @@ async def build_publications(
         await event_model.build_publication_by_publisher_name(name)
         for name in publishers
     ]
-    return [publication_from_orm(m, dataclasses.replace(event)) for m in models]
+    return [publication_from_orm(m, event) for m in models]
 
 
 @atomic(CONNECTION_NAME)
