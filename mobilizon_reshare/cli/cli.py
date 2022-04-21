@@ -11,7 +11,7 @@ from mobilizon_reshare.cli.commands.recap.main import recap_command as recap_mai
 from mobilizon_reshare.cli.commands.start.main import start_command as start_main
 from mobilizon_reshare.cli.commands.pull.main import pull_command as pull_main
 from mobilizon_reshare.cli.commands.publish.main import publish_command as publish_main
-from mobilizon_reshare.config.config import current_version
+from mobilizon_reshare.config.config import current_version, get_settings
 from mobilizon_reshare.config.publishers import publisher_names
 from mobilizon_reshare.event.event import EventPublicationStatus
 from mobilizon_reshare.cli.commands.retry.main import (
@@ -19,6 +19,31 @@ from mobilizon_reshare.cli.commands.retry.main import (
     retry_publication_command,
 )
 from mobilizon_reshare.models.publication import PublicationStatus
+from mobilizon_reshare.publishers import get_active_publishers
+
+
+def test_settings(ctx, param, value):
+    if not value or ctx.resilient_parsing:
+        return
+    get_settings()
+    click.echo("OK!")
+    ctx.exit()
+
+
+def print_version(ctx, param, value):
+    if not value or ctx.resilient_parsing:
+        return
+    click.echo(current_version())
+    ctx.exit()
+
+
+def print_platforms(ctx, param, value):
+    if not value or ctx.resilient_parsing:
+        return
+    for platform in get_active_publishers():
+        click.echo(platform)
+    ctx.exit()
+
 
 status_name_to_enum = {
     "event": {
@@ -84,21 +109,32 @@ platform_name_option = click.option(
 list_supported_option = click.option(
     "--list-platforms",
     is_flag=True,
-    default=False,
-    help="Print all supported platforms.",
+    callback=print_platforms,
+    expose_value=False,
+    is_eager=True,
+    help="Show all active platforms.",
+)
+test_configuration = click.option(
+    "-t",
+    "--test-configuration",
+    is_flag=True,
+    callback=test_settings,
+    expose_value=False,
+    is_eager=True,
+    help="Validate the current configuration.",
 )
 
 
-def print_version(ctx, param, value):
-    if not value or ctx.resilient_parsing:
-        return
-    click.echo(current_version())
-    ctx.exit()
-
-
 @click.group()
+@test_configuration
+@list_supported_option
 @click.option(
-    "--version", is_flag=True, callback=print_version, expose_value=False, is_eager=True
+    "--version",
+    is_flag=True,
+    callback=print_version,
+    expose_value=False,
+    is_eager=True,
+    help="Show the current version.",
 )
 @pass_context
 def mobilizon_reshare(obj):
@@ -142,7 +178,6 @@ def pull():
 @event_uuid_option
 @publication_uuid_option
 @platform_name_option
-@list_supported_option
 def publish(event, publication, platform, list_platforms):
     safe_execution(
         functools.partial(publish_main, event, publication, platform, list_platforms),
