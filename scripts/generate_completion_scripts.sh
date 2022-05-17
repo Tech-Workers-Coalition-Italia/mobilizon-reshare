@@ -10,3 +10,5 @@ scripts/mobilizon-reshare.sh > etc/fish/completions/mobilizon-reshare.fish
 
 export _MOBILIZON_RESHARE_COMPLETE=zsh_source
 scripts/mobilizon-reshare.sh > etc/zsh/mobilizon-reshare-completion.zsh
+
+exit 0

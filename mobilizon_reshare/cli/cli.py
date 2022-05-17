@@ -11,7 +11,7 @@ from mobilizon_reshare.cli.commands.recap.main import recap_command as recap_mai
 from mobilizon_reshare.cli.commands.start.main import start_command as start_main
 from mobilizon_reshare.cli.commands.pull.main import pull_command as pull_main
 from mobilizon_reshare.cli.commands.publish.main import publish_command as publish_main
-from mobilizon_reshare.config.config import current_version
+from mobilizon_reshare.config.config import current_version, get_settings
 from mobilizon_reshare.config.publishers import publisher_names
 from mobilizon_reshare.event.event import EventPublicationStatus
 from mobilizon_reshare.cli.commands.retry.main import (
@@ -19,6 +19,31 @@ from mobilizon_reshare.cli.commands.retry.main import (
     retry_publication_command,
 )
 from mobilizon_reshare.models.publication import PublicationStatus
+from mobilizon_reshare.publishers import get_active_publishers
+
+
+def test_settings(ctx, param, value):
+    if not value or ctx.resilient_parsing:
+        return
+    get_settings()
+    click.echo("OK!")
+    ctx.exit()
+
+
+def print_version(ctx, param, value):
+    if not value or ctx.resilient_parsing:
+        return
+    click.echo(current_version())
+    ctx.exit()
+
+
+def print_platforms(ctx, param, value):
+    if not value or ctx.resilient_parsing:
+        return
+    for platform in get_active_publishers():
+        click.echo(platform)
+    ctx.exit()
+
 
 status_name_to_enum = {
     "event": {
@@ -46,32 +71,70 @@ to_date_option = click.option(
     "--end",
     type=click.DateTime(),
     expose_value=True,
-    help="Include only events that begin before this datetime.",
+    help="Include only events that end before this datetime.",
 )
-event_status_option = click.argument(
+event_status_argument = click.argument(
     "status",
     type=click.Choice(list(status_name_to_enum["event"].keys())),
     default="all",
     expose_value=True,
 )
-publication_status_option = click.argument(
+publication_status_argument = click.argument(
     "status",
     type=click.Choice(list(status_name_to_enum["publication"].keys())),
     default="all",
     expose_value=True,
 )
-
-
-def print_version(ctx, param, value):
-    if not value or ctx.resilient_parsing:
-        return
-    click.echo(current_version())
-    ctx.exit()
+event_uuid_option = click.option(
+    "-E",
+    "--event",
+    type=click.UUID,
+    expose_value=True,
+    help="Publish the given event.",
+)
+publication_uuid_option = click.option(
+    "-P",
+    "--publication",
+    type=click.UUID,
+    expose_value=True,
+    help="Publish the given publication.",
+)
+platform_name_option = click.option(
+    "-p",
+    "--platform",
+    type=str,
+    expose_value=True,
+    help="Publish to the given platform. This makes sense only for events.",
+)
+list_supported_option = click.option(
+    "--list-platforms",
+    is_flag=True,
+    callback=print_platforms,
+    expose_value=False,
+    is_eager=True,
+    help="Show all active platforms.",
+)
+test_configuration = click.option(
+    "-t",
+    "--test-configuration",
+    is_flag=True,
+    callback=test_settings,
+    expose_value=False,
+    is_eager=True,
+    help="Validate the current configuration.",
+)
 
 
 @click.group()
+@test_configuration
+@list_supported_option
 @click.option(
-    "--version", is_flag=True, callback=print_version, expose_value=False, is_eager=True
+    "--version",
+    is_flag=True,
+    callback=print_version,
+    expose_value=False,
+    is_eager=True,
+    help="Show the current version.",
 )
 @pass_context
 def mobilizon_reshare(obj):
@@ -99,7 +162,8 @@ def recap():
 
 
 @mobilizon_reshare.command(
-    help="Fetch the latest events from Mobilizon and store them."
+    help="Fetch the latest events from Mobilizon, store them if they are unknown, "
+    "update them if they are known and changed."
 )
 def pull():
     safe_execution(
@@ -107,7 +171,13 @@ def pull():
     )
 
 
-@mobilizon_reshare.command(help="Select an event and publish it.")
+@mobilizon_reshare.command(
+    help="Select an event with the current configured strategy"
+    " and publish it to all active platforms."
+)
+@event_uuid_option
+@publication_uuid_option
+@platform_name_option
 def publish():
     safe_execution(
         publish_main,
@@ -125,7 +195,7 @@ def publication():
 
 
 @event.command(help="Query for events in the database.", name="list")
-@event_status_option
+@event_status_argument
 @from_date_option
 @to_date_option
 def event_list(status, begin, end):
@@ -141,7 +211,7 @@ def event_list(status, begin, end):
 
 
 @publication.command(help="Query for publications in the database.", name="list")
-@publication_status_option
+@publication_status_argument
 @from_date_option
 @to_date_option
 def publication_list(status, begin, end):

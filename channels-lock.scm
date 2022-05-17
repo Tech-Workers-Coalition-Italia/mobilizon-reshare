@@ -1,11 +1,12 @@
-(use-modules (guix channels))
+(define-module (channels-lock)
+  #:use-module (guix channels))
 
 (list
  (channel
   (name 'guix)
   (url "https://git.savannah.gnu.org/git/guix.git")
   (commit
-   "72abf9b9b82d2f5f34b7d22b7aae6f2398336a93")
+   "61c8d0fe3dd5415de5617a5251d7ff14dd17a545")
   (introduction
    (make-channel-introduction
     "afb9f2752315f131e4ddd44eba02eed403365085"

@@ -1,3 +1,4 @@
-(use-modules (docker mobilizon-reshare))
+(define-module (guix)
+  #:use-module (docker mobilizon-reshare))
 
 mobilizon-reshare.git

@@ -180,7 +180,7 @@ async def test_build_publications(
 ):
     await generate_models(spec)
 
-    publications = list(await build_publications(event))
+    publications = list(await build_publications(event, mock_active_publishers))
 
     assert len(publications) == n_publications
 

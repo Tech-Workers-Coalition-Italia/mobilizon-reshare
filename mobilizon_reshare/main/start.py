@@ -1,7 +1,7 @@
 import logging.config
 from typing import Optional
 
-from mobilizon_reshare.main.publish import publish
+from mobilizon_reshare.main.publish import select_and_publish
 from mobilizon_reshare.main.pull import pull
 from mobilizon_reshare.publishers.coordinator import PublisherCoordinatorReport
 
@@ -14,4 +14,4 @@ async def start() -> Optional[PublisherCoordinatorReport]:
     :return:
     """
     events = await pull()
-    return await publish(events)
+    return await select_and_publish(events)

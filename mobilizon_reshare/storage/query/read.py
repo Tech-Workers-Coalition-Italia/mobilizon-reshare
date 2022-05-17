@@ -1,4 +1,3 @@
-import dataclasses
 from functools import partial
 from typing import Iterable, Optional
 from uuid import UUID
@@ -12,7 +11,6 @@ from mobilizon_reshare.event.event import MobilizonEvent, EventPublicationStatus
 from mobilizon_reshare.models.event import Event
 from mobilizon_reshare.models.publication import Publication, PublicationStatus
 from mobilizon_reshare.models.publisher import Publisher
-from mobilizon_reshare.publishers import get_active_publishers
 from mobilizon_reshare.publishers.abstract import EventPublication
 from mobilizon_reshare.storage.query import CONNECTION_NAME
 from mobilizon_reshare.storage.query.converter import (
@@ -68,7 +66,7 @@ async def events_with_status(
 async def get_all_publications(
     from_date: Optional[Arrow] = None,
     to_date: Optional[Arrow] = None,
-) -> Iterable[EventPublication]:
+) -> Iterable[Publication]:
     return await prefetch_publication_relations(
         _add_date_window(Publication.all(), "timestamp", from_date, to_date)
     )
@@ -84,6 +82,10 @@ async def get_all_events(
             _add_date_window(Event.all(), "begin_datetime", from_date, to_date)
         )
     ]
+
+
+async def get_all_publishers() -> list[Publisher]:
+    return await Publisher.all()
 
 
 async def prefetch_event_relations(queryset: QuerySet[Event]) -> list[Event]:
@@ -152,6 +154,10 @@ async def get_event(event_mobilizon_id: UUID) -> Event:
     return events[0]
 
 
+async def get_mobilizon_event(event_mobilizon_id: UUID) -> MobilizonEvent:
+    return event_from_model(await get_event(event_mobilizon_id))
+
+
 async def get_publisher_by_name(name) -> Publisher:
     return await Publisher.filter(name=name).first()
 
@@ -165,13 +171,15 @@ async def is_known(event: MobilizonEvent) -> bool:
 
 
 @atomic(CONNECTION_NAME)
-async def build_publications(event: MobilizonEvent) -> list[EventPublication]:
+async def build_publications(
+    event: MobilizonEvent, publishers: list[str]
+) -> list[EventPublication]:
     event_model = await get_event(event.mobilizon_id)
     models = [
         await event_model.build_publication_by_publisher_name(name)
-        for name in get_active_publishers()
+        for name in publishers
     ]
-    return [publication_from_orm(m, dataclasses.replace(event)) for m in models]
+    return [publication_from_orm(m, event) for m in models]
 
 
 @atomic(CONNECTION_NAME)
@@ -194,7 +202,7 @@ async def get_failed_publications_for_event(
 
 
 @atomic(CONNECTION_NAME)
-async def get_publication(publication_id):
+async def get_publication(publication_id: UUID):
     try:
         publication = await prefetch_publication_relations(
             Publication.get(id=publication_id).first()
