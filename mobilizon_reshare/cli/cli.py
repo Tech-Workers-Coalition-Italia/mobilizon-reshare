@@ -172,15 +172,15 @@ def pull():
 
 
 @mobilizon_reshare.command(
-    help="If no arguments are provided, select an event with the current configured strategy"
+    help="Select an event with the current configured strategy"
     " and publish it to all active platforms."
 )
 @event_uuid_option
 @publication_uuid_option
 @platform_name_option
-def publish(event, publication, platform, list_platforms):
+def publish():
     safe_execution(
-        functools.partial(publish_main, event, publication, platform, list_platforms),
+        publish_main,
     )
 
 
