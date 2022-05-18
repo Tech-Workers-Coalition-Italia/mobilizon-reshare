@@ -24,7 +24,11 @@
       (version (git-version source-version revision commit))
       (source (local-file %source-dir
                           #:recursive? #t
-                          #:select? (git-predicate %source-dir))))))
+                          #:select? (git-predicate %source-dir)))
+      (propagated-inputs
+       (modify-inputs (package-propagated-inputs mobilizon-reshare)
+        (replace "python-jinja2"
+          python-jinja2))))))
 
 (define-public mobilizon-reshare-scheduler
  (package (inherit mobilizon-reshare.git)
