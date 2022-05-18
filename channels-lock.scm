@@ -3,6 +3,10 @@
 
 (list
  (channel
+  (name 'mobilizon-reshare)
+  (url "https://github.com/fishinthecalculator/mobilizon-reshare-guix")
+  (branch "main"))
+ (channel
   (name 'guix)
   (url "https://git.savannah.gnu.org/git/guix.git")
   (commit

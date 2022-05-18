@@ -1,6 +1,6 @@
 # Beating dependency hell with GNU Guix
 
-`mobilizon-reshare`'s distribution process relies quite a bit upon GNU Guix. It's involved in our CI pipeline, and it builds the [OCI compliant](https://opencontainers.org/) container image available on Docker Hub. It provides us with [inspectable](https://hpc.guix.info/blog/2021/10/when-docker-images-become-fixed-point/), [bit-for-bit reproducible](https://reproducible-builds.org/) and [fully bootstrappable](https://bootstrappable.org) images which in turns allows for strong control on what code is actually bundled within the image and it should prevent entire classes of supply-chain attacks starting from the [Trusting Trust problem](https://www.cs.cmu.edu/~rdriley/487/papers/Thompson_1984_ReflectionsonTrustingTrust.pdf) up until the many recent [attacks](https://www.sonatype.com/resources/state-of-the-software-supply-chain-2021) to many FOSS software registries.
+`mobilizon-reshare`'s distribution process relies quite a bit upon GNU Guix. It's involved in our CI pipeline, and it builds the [OCI compliant](https://opencontainers.org/) container image available on Docker Hub. It provides us with [inspectable](https://hpc.guix.info/blog/2021/10/when-docker-images-become-fixed-point/), [bit-for-bit reproducible](https://reproducible-builds.org/) and [fully bootstrappable](https://bootstrappable.org) images which in turns allows for strong control on what code is actually bundled within the image and it should prevent entire classes of supply-chain attacks starting from the [Trusting Trust attack](https://www.cs.cmu.edu/~rdriley/487/papers/Thompson_1984_ReflectionsonTrustingTrust.pdf) up until the many recent [attacks](https://www.sonatype.com/resources/state-of-the-software-supply-chain-2021) to many FOSS software registries.
 
 To allow for interoperability with the Python ecosystem, we also ship a `pyproject.toml` that we handle with [Poetry](https://python-poetry.org/). The next paragraph will elaborate on the interactions between Poetry and Guix.
 
@@ -18,7 +18,7 @@ To update Python dependencies and test your changes the steps are:
 
 ```shell
 $ poetry update
-$ guix time-machine -C channels-lock.scm -- build -L . mobilizon-reshare.git
+$ guix time-machine -C channels-lock.scm -- build -f guix.scm
 $ scripts/build_docker_image.sh
 ```
 
@@ -27,7 +27,7 @@ If these steps succeed you can safely commit your changes. If Guix fails you hav
 You now have two alternatives:
 
 1. You try to follow the next step about system dependencies. `channels-lock.scm` locks everything: as long as the Guix commit specified in that file does not change, `guix time-machine` will look for the exact same package graph. This means that every time we build the image we get the same exact dependencies we ask for, but this semantics is slightly different from Poetry's lock-file which instead tracks the **latest version** (within the constraints) available on Pypi. Having a more updated Guix version may allow for a more updated mapping of Pypi.
-2. You find the package (or packages) responsible for the mismatch and try to manipulate it to follow Poetry's constraints. This requires some basic Scheme understanding but nothing complex. There are many ways a Guix package can be programmatically manipulated as it's just a structured Scheme record, you can start by looking into [package variants](https://guix.gnu.org/en/manual/devel/en/guix.html#Defining-Package-Variants) or also directly at `docker/mobilizon-reshare.scm`.
+2. You find the package (or packages) responsible for the mismatch and try to manipulate it to follow Poetry's constraints. This requires some basic Scheme understanding but nothing complex. There are many ways a Guix package can be programmatically manipulated as it's just a structured Scheme record, you can start by looking into [package variants](https://guix.gnu.org/en/manual/devel/en/guix.html#Defining-Package-Variants) or also directly at the [channel code](https://github.com/fishinthecalculator/mobilizon-reshare-guix/tree/main/modules/mobilizon-reshare).
 
 ### System dependencies
 
@@ -66,7 +66,7 @@ $ vim channels-lock.scm
 To test our change we can run:
 
 ```shell
-$ guix time-machine -C channels-lock.scm -- build -L . mobilizon-reshare.git
+$ guix time-machine -C channels-lock.scm -- build -f guix.scm
 ```
 
 But a better test would be to build the Docker image, as that actually bundles all required runtime dependencies:

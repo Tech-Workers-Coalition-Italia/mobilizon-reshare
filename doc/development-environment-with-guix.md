@@ -115,4 +115,4 @@ Alternately, see `guix package --search-paths'.
 $
 ```
 
-when you see a message like that you can either run it to make the current shell work with the new packages installed by Guix or just close the current shell and spawn another, this way it'll put Guix packages in the right plache in your `PATH`.
+when you see a message like that you can either run it to make the current shell work with the new packages installed by Guix or just close the current shell and spawn another, this way it'll put Guix packages in the right place in your `PATH`.
