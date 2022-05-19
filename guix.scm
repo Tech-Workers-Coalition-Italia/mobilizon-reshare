@@ -4,6 +4,7 @@
   #:use-module (guix gexp)                  ;; for local-file
   #:use-module (guix packages)
   #:use-module (gnu packages python)
+  #:use-module (gnu packages python-xyz)
   #:use-module (mobilizon-reshare package)
   #:use-module (mobilizon-reshare dependencies)
   #:use-module (ice-9 rdelim)
