@@ -58,9 +58,11 @@ A Publisher is responsible publishing an event or a message on a given platform.
 
 Currently the following publishers are supported:
 
-* Telegram
-* Zulip
-* Twitter
+- Facebook
+- Mastodon
+- Twitter
+- Telegram
+- Zulip
 
 ### Notifier
 

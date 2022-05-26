@@ -37,13 +37,12 @@ commands and their description.
 
 ### Guix package
 
-If you run the Guix package manager you can install `mobilizon_reshare` from the root of the repository by running:
+If you run Guix you can install `mobilizon-reshare` by adding our [Guix channel](https://github.com/fishinthecalculator/mobilizon-reshare-guix#configure) to your `.config/guix/channels.scm`.
 
-``` shell
-$ guix install -L . mobilizon-reshare.git
-```
 
-To use the same dependencies used in CI env:
+
+
+To run `mobilizon-reshare` from master you can run the following command from the root of the repository:
 
 ``` shell
 $ guix time-machine -C channels-lock.scm -- install -L . mobilizon-reshare.git
