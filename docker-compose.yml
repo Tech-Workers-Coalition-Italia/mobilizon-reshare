@@ -1,14 +1,14 @@
 version: "3.7"
 services:
   mobilizon-reshare:
-    image: fishinthecalculator/mobilizon-reshare:v0.3.1
+    image: fishinthecalculator/mobilizon-reshare:v0.3.2
     environment:
-      SECRETS_FOR_DYNACONF: /etc/xdg/mobilizon-reshare/0.3.1/.secrets.toml
+      SECRETS_FOR_DYNACONF: /etc/xdg/mobilizon-reshare/0.3.2/.secrets.toml
       ENV_FOR_DYNACONF: production
       MOBILIZON_RESHARE_INTERVAL: "*/15 10-18 * * 0-4"
     volumes:
-      - ./.secrets.toml:/etc/xdg/mobilizon-reshare/0.3.1/.secrets.toml:ro
-      - ./mobilizon_reshare.toml:/etc/xdg/mobilizon-reshare/0.3.1/mobilizon_reshare.toml:ro
+      - ./.secrets.toml:/etc/xdg/mobilizon-reshare/0.3.2/.secrets.toml:ro
+      - ./mobilizon_reshare.toml:/etc/xdg/mobilizon-reshare/0.3.2/mobilizon_reshare.toml:ro
       - ./var:/var/lib/mobilizon-reshare
       - /etc/localtime:/etc/localtime:ro
       - /etc/timezone:/etc/timezone:ro
