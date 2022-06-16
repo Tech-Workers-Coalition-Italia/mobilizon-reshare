@@ -1,6 +1,7 @@
 import logging.config
 from typing import Optional
 
+from config.command import CommandConfig
 from mobilizon_reshare.event.event import MobilizonEvent
 from mobilizon_reshare.event.event_selection_strategies import select_event_to_publish
 from mobilizon_reshare.publishers import get_active_publishers
@@ -28,9 +29,7 @@ async def publish_publications(
     await save_publication_report(report)
     for publication_report in report.reports:
         if not publication_report.succesful:
-            PublicationFailureNotifiersCoordinator(
-                publication_report,
-            ).notify_failure()
+            PublicationFailureNotifiersCoordinator(publication_report,).notify_failure()
 
     return report
 
@@ -48,6 +47,7 @@ async def publish_event(
 
 
 async def select_and_publish(
+    command_config: CommandConfig,
     unpublished_events: Optional[list[MobilizonEvent]] = None,
 ) -> Optional[PublisherCoordinatorReport]:
     """
@@ -58,8 +58,7 @@ async def select_and_publish(
         unpublished_events = await events_without_publications()
 
     event = select_event_to_publish(
-        list(await get_published_events()),
-        unpublished_events,
+        list(await get_published_events()), unpublished_events,
     )
 
     if event:

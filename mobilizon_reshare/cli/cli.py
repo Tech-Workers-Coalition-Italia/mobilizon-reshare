@@ -3,6 +3,7 @@ import functools
 import click
 from click import pass_context
 
+from config.command import CommandConfig
 from mobilizon_reshare.cli import safe_execution
 from mobilizon_reshare.cli.commands.format.format import format_event
 from mobilizon_reshare.cli.commands.list.list_event import list_events
@@ -144,21 +145,22 @@ def mobilizon_reshare(obj):
 @mobilizon_reshare.command(
     help="Synchronize and publish events. It is equivalent to running consecutively pull and then publish."
 )
+@click.option(
+    "--dry-run",
+    "dry_run",
+    is_flag=True,
+    help="Prevents data to be published to platforms or written to database",
+    default=False,
+)
 @pass_context
-def start(
-    ctx,
-):
-    ctx.ensure_object(dict)
-    safe_execution(
-        start_main,
-    )
+def start(dry_run):
+
+    safe_execution(start_main, CommandConfig(dry_run=dry_run))
 
 
 @mobilizon_reshare.command(help="Publish a recap of already published events.")
 def recap():
-    safe_execution(
-        recap_main,
-    )
+    safe_execution(recap_main,)
 
 
 @mobilizon_reshare.command(
@@ -166,9 +168,7 @@ def recap():
     "update them if they are known and changed."
 )
 def pull():
-    safe_execution(
-        pull_main,
-    )
+    safe_execution(pull_main,)
 
 
 @mobilizon_reshare.command(
@@ -179,9 +179,7 @@ def pull():
 @publication_uuid_option
 @platform_name_option
 def publish():
-    safe_execution(
-        publish_main,
-    )
+    safe_execution(publish_main,)
 
 
 @mobilizon_reshare.group(help="Operations that pertain to events")
@@ -202,10 +200,7 @@ def event_list(status, begin, end):
 
     safe_execution(
         functools.partial(
-            list_events,
-            status_name_to_enum["event"][status],
-            frm=begin,
-            to=end,
+            list_events, status_name_to_enum["event"][status], frm=begin, to=end,
         ),
     )
 
@@ -232,28 +227,21 @@ def publication_list(status, begin, end):
 @click.argument("event-id", type=click.UUID)
 @click.argument("publisher", type=click.Choice(publisher_names))
 def format(
-    event_id,
-    publisher,
+    event_id, publisher,
 ):
-    safe_execution(
-        functools.partial(format_event, event_id, publisher),
-    )
+    safe_execution(functools.partial(format_event, event_id, publisher),)
 
 
 @event.command(name="retry", help="Retries all the failed publications")
 @click.argument("event-id", type=click.UUID)
 def event_retry(event_id):
-    safe_execution(
-        functools.partial(retry_event_command, event_id),
-    )
+    safe_execution(functools.partial(retry_event_command, event_id),)
 
 
 @publication.command(name="retry", help="Retries a specific publication")
 @click.argument("publication-id", type=click.UUID)
 def publication_retry(publication_id):
-    safe_execution(
-        functools.partial(retry_publication_command, publication_id),
-    )
+    safe_execution(functools.partial(retry_publication_command, publication_id),)
 
 
 if __name__ == "__main__":
