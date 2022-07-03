@@ -6,7 +6,7 @@ from logging.config import dictConfig
 from pathlib import Path
 import sys
 
-from config.command import CommandConfig
+from mobilizon_reshare.config.command import CommandConfig
 from mobilizon_reshare.config.config import get_settings
 from mobilizon_reshare.storage.db import tear_down, MoReDB
 
@@ -39,6 +39,9 @@ async def _safe_execution(function):
         return return_code
 
 
-def safe_execution(function, command_config: CommandConfig):
-    code = asyncio.run(_safe_execution(functools.partial(function, command_config)))
+def safe_execution(function, command_config: CommandConfig = None):
+    if command_config:
+        function = functools.partial(function, command_config)
+
+    code = asyncio.run(_safe_execution(function))
     sys.exit(code)

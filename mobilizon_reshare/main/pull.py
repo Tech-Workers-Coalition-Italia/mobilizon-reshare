@@ -1,15 +1,13 @@
 import logging.config
 
-from config.command import CommandConfig
 from mobilizon_reshare.event.event import MobilizonEvent
 from mobilizon_reshare.mobilizon.events import get_mobilizon_future_events
-
 from mobilizon_reshare.storage.query.write import create_unpublished_events
 
 logger = logging.getLogger(__name__)
 
 
-async def pull(command_config: CommandConfig) -> list[MobilizonEvent]:
+async def pull() -> list[MobilizonEvent]:
     """
     Fetches the latest events from Mobilizon and stores them.
     :return:

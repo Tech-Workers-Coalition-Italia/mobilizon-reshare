@@ -1,7 +1,8 @@
+import dataclasses
 import logging
 from abc import abstractmethod, ABC
 from dataclasses import dataclass
-from typing import List, Optional
+from typing import List, Optional, Sequence
 
 from mobilizon_reshare.models.publication import PublicationStatus
 from mobilizon_reshare.publishers import get_active_notifiers
@@ -26,7 +27,6 @@ class BasePublicationReport:
         return self.status == PublicationStatus.COMPLETED
 
     def get_failure_message(self):
-
         return (
             f"Publication failed with status: {self.status}.\n" f"Reason: {self.reason}"
         )
@@ -35,9 +35,9 @@ class BasePublicationReport:
 @dataclass
 class EventPublicationReport(BasePublicationReport):
     publication: EventPublication
+    published_content: Optional[str] = dataclasses.field(default=None)
 
     def get_failure_message(self):
-
         if not self.reason:
             logger.error("Report of failure without reason.", exc_info=True)
 
@@ -60,8 +60,7 @@ class BaseCoordinatorReport:
 
 @dataclass
 class PublisherCoordinatorReport(BaseCoordinatorReport):
-
-    reports: List[EventPublicationReport]
+    reports: Sequence[EventPublicationReport]
     publications: List[EventPublication]
 
 
@@ -94,6 +93,7 @@ class PublisherCoordinator:
                         status=PublicationStatus.COMPLETED,
                         publication=publication,
                         reason=None,
+                        published_content=message,
                     )
                 )
             except PublisherError as e:
@@ -141,6 +141,32 @@ class PublisherCoordinator:
         return errors
 
 
+class DryRunPublisherCoordinator(PublisherCoordinator):
+    def __init__(self, publications: List[EventPublication]):
+        self.publications = publications
+
+    def run(self) -> PublisherCoordinatorReport:
+        errors = self._validate()
+        if errors:
+            coord_report = PublisherCoordinatorReport(
+                reports=errors, publications=self.publications
+            )
+        else:
+            reports = [
+                EventPublicationReport(
+                    status=PublicationStatus.COMPLETED,
+                    publication=publication,
+                    reason=None,
+                )
+                for publication in self.publications
+            ]
+            coord_report = PublisherCoordinatorReport(
+                publications=self.publications, reports=reports
+            )
+
+        return coord_report
+
+
 class Sender:
     def __init__(self, message: str, platforms: List[AbstractPlatform] = None):
         self.message = message
@@ -156,7 +182,9 @@ class Sender:
 
 
 class AbstractNotifiersCoordinator(ABC):
-    def __init__(self, report: EventPublicationReport, notifiers: List[AbstractPlatform] = None):
+    def __init__(
+        self, report: EventPublicationReport, notifiers: List[AbstractPlatform] = None
+    ):
         self.platforms = notifiers or [
             get_notifier_class(notifier)() for notifier in get_active_notifiers()
         ]

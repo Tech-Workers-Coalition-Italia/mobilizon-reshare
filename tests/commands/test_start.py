@@ -2,6 +2,7 @@ from logging import DEBUG, INFO
 
 import pytest
 
+from mobilizon_reshare.config.command import CommandConfig
 from mobilizon_reshare.storage.query.converter import event_from_model, event_to_model
 from mobilizon_reshare.storage.query.read import get_all_events
 from tests.commands.conftest import simple_event_element, second_event_element
@@ -10,7 +11,13 @@ from mobilizon_reshare.main.start import start
 from mobilizon_reshare.models.event import Event
 from mobilizon_reshare.models.publication import PublicationStatus
 
-one_published_event_specification = {"event": 1, "publications": [{"event_idx": 0, "publisher_idx": 0, "status": PublicationStatus.COMPLETED}], "publisher": ["telegram", "twitter", "mastodon", "zulip"]}
+one_published_event_specification = {
+    "event": 1,
+    "publications": [
+        {"event_idx": 0, "publisher_idx": 0, "status": PublicationStatus.COMPLETED}
+    ],
+    "publisher": ["telegram", "twitter", "mastodon", "zulip"],
+}
 
 
 @pytest.mark.asyncio
@@ -18,10 +25,10 @@ one_published_event_specification = {"event": 1, "publications": [{"event_idx": 
     "elements", [[]],
 )
 async def test_start_no_event(
-    mock_mobilizon_success_answer, mobilizon_answer, caplog, elements
+    mock_mobilizon_success_answer, mobilizon_answer, caplog, elements, command_config
 ):
     with caplog.at_level(DEBUG):
-        assert await start() is None
+        assert await start(command_config) is None
         assert "No event to publish found" in caplog.text
 
 
@@ -40,10 +47,11 @@ async def test_start_new_event(
     mock_publisher_config,
     message_collector,
     elements,
+    command_config,
 ):
     with caplog.at_level(DEBUG):
         # calling the start command
-        assert await start() is not None
+        assert await start(command_config) is not None
 
         # since the mobilizon_answer contains at least one result, one event to publish must be found and published
         # by the publisher coordinator
@@ -74,7 +82,9 @@ async def test_start_new_event(
             assert p.status == PublicationStatus.COMPLETED
 
         # the derived status for the event should be COMPLETED
-        assert event_from_model(all_events[0]).status == EventPublicationStatus.COMPLETED
+        assert (
+            event_from_model(all_events[0]).status == EventPublicationStatus.COMPLETED
+        )
 
 
 @pytest.mark.asyncio
@@ -91,6 +101,7 @@ async def test_start_event_from_db(
     mock_publisher_config,
     message_collector,
     event_generator,
+    command_config,
 ):
     event = event_generator()
     event_model = event_to_model(event)
@@ -98,7 +109,7 @@ async def test_start_event_from_db(
 
     with caplog.at_level(DEBUG):
         # calling the start command
-        assert await start() is not None
+        assert await start(command_config) is not None
 
         # since the db contains at least one event, this has to be picked and published
         assert "Event to publish found" in caplog.text
@@ -134,6 +145,7 @@ async def test_start_publisher_failure(
     message_collector,
     event_generator,
     mock_notifier_config,
+    command_config,
 ):
     event = event_generator()
     event_model = event_to_model(event)
@@ -141,7 +153,7 @@ async def test_start_publisher_failure(
 
     with caplog.at_level(DEBUG):
         # calling the start command
-        assert await start() is not None
+        assert await start(command_config) is not None
 
         # since the db contains at least one event, this has to be picked and published
 
@@ -179,7 +191,8 @@ async def test_start_second_execution(
     caplog,
     mock_publisher_config,
     message_collector,
-    generate_models
+    generate_models,
+    command_config,
 ):
     await generate_models(one_published_event_specification)
 
@@ -188,7 +201,7 @@ async def test_start_second_execution(
 
     with caplog.at_level(INFO):
         # calling the start command
-        assert await start() is not None
+        assert await start(command_config) is not None
 
         # verify that the second event gets published
         assert "Event to publish found" in caplog.text
@@ -197,3 +210,42 @@ async def test_start_second_execution(
         ]
         # I verify that the db event and the new event coming from mobilizon are both in the db
         assert len(list(await get_all_events())) == 2
+
+
+@pytest.mark.parametrize(
+    "publisher_class", [pytest.lazy_fixture("mock_publisher_class")]
+)
+@pytest.mark.asyncio
+@pytest.mark.parametrize(
+    "elements",
+    [[simple_event_element()], [simple_event_element(), simple_event_element()]],
+)
+async def test_start_dry_run(
+    mock_mobilizon_success_answer,
+    mobilizon_answer,
+    caplog,
+    mock_publisher_config,
+    message_collector,
+    elements,
+):
+    with caplog.at_level(DEBUG):
+        # calling the start command
+        assert await start(CommandConfig(dry_run=True)) is not None
+
+        assert "Event to publish found" in caplog.text
+        assert (
+            message_collector == []
+        )  # the configured publisher shouldn't be called if in dry run mode
+
+        all_events = (
+            await Event.all()
+            .prefetch_related("publications")
+            .prefetch_related("publications__publisher")
+        )
+
+        # the start command should save all the events in the database
+        assert len(all_events) == len(elements), all_events
+
+        # it should create no publication
+        publications = all_events[0].publications
+        assert len(publications) == 0, publications

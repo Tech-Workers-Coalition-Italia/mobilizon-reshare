@@ -3,7 +3,7 @@ import functools
 import click
 from click import pass_context
 
-from config.command import CommandConfig
+from mobilizon_reshare.config.command import CommandConfig
 from mobilizon_reshare.cli import safe_execution
 from mobilizon_reshare.cli.commands.format.format import format_event
 from mobilizon_reshare.cli.commands.list.list_event import list_events
@@ -149,7 +149,7 @@ def mobilizon_reshare(obj):
     "--dry-run",
     "dry_run",
     is_flag=True,
-    help="Prevents data to be published to platforms or written to database",
+    help="Prevents data to be published to platforms. WARNING: it will download and write new events to the database",
     default=False,
 )
 @pass_context

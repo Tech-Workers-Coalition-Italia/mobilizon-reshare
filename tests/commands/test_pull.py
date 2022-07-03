@@ -24,8 +24,7 @@ one_unpublished_event_specification = {
 
 @pytest.mark.asyncio
 @pytest.mark.parametrize(
-    "elements, expected_result",
-    [[[], []]],
+    "elements, expected_result", [[[], []]],
 )
 async def test_pull_no_event(
     generate_models,
@@ -104,6 +103,7 @@ async def test_pull_start(
     specification,
     expected_pull,
     expected_publish,
+    command_config,
 ):
     await generate_models(specification)
 
@@ -115,7 +115,7 @@ async def test_pull_start(
         assert expected_pull == await get_all_events()
         assert expected_pull == await events_without_publications()
 
-        report = await start()
+        report = await start(command_config)
         assert report.successful
 
         assert f"Event to publish found: {expected_publish.name}" in caplog.text
@@ -135,9 +135,7 @@ async def test_pull_start(
 )
 @pytest.mark.parametrize(
     "elements, specification, expected_result",
-    [
-        [[second_event_element()], one_unpublished_event_specification, event_0],
-    ],
+    [[[second_event_element()], one_unpublished_event_specification, event_0]],
 )
 async def test_start_pull(
     generate_models,
@@ -149,6 +147,7 @@ async def test_start_pull(
     elements,
     specification,
     expected_result,
+    command_config,
 ):
     await generate_models(specification)
 
@@ -156,7 +155,7 @@ async def test_start_pull(
     message_collector.data = []
 
     with caplog.at_level(DEBUG):
-        assert await start()
+        assert await start(command_config)
         assert f"Event to publish found: {expected_result.name}" in caplog.text
         assert await pull()
         assert "There are now 1 unpublished events."
