@@ -22,13 +22,16 @@ one_published_event_specification = {
 
 @pytest.mark.asyncio
 @pytest.mark.parametrize(
+    "dry_run", [True, False]
+)  # the behavior should be identical with and without dry-run
+@pytest.mark.parametrize(
     "elements", [[]],
 )
 async def test_start_no_event(
-    mock_mobilizon_success_answer, mobilizon_answer, caplog, elements, command_config
+    mock_mobilizon_success_answer, mobilizon_answer, caplog, elements, dry_run
 ):
     with caplog.at_level(DEBUG):
-        assert await start(command_config) is None
+        assert await start(CommandConfig(dry_run=dry_run)) is None
         assert "No event to publish found" in caplog.text
 
 
@@ -109,7 +112,13 @@ async def test_start_event_from_db(
 
     with caplog.at_level(DEBUG):
         # calling the start command
-        assert await start(command_config) is not None
+        result = await start(command_config)
+
+        assert result.successful
+        assert len(result.reports) == 1
+        assert (
+            result.reports[0].published_content == "test event|description of the event"
+        )
 
         # since the db contains at least one event, this has to be picked and published
         assert "Event to publish found" in caplog.text
@@ -153,7 +162,11 @@ async def test_start_publisher_failure(
 
     with caplog.at_level(DEBUG):
         # calling the start command
-        assert await start(command_config) is not None
+        result = await start(command_config)
+
+        assert not result.successful
+        assert len(result.reports) == 1
+        assert result.reports[0].published_content is None
 
         # since the db contains at least one event, this has to be picked and published
 
@@ -230,9 +243,16 @@ async def test_start_dry_run(
 ):
     with caplog.at_level(DEBUG):
         # calling the start command
-        assert await start(CommandConfig(dry_run=True)) is not None
+        result = await start(CommandConfig(dry_run=True))
+        assert result.successful
+        assert len(result.reports) == 1
+        assert result.reports[0].published_content is None
 
         assert "Event to publish found" in caplog.text
+        assert (
+            "Executing in dry run mode. No event is going to be published."
+            in caplog.text
+        )
         assert (
             message_collector == []
         )  # the configured publisher shouldn't be called if in dry run mode
@@ -249,3 +269,47 @@ async def test_start_dry_run(
         # it should create no publication
         publications = all_events[0].publications
         assert len(publications) == 0, publications
+
+
+@pytest.mark.parametrize(
+    "publisher_class", [pytest.lazy_fixture("mock_publisher_class")]
+)
+@pytest.mark.asyncio
+@pytest.mark.parametrize(
+    "elements",
+    [[simple_event_element()], [simple_event_element(), simple_event_element()]],
+)
+async def test_start_dry_run_second_execution(
+    mock_mobilizon_success_answer,
+    mobilizon_answer,
+    caplog,
+    mock_publisher_config,
+    message_collector,
+    elements,
+):
+    with caplog.at_level(DEBUG):
+        # calling the start command in dry_run
+        assert await start(CommandConfig(dry_run=True)) is not None
+
+        assert "Event to publish found" in caplog.text
+        assert (
+            "Executing in dry run mode. No event is going to be published."
+            in caplog.text
+        )
+        assert (
+            message_collector == []
+        )  # the configured publisher shouldn't be called if in dry run mode
+
+        # calling the start command in normal mode
+        assert await start(CommandConfig(dry_run=False)) is not None
+        assert message_collector == [
+            "test event|Some description"
+        ]  # the publisher should now have published one message
+        all_events = (
+            await Event.all()
+            .prefetch_related("publications")
+            .prefetch_related("publications__publisher")
+        )
+
+        # verify that the dry run doesn't mistakenly does double saves
+        assert len(all_events) == len(elements), all_events
