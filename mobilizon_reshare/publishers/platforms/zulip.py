@@ -102,7 +102,7 @@ class ZulipPlatform(AbstractPlatform):
         try:
             response.raise_for_status()
         except requests.exceptions.HTTPError as e:
-            self._log_debug(str(response))
+            self._log_debug(str(response.text))
             self._log_error(
                 str(e), raise_error=HTTPResponseError,
             )
