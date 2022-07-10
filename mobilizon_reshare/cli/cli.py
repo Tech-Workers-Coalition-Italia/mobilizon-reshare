@@ -159,8 +159,15 @@ def start(dry_run):
 
 
 @mobilizon_reshare.command(help="Publish a recap of already published events.")
-def recap():
-    safe_execution(recap_main,)
+@click.option(
+    "--dry-run",
+    "dry_run",
+    is_flag=True,
+    help="Prevents data to be published to platforms. WARNING: it will download and write new events to the database",
+    default=False,
+)
+def recap(dry_run):
+    safe_execution(recap_main, CommandConfig(dry_run=dry_run))
 
 
 @mobilizon_reshare.command(

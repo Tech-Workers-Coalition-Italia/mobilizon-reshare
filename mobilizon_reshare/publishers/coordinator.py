@@ -33,6 +33,11 @@ class BasePublicationReport:
 
 
 @dataclass
+class RecapPublicationReport(BasePublicationReport):
+    published_content: Optional[str] = dataclasses.field(default=None)
+
+
+@dataclass
 class EventPublicationReport(BasePublicationReport):
     publication: EventPublication
     published_content: Optional[str] = dataclasses.field(default=None)
@@ -51,7 +56,7 @@ class EventPublicationReport(BasePublicationReport):
 
 @dataclass
 class BaseCoordinatorReport:
-    reports: List[BasePublicationReport]
+    reports: Sequence[BasePublicationReport]
 
     @property
     def successful(self):
@@ -59,9 +64,14 @@ class BaseCoordinatorReport:
 
 
 @dataclass
+class RecapCoordinatorReport(BaseCoordinatorReport):
+    reports: Sequence[RecapPublicationReport]
+
+
+@dataclass
 class PublisherCoordinatorReport(BaseCoordinatorReport):
     reports: Sequence[EventPublicationReport]
-    publications: List[EventPublication]
+    publications: Sequence[EventPublication] = dataclasses.field(default_factory=list)
 
 
 class PublisherCoordinator:
@@ -220,28 +230,39 @@ class RecapCoordinator:
     def __init__(self, recap_publications: List[RecapPublication]):
         self.recap_publications = recap_publications
 
-    def run(self) -> BaseCoordinatorReport:
+    def _build_recap_content(self, recap_publication: RecapPublication):
+        fragments = [recap_publication.formatter.get_recap_header()]
+        for event in recap_publication.events:
+            fragments.append(recap_publication.formatter.get_recap_fragment(event))
+        return "\n\n".join(fragments)
+
+    def _send(self, content, recap_publication):
+        recap_publication.publisher.send(content)
+
+    def run(self) -> RecapCoordinatorReport:
         reports = []
         for recap_publication in self.recap_publications:
             try:
 
-                fragments = [recap_publication.formatter.get_recap_header()]
-                for event in recap_publication.events:
-                    fragments.append(
-                        recap_publication.formatter.get_recap_fragment(event)
-                    )
-                message = "\n\n".join(fragments)
-                recap_publication.publisher.send(message)
+                message = self._build_recap_content(recap_publication)
+                self._send(message, recap_publication)
                 reports.append(
-                    BasePublicationReport(
-                        status=PublicationStatus.COMPLETED, reason=None,
+                    RecapPublicationReport(
+                        status=PublicationStatus.COMPLETED,
+                        reason=None,
+                        published_content=message,
                     )
                 )
             except PublisherError as e:
                 reports.append(
-                    BasePublicationReport(
+                    RecapPublicationReport(
                         status=PublicationStatus.FAILED, reason=str(e),
                     )
                 )
 
-        return BaseCoordinatorReport(reports=reports)
+        return RecapCoordinatorReport(reports=reports)
+
+
+class DryRunRecapCoordinator(RecapCoordinator):
+    def _send(self, content, recap_publication):
+        pass
