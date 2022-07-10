@@ -34,6 +34,7 @@ class BasePublicationReport:
 
 @dataclass
 class RecapPublicationReport(BasePublicationReport):
+    publication: RecapPublication
     published_content: Optional[str] = dataclasses.field(default=None)
 
 
@@ -66,6 +67,18 @@ class BaseCoordinatorReport:
 @dataclass
 class RecapCoordinatorReport(BaseCoordinatorReport):
     reports: Sequence[RecapPublicationReport]
+
+    def __str__(self):
+        platform_messages = []
+        for report in self.reports:
+            intro = f"Message for: {report.publication.publisher.name}"
+            platform_messages.append(
+                f"""{intro}
+{"*"*len(intro)}
+{report.published_content}
+{"-"*80}"""
+            )
+        return "\n".join(platform_messages)
 
 
 @dataclass
@@ -266,12 +279,15 @@ class RecapCoordinator:
                         status=PublicationStatus.COMPLETED,
                         reason=None,
                         published_content=message,
+                        publication=recap_publication,
                     )
                 )
             except PublisherError as e:
                 reports.append(
                     RecapPublicationReport(
-                        status=PublicationStatus.FAILED, reason=str(e),
+                        status=PublicationStatus.FAILED,
+                        reason=str(e),
+                        publication=recap_publication,
                     )
                 )
 

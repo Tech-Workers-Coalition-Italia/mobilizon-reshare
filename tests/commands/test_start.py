@@ -246,7 +246,7 @@ async def test_start_dry_run(
         result = await start(CommandConfig(dry_run=True))
         assert result.successful
         assert len(result.reports) == 1
-        assert result.reports[0].published_content is None
+        assert result.reports[0].published_content == "test event|Some description"
 
         assert "Event to publish found" in caplog.text
         assert (
