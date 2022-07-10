@@ -147,12 +147,10 @@ def mobilizon_reshare(obj):
 )
 @click.option(
     "--dry-run",
-    "dry_run",
     is_flag=True,
     help="Prevents data to be published to platforms. WARNING: it will download and write new events to the database",
     default=False,
 )
-@pass_context
 def start(dry_run):
 
     safe_execution(start_main, CommandConfig(dry_run=dry_run))

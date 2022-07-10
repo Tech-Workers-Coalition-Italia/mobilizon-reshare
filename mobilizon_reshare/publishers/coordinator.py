@@ -73,6 +73,18 @@ class PublisherCoordinatorReport(BaseCoordinatorReport):
     reports: Sequence[EventPublicationReport]
     publications: Sequence[EventPublication] = dataclasses.field(default_factory=list)
 
+    def __str__(self):
+        platform_messages = []
+        for report in self.reports:
+            intro = f"Message for: {report.publication.publisher.name}"
+            platform_messages.append(
+                f"""{intro}
+{"*"*len(intro)}
+{report.published_content}
+{"-"*80}"""
+            )
+        return "\n".join(platform_messages)
+
 
 class PublisherCoordinator:
     def __init__(self, publications: List[EventPublication]):
@@ -167,6 +179,9 @@ class DryRunPublisherCoordinator(PublisherCoordinator):
                     status=PublicationStatus.COMPLETED,
                     publication=publication,
                     reason=None,
+                    published_content=publication.formatter.get_message_from_event(
+                        publication.event
+                    ),
                 )
                 for publication in self.publications
             ]
