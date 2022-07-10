@@ -1,4 +1,4 @@
-from cli.commands import print_reports
+from mobilizon_reshare.cli.commands import print_reports
 from mobilizon_reshare.config.command import CommandConfig
 from mobilizon_reshare.main.start import start
 
