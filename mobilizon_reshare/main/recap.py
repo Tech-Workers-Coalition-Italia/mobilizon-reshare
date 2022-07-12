@@ -3,6 +3,7 @@ from typing import Optional, List
 
 from arrow import now
 
+from mobilizon_reshare.config.command import CommandConfig
 from mobilizon_reshare.event.event import EventPublicationStatus, MobilizonEvent
 from mobilizon_reshare.publishers import get_active_publishers
 from mobilizon_reshare.publishers.abstract import RecapPublication
@@ -16,6 +17,7 @@ from mobilizon_reshare.publishers.platforms.platform_mapping import (
     get_formatter_class,
 )
 from mobilizon_reshare.storage.query.read import events_with_status
+from mobilizon_reshare.publishers.coordinator import DryRunRecapCoordinator
 
 logger = logging.getLogger(__name__)
 
@@ -28,7 +30,7 @@ async def select_events_to_recap() -> List[MobilizonEvent]:
     )
 
 
-async def recap() -> Optional[BaseCoordinatorReport]:
+async def recap(command_config: CommandConfig) -> Optional[BaseCoordinatorReport]:
     # I want to recap only the events that have been successfully published and that haven't happened yet
     events_to_recap = await select_events_to_recap()
 
@@ -42,7 +44,10 @@ async def recap() -> Optional[BaseCoordinatorReport]:
             )
             for publisher in get_active_publishers()
         ]
-        reports = RecapCoordinator(recap_publications).run()
+        if command_config.dry_run:
+            reports = DryRunRecapCoordinator(recap_publications).run()
+        else:
+            reports = RecapCoordinator(recap_publications).run()
 
         for report in reports.reports:
             if report.status == EventPublicationStatus.FAILED:

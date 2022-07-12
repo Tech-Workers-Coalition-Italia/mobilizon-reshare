@@ -1,7 +1,8 @@
+import dataclasses
 import logging
 from abc import abstractmethod, ABC
 from dataclasses import dataclass
-from typing import List, Optional
+from typing import List, Optional, Sequence
 
 from mobilizon_reshare.models.publication import PublicationStatus
 from mobilizon_reshare.publishers import get_active_notifiers
@@ -26,18 +27,23 @@ class BasePublicationReport:
         return self.status == PublicationStatus.COMPLETED
 
     def get_failure_message(self):
-
         return (
             f"Publication failed with status: {self.status}.\n" f"Reason: {self.reason}"
         )
 
 
 @dataclass
+class RecapPublicationReport(BasePublicationReport):
+    publication: RecapPublication
+    published_content: Optional[str] = dataclasses.field(default=None)
+
+
+@dataclass
 class EventPublicationReport(BasePublicationReport):
     publication: EventPublication
+    published_content: Optional[str] = dataclasses.field(default=None)
 
     def get_failure_message(self):
-
         if not self.reason:
             logger.error("Report of failure without reason.", exc_info=True)
 
@@ -51,7 +57,7 @@ class EventPublicationReport(BasePublicationReport):
 
 @dataclass
 class BaseCoordinatorReport:
-    reports: List[BasePublicationReport]
+    reports: Sequence[BasePublicationReport]
 
     @property
     def successful(self):
@@ -59,10 +65,38 @@ class BaseCoordinatorReport:
 
 
 @dataclass
-class PublisherCoordinatorReport(BaseCoordinatorReport):
+class RecapCoordinatorReport(BaseCoordinatorReport):
+    reports: Sequence[RecapPublicationReport]
 
-    reports: List[EventPublicationReport]
-    publications: List[EventPublication]
+    def __str__(self):
+        platform_messages = []
+        for report in self.reports:
+            intro = f"Message for: {report.publication.publisher.name}"
+            platform_messages.append(
+                f"""{intro}
+{"*"*len(intro)}
+{report.published_content}
+{"-"*80}"""
+            )
+        return "\n".join(platform_messages)
+
+
+@dataclass
+class PublisherCoordinatorReport(BaseCoordinatorReport):
+    reports: Sequence[EventPublicationReport]
+    publications: Sequence[EventPublication] = dataclasses.field(default_factory=list)
+
+    def __str__(self):
+        platform_messages = []
+        for report in self.reports:
+            intro = f"Message for: {report.publication.publisher.name}"
+            platform_messages.append(
+                f"""{intro}
+{"*"*len(intro)}
+{report.published_content}
+{"-"*80}"""
+            )
+        return "\n".join(platform_messages)
 
 
 class PublisherCoordinator:
@@ -94,6 +128,7 @@ class PublisherCoordinator:
                         status=PublicationStatus.COMPLETED,
                         publication=publication,
                         reason=None,
+                        published_content=message,
                     )
                 )
             except PublisherError as e:
@@ -141,6 +176,35 @@ class PublisherCoordinator:
         return errors
 
 
+class DryRunPublisherCoordinator(PublisherCoordinator):
+    def __init__(self, publications: List[EventPublication]):
+        self.publications = publications
+
+    def run(self) -> PublisherCoordinatorReport:
+        errors = self._validate()
+        if errors:
+            coord_report = PublisherCoordinatorReport(
+                reports=errors, publications=self.publications
+            )
+        else:
+            reports = [
+                EventPublicationReport(
+                    status=PublicationStatus.COMPLETED,
+                    publication=publication,
+                    reason=None,
+                    published_content=publication.formatter.get_message_from_event(
+                        publication.event
+                    ),
+                )
+                for publication in self.publications
+            ]
+            coord_report = PublisherCoordinatorReport(
+                publications=self.publications, reports=reports
+            )
+
+        return coord_report
+
+
 class Sender:
     def __init__(self, message: str, platforms: List[AbstractPlatform] = None):
         self.message = message
@@ -156,7 +220,9 @@ class Sender:
 
 
 class AbstractNotifiersCoordinator(ABC):
-    def __init__(self, report: EventPublicationReport, notifiers: List[AbstractPlatform] = None):
+    def __init__(
+        self, report: EventPublicationReport, notifiers: List[AbstractPlatform] = None
+    ):
         self.platforms = notifiers or [
             get_notifier_class(notifier)() for notifier in get_active_notifiers()
         ]
@@ -192,28 +258,42 @@ class RecapCoordinator:
     def __init__(self, recap_publications: List[RecapPublication]):
         self.recap_publications = recap_publications
 
-    def run(self) -> BaseCoordinatorReport:
+    def _build_recap_content(self, recap_publication: RecapPublication):
+        fragments = [recap_publication.formatter.get_recap_header()]
+        for event in recap_publication.events:
+            fragments.append(recap_publication.formatter.get_recap_fragment(event))
+        return "\n\n".join(fragments)
+
+    def _send(self, content, recap_publication):
+        recap_publication.publisher.send(content)
+
+    def run(self) -> RecapCoordinatorReport:
         reports = []
         for recap_publication in self.recap_publications:
             try:
 
-                fragments = [recap_publication.formatter.get_recap_header()]
-                for event in recap_publication.events:
-                    fragments.append(
-                        recap_publication.formatter.get_recap_fragment(event)
-                    )
-                message = "\n\n".join(fragments)
-                recap_publication.publisher.send(message)
+                message = self._build_recap_content(recap_publication)
+                self._send(message, recap_publication)
                 reports.append(
-                    BasePublicationReport(
-                        status=PublicationStatus.COMPLETED, reason=None,
+                    RecapPublicationReport(
+                        status=PublicationStatus.COMPLETED,
+                        reason=None,
+                        published_content=message,
+                        publication=recap_publication,
                     )
                 )
             except PublisherError as e:
                 reports.append(
-                    BasePublicationReport(
-                        status=PublicationStatus.FAILED, reason=str(e),
+                    RecapPublicationReport(
+                        status=PublicationStatus.FAILED,
+                        reason=str(e),
+                        publication=recap_publication,
                     )
                 )
 
-        return BaseCoordinatorReport(reports=reports)
+        return RecapCoordinatorReport(reports=reports)
+
+
+class DryRunRecapCoordinator(RecapCoordinator):
+    def _send(self, content, recap_publication):
+        pass

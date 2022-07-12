@@ -12,6 +12,7 @@ import responses
 from tortoise.contrib.test import finalizer, initializer
 
 import mobilizon_reshare
+from mobilizon_reshare.config.command import CommandConfig
 from mobilizon_reshare.config.config import get_settings
 from mobilizon_reshare.event.event import MobilizonEvent, EventPublicationStatus
 from mobilizon_reshare.models.event import Event
@@ -174,9 +175,7 @@ def event_model_generator():
 
 @pytest.fixture()
 def publisher_model_generator():
-    def _publisher_model_generator(
-        idx=1,
-    ):
+    def _publisher_model_generator(idx=1,):
         return Publisher(name=f"publisher_{idx}", account_ref=f"account_ref_{idx}")
 
     return _publisher_model_generator
@@ -413,10 +412,7 @@ def mock_mobilizon_success_answer(mobilizon_answer, mobilizon_url):
     with responses.RequestsMock() as rsps:
 
         rsps.add(
-            responses.POST,
-            mobilizon_url,
-            json=mobilizon_answer,
-            status=200,
+            responses.POST, mobilizon_url, json=mobilizon_answer, status=200,
         )
         yield
 
@@ -428,10 +424,7 @@ def mock_multiple_success_answer(multiple_answers, mobilizon_url):
 
         for answer in multiple_answers:
             rsps.add(
-                responses.POST,
-                mobilizon_url,
-                json=answer,
-                status=200,
+                responses.POST, mobilizon_url, json=answer, status=200,
             )
 
         yield
@@ -506,3 +499,8 @@ async def failed_publication(stored_event) -> Publication:
     )
     await p.save()
     return p
+
+
+@pytest.fixture
+def command_config():
+    return CommandConfig(dry_run=False)

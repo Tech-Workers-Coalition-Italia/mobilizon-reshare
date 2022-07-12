@@ -1,6 +1,7 @@
 import logging.config
-from typing import Optional
+from typing import Optional, Iterator
 
+from mobilizon_reshare.config.command import CommandConfig
 from mobilizon_reshare.event.event import MobilizonEvent
 from mobilizon_reshare.event.event_selection_strategies import select_event_to_publish
 from mobilizon_reshare.publishers import get_active_publishers
@@ -16,6 +17,7 @@ from mobilizon_reshare.storage.query.read import (
     events_without_publications,
 )
 from mobilizon_reshare.storage.query.write import save_publication_report
+from mobilizon_reshare.publishers.coordinator import DryRunPublisherCoordinator
 
 logger = logging.getLogger(__name__)
 
@@ -28,15 +30,19 @@ async def publish_publications(
     await save_publication_report(report)
     for publication_report in report.reports:
         if not publication_report.succesful:
-            PublicationFailureNotifiersCoordinator(
-                publication_report,
-            ).notify_failure()
+            PublicationFailureNotifiersCoordinator(publication_report,).notify_failure()
 
     return report
 
 
+def perform_dry_run(publications: list[EventPublication]):
+    return DryRunPublisherCoordinator(publications).run()
+
+
 async def publish_event(
-    event: MobilizonEvent, publishers: Optional[list[Optional[str]]] = None
+    event: MobilizonEvent,
+    command_config: CommandConfig,
+    publishers: Optional[Iterator[str]] = None,
 ) -> PublisherCoordinatorReport:
     logger.info(f"Event to publish found: {event.name}")
 
@@ -44,10 +50,15 @@ async def publish_event(
         publishers = get_active_publishers()
 
     publications = await build_publications(event, publishers)
-    return await publish_publications(publications)
+    if command_config.dry_run:
+        logger.info("Executing in dry run mode. No event is going to be published.")
+        return perform_dry_run(publications)
+    else:
+        return await publish_publications(publications)
 
 
 async def select_and_publish(
+    command_config: CommandConfig,
     unpublished_events: Optional[list[MobilizonEvent]] = None,
 ) -> Optional[PublisherCoordinatorReport]:
     """
@@ -58,11 +69,10 @@ async def select_and_publish(
         unpublished_events = await events_without_publications()
 
     event = select_event_to_publish(
-        list(await get_published_events()),
-        unpublished_events,
+        list(await get_published_events()), unpublished_events,
     )
 
     if event:
-        return await publish_event(event)
+        return await publish_event(event, command_config)
     else:
         logger.info("No event to publish found")

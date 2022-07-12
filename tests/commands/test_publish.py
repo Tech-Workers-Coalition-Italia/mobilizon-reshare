@@ -24,9 +24,9 @@ three_event_specification = {
 
 
 @pytest.mark.asyncio
-async def test_publish_no_event(caplog):
+async def test_publish_no_event(caplog, command_config):
     with caplog.at_level(DEBUG):
-        assert await select_and_publish() is None
+        assert await select_and_publish(command_config) is None
         assert "No event to publish found" in caplog.text
 
 
@@ -48,11 +48,12 @@ async def test_select_and_publish_new_event(
     message_collector,
     specification,
     expected_event,
+    command_config,
 ):
     await generate_models(specification)
     with caplog.at_level(DEBUG):
         # calling the publish command without arguments
-        assert await select_and_publish() is not None
+        assert await select_and_publish(command_config) is not None
 
         assert "Event to publish found" in caplog.text
         assert message_collector == [
@@ -94,11 +95,12 @@ async def test_publish_event(
     message_collector,
     publishers,
     expected,
+    command_config,
 ):
     await generate_models(one_unpublished_event_specification)
     with caplog.at_level(DEBUG):
         # calling mobilizon-reshare publish -E <UUID> -p <platform>
-        report = await publish_event(event_0, publishers)
+        report = await publish_event(event_0, command_config, publishers)
         assert report is not None
         assert report.successful
 

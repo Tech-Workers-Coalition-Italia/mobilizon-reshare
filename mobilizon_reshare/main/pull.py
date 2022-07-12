@@ -2,10 +2,7 @@ import logging.config
 
 from mobilizon_reshare.event.event import MobilizonEvent
 from mobilizon_reshare.mobilizon.events import get_mobilizon_future_events
-
-from mobilizon_reshare.storage.query.write import (
-    create_unpublished_events,
-)
+from mobilizon_reshare.storage.query.write import create_unpublished_events
 
 logger = logging.getLogger(__name__)
 
