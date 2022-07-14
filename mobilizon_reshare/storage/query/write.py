@@ -8,7 +8,7 @@ from mobilizon_reshare.event.event import MobilizonEvent
 from mobilizon_reshare.models.event import Event
 from mobilizon_reshare.models.publication import Publication
 from mobilizon_reshare.models.publisher import Publisher
-from mobilizon_reshare.publishers.coordinator import PublisherCoordinatorReport
+from mobilizon_reshare.publishers.coordinators.publish import PublisherCoordinatorReport
 from mobilizon_reshare.storage.query import CONNECTION_NAME
 from mobilizon_reshare.storage.query.converter import event_to_model
 from mobilizon_reshare.storage.query.read import (

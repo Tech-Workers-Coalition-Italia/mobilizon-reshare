@@ -3,7 +3,7 @@ import logging.config
 from mobilizon_reshare.config.command import CommandConfig
 from mobilizon_reshare.main.publish import select_and_publish
 from mobilizon_reshare.main.pull import pull
-from mobilizon_reshare.publishers.coordinator import PublisherCoordinatorReport
+from mobilizon_reshare.publishers.coordinators.publish import PublisherCoordinatorReport
 
 logger = logging.getLogger(__name__)
 

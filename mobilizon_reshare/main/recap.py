@@ -7,17 +7,17 @@ from mobilizon_reshare.config.command import CommandConfig
 from mobilizon_reshare.event.event import EventPublicationStatus, MobilizonEvent
 from mobilizon_reshare.publishers import get_active_publishers
 from mobilizon_reshare.publishers.abstract import RecapPublication
-from mobilizon_reshare.publishers.coordinator import (
-    RecapCoordinator,
+from mobilizon_reshare.publishers.coordinators.notify import (
     PublicationFailureNotifiersCoordinator,
-    BaseCoordinatorReport,
 )
+from mobilizon_reshare.publishers.coordinators.recap import RecapCoordinator
+from mobilizon_reshare.publishers.coordinators import BaseCoordinatorReport
 from mobilizon_reshare.publishers.platforms.platform_mapping import (
     get_publisher_class,
     get_formatter_class,
 )
 from mobilizon_reshare.storage.query.read import events_with_status
-from mobilizon_reshare.publishers.coordinator import DryRunRecapCoordinator
+from mobilizon_reshare.publishers.coordinators.dry_run import DryRunRecapCoordinator
 
 logger = logging.getLogger(__name__)
 

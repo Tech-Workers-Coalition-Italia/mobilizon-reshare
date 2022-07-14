@@ -4,7 +4,7 @@ import responses
 
 from mobilizon_reshare.config.config import get_settings
 from mobilizon_reshare.models.publication import PublicationStatus
-from mobilizon_reshare.publishers.coordinator import PublisherCoordinator
+from mobilizon_reshare.publishers.coordinators.publish import PublisherCoordinator
 from mobilizon_reshare.publishers.exceptions import (
     InvalidEvent,
     InvalidResponse,
@@ -88,9 +88,7 @@ def mocked_client_error_response():
 
 @pytest.fixture
 @pytest.mark.asyncio
-async def setup_db(
-    generate_models
-):
+async def setup_db(generate_models):
     settings = get_settings()
     settings["publisher"]["zulip"][
         "bot_email"
