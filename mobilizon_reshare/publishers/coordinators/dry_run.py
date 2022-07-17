@@ -1,7 +1,4 @@
-from typing import List
-
 from mobilizon_reshare.models.publication import PublicationStatus
-from mobilizon_reshare.publishers.abstract import EventPublication
 from mobilizon_reshare.publishers.coordinators.publish import (
     PublisherCoordinator,
     PublisherCoordinatorReport,
@@ -11,9 +8,6 @@ from mobilizon_reshare.publishers.coordinators.recap import RecapCoordinator
 
 
 class DryRunPublisherCoordinator(PublisherCoordinator):
-    def __init__(self, publications: List[EventPublication]):
-        self.publications = publications
-
     def run(self) -> PublisherCoordinatorReport:
         errors = self._validate()
         if errors:
