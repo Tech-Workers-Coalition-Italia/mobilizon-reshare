@@ -6,10 +6,10 @@ from mobilizon_reshare.event.event import MobilizonEvent
 from mobilizon_reshare.event.event_selection_strategies import select_event_to_publish
 from mobilizon_reshare.publishers import get_active_publishers
 from mobilizon_reshare.publishers.abstract import EventPublication
-from mobilizon_reshare.publishers.coordinators.notify import (
+from mobilizon_reshare.publishers.coordinators.event_publishing.notify import (
     PublicationFailureNotifiersCoordinator,
 )
-from mobilizon_reshare.publishers.coordinators.publish import (
+from mobilizon_reshare.publishers.coordinators.event_publishing.publish import (
     PublisherCoordinatorReport,
     PublisherCoordinator,
 )
@@ -19,7 +19,9 @@ from mobilizon_reshare.storage.query.read import (
     events_without_publications,
 )
 from mobilizon_reshare.storage.query.write import save_publication_report
-from mobilizon_reshare.publishers.coordinators.dry_run import DryRunPublisherCoordinator
+from mobilizon_reshare.publishers.coordinators.event_publishing.dry_run import (
+    DryRunPublisherCoordinator,
+)
 
 logger = logging.getLogger(__name__)
 

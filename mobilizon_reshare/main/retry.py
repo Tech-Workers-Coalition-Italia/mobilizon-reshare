@@ -3,7 +3,9 @@ from typing import Optional
 from uuid import UUID
 
 from mobilizon_reshare.main.publish import publish_publications
-from mobilizon_reshare.publishers.coordinators.publish import PublisherCoordinatorReport
+from mobilizon_reshare.publishers.coordinators.event_publishing.publish import (
+    PublisherCoordinatorReport,
+)
 from mobilizon_reshare.storage.query.exceptions import EventNotFound
 from mobilizon_reshare.storage.query.read import (
     get_failed_publications_for_event,

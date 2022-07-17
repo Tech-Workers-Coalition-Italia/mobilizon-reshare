@@ -4,7 +4,9 @@ import responses
 
 from mobilizon_reshare.config.config import get_settings
 from mobilizon_reshare.models.publication import PublicationStatus
-from mobilizon_reshare.publishers.coordinators.publish import PublisherCoordinator
+from mobilizon_reshare.publishers.coordinators.event_publishing.publish import (
+    PublisherCoordinator,
+)
 from mobilizon_reshare.publishers.exceptions import (
     InvalidEvent,
     InvalidResponse,

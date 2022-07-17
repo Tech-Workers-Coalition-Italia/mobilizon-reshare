@@ -8,7 +8,7 @@ import mobilizon_reshare.publishers
 import mobilizon_reshare.storage.query.read
 from mobilizon_reshare.models.publisher import Publisher
 import mobilizon_reshare.main.recap
-from mobilizon_reshare.publishers.coordinators import notify
+from mobilizon_reshare.publishers.coordinators.event_publishing import notify
 from tests import today
 from tests.conftest import event_1, event_0
 

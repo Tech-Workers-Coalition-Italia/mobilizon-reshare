@@ -1,13 +1,14 @@
 from mobilizon_reshare.models.publication import PublicationStatus
-from mobilizon_reshare.publishers.coordinators.publish import (
-    PublisherCoordinator,
+from mobilizon_reshare.publishers.coordinators.event_publishing import (
+    BaseEventPublishingCoordinator,
+)
+from mobilizon_reshare.publishers.coordinators.event_publishing.publish import (
     PublisherCoordinatorReport,
     EventPublicationReport,
 )
-from mobilizon_reshare.publishers.coordinators.recap import RecapCoordinator
 
 
-class DryRunPublisherCoordinator(PublisherCoordinator):
+class DryRunPublisherCoordinator(BaseEventPublishingCoordinator):
     def run(self) -> PublisherCoordinatorReport:
         errors = self._validate()
         if errors:
@@ -31,8 +32,3 @@ class DryRunPublisherCoordinator(PublisherCoordinator):
             )
 
         return coord_report
-
-
-class DryRunRecapCoordinator(RecapCoordinator):
-    def _send(self, content, recap_publication):
-        pass

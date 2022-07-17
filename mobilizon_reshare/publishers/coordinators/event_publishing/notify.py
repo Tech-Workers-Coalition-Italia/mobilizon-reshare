@@ -5,7 +5,9 @@ from mobilizon_reshare.models.publication import PublicationStatus
 from mobilizon_reshare.publishers import get_active_notifiers
 from mobilizon_reshare.publishers.abstract import AbstractPlatform
 from mobilizon_reshare.publishers.coordinators import logger
-from mobilizon_reshare.publishers.coordinators.publish import EventPublicationReport
+from mobilizon_reshare.publishers.coordinators.event_publishing.publish import (
+    EventPublicationReport,
+)
 from mobilizon_reshare.publishers.platforms.platform_mapping import get_notifier_class
 
 

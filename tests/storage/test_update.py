@@ -5,7 +5,7 @@ import pytest
 from mobilizon_reshare.models.publication import PublicationStatus, Publication
 from mobilizon_reshare.models.publisher import Publisher
 from mobilizon_reshare.publishers.abstract import EventPublication
-from mobilizon_reshare.publishers.coordinators.publish import (
+from mobilizon_reshare.publishers.coordinators.event_publishing.publish import (
     EventPublicationReport,
     PublisherCoordinatorReport,
 )
