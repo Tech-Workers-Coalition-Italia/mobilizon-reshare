@@ -35,6 +35,10 @@ class RecapCoordinatorReport(BaseCoordinatorReport):
 
 
 class RecapCoordinator:
+    """
+    Coordinator to publish a recap on future events
+    """
+
     def __init__(self, recap_publications: List[RecapPublication]):
         self.recap_publications = recap_publications
 

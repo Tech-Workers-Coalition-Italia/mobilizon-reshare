@@ -33,6 +33,10 @@ class PublisherCoordinatorReport(BaseCoordinatorReport):
 
 
 class PublisherCoordinator(BaseEventPublishingCoordinator):
+    """
+    Coordinator to publish an event on every active platform
+    """
+
     def run(self) -> PublisherCoordinatorReport:
         errors = self._validate()
         if errors:
@@ -40,15 +44,15 @@ class PublisherCoordinator(BaseEventPublishingCoordinator):
                 reports=errors, publications=self.publications
             )
 
-        return self._post()
+        return self._publish()
 
-    def _post(self) -> PublisherCoordinatorReport:
+    def _publish(self) -> PublisherCoordinatorReport:
         reports = []
 
         for publication in self.publications:
 
             try:
-                publication_report = self._post_publication(publication)
+                publication_report = self._publish_publication(publication)
                 reports.append(publication_report)
             except PublisherError as e:
                 logger.error(str(e))
@@ -64,8 +68,15 @@ class PublisherCoordinator(BaseEventPublishingCoordinator):
             publications=self.publications, reports=reports
         )
 
-    def _post_publication(self, publication):
-        logger.info("Publishing to " % {publication.publisher.name})
+    @staticmethod
+    def _publish_publication(publication):
+        """
+        Publishes a single publication
+        :param publication:
+        :return:
+        """
+
+        logger.info("Publishing to %s", publication.publisher.name)
         message = publication.formatter.get_message_from_event(publication.event)
         publication.publisher.send(message, publication.event)
         return EventPublicationReport(

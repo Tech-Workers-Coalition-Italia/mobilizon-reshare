@@ -9,6 +9,10 @@ from mobilizon_reshare.publishers.coordinators.event_publishing.publish import (
 
 
 class DryRunPublisherCoordinator(BaseEventPublishingCoordinator):
+    """
+    Coordinator to perform a dry-run on the event publication
+    """
+
     def run(self) -> PublisherCoordinatorReport:
         errors = self._validate()
         if errors:
