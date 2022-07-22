@@ -1,3 +1,4 @@
+import asyncio
 import importlib.resources
 import os
 from collections import UserList
@@ -9,7 +10,7 @@ from uuid import UUID
 import arrow
 import pytest
 import responses
-from tortoise.contrib.test import finalizer, initializer
+from tortoise import Tortoise
 
 import mobilizon_reshare
 from mobilizon_reshare.config.command import CommandConfig
@@ -129,20 +130,41 @@ async def stored_event(event) -> Event:
 
 
 @pytest.fixture(scope="function", autouse=True)
-def initialize_db_tests() -> None:
-    db_url = os.environ.get("TORTOISE_TEST_DB", "sqlite://:memory:")
-    initializer(
-        [
-            "mobilizon_reshare.models.event",
-            "mobilizon_reshare.models.notification",
-            "mobilizon_reshare.models.publication",
-            "mobilizon_reshare.models.publisher",
-        ],
-        db_url=db_url,
-        app_label="models",
-    )
-    yield None
-    finalizer()
+def initialize_db_tests(request) -> None:
+    config = {
+        "connections": {
+            "default": os.environ.get("TORTOISE_TEST_DB", "sqlite://:memory:")
+        },
+        "apps": {
+            "models": {
+                "models": [
+                    "mobilizon_reshare.models.event",
+                    "mobilizon_reshare.models.notification",
+                    "mobilizon_reshare.models.publication",
+                    "mobilizon_reshare.models.publisher",
+                    "aerich.models",
+                ],
+                "default_connection": "default",
+            },
+        },
+        # always store UTC time in database
+        "use_tz": True,
+    }
+
+    async def _init_db() -> None:
+        await Tortoise.init(config)
+        try:
+            await Tortoise._drop_databases()
+        except:  # pragma: nocoverage
+            pass
+
+        await Tortoise.init(config, _create_db=True)
+        await Tortoise.generate_schemas(safe=False)
+
+    loop = asyncio.get_event_loop()
+    loop.run_until_complete(_init_db())
+
+    request.addfinalizer(lambda: loop.run_until_complete(Tortoise._drop_databases()))
 
 
 @pytest.fixture()
@@ -175,7 +197,9 @@ def event_model_generator():
 
 @pytest.fixture()
 def publisher_model_generator():
-    def _publisher_model_generator(idx=1,):
+    def _publisher_model_generator(
+        idx=1,
+    ):
         return Publisher(name=f"publisher_{idx}", account_ref=f"account_ref_{idx}")
 
     return _publisher_model_generator
@@ -412,7 +436,10 @@ def mock_mobilizon_success_answer(mobilizon_answer, mobilizon_url):
     with responses.RequestsMock() as rsps:
 
         rsps.add(
-            responses.POST, mobilizon_url, json=mobilizon_answer, status=200,
+            responses.POST,
+            mobilizon_url,
+            json=mobilizon_answer,
+            status=200,
         )
         yield
 
@@ -424,7 +451,10 @@ def mock_multiple_success_answer(multiple_answers, mobilizon_url):
 
         for answer in multiple_answers:
             rsps.add(
-                responses.POST, mobilizon_url, json=answer, status=200,
+                responses.POST,
+                mobilizon_url,
+                json=answer,
+                status=200,
             )
 
         yield
