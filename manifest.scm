@@ -14,4 +14,4 @@
        '("git-cal" "man-db" "texinfo"
          "python-pre-commit" "cloc"
          "ripgrep" "python-semver"
-         "fd" "docker-compose"))))
+         "fd" "docker-compose" "poetry"))))

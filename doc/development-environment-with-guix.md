@@ -22,15 +22,15 @@ Hurray 🎉 ! Now you can hack on `mobilizon-reshare` without worrying about dep
 
 *Caveat:* Guix currently runs only on Linux, if you run a different OS you're probably better off with something like [poetry](https://python-poetry.org/). Just beware that you may end up with slightly different behavior, since `poetry` only locks Python dependencies.
 
-### Debian Bullseye
+### Debian/Ubuntu/Linx Mint and derivatives
 
-If you run Debian Bullseye (or one of its derivatives) installing Guix is achieved with:
+If you run Ubuntu 20.04, Linux Mint 20, Debian Bullseye or later (or one of their derivatives) installing Guix is achieved with:
 
 ```shell
 $ sudo apt install guix
 ```
 
-If you want to find out if your distribution is a derivative of Debian Bullseye you can run:
+If you want to find out which version of Debian you are running you can use:
 
 ```shell
 $ sudo cat /etc/debian_release
