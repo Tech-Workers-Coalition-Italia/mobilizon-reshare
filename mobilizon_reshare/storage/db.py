@@ -1,13 +1,15 @@
 import logging
+from logging.config import dictConfig
 from pathlib import Path
 
 import pkg_resources
-from tortoise import Tortoise
 from aerich import Command
-from mobilizon_reshare.config.publishers import publisher_names
-from mobilizon_reshare.storage.query.write import update_publishers
+from tortoise import Tortoise
+from tortoise.contrib.fastapi import register_tortoise
 
 from mobilizon_reshare.config.config import get_settings
+from mobilizon_reshare.config.publishers import publisher_names
+from mobilizon_reshare.storage.query.write import update_publishers
 
 logger = logging.getLogger(__name__)
 
@@ -71,9 +73,7 @@ class MoReDB:
 
     async def setup(self):
         await self._implement_db_changes()
-        await Tortoise.init(
-            config=TORTOISE_ORM,
-        )
+        await Tortoise.init(config=TORTOISE_ORM,)
         if not self.is_init:
             await Tortoise.generate_schemas()
             self.is_init = True
@@ -81,6 +81,24 @@ class MoReDB:
 
         await update_publishers(publisher_names)
 
+    @staticmethod
+    def register_app(app):
+        orm_data = get_tortoise_orm()
+        register_tortoise(
+            app,
+            db_url=orm_data["connections"]["default"],
+            modules=orm_data["apps"],
+            generate_schemas=True,
+        )
+
 
 async def tear_down():
     return await Tortoise.close_connections()
+
+
+async def init():
+    settings = get_settings()
+    dictConfig(settings["logging"])
+    db_path = Path(settings.db_path)
+    db = MoReDB(db_path)
+    await db.setup()

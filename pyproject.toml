@@ -23,6 +23,8 @@ appdirs = "~1.4"
 tweepy = "~4.4"
 facebook-sdk = "~3.1"
 aerich = "~0.6"
+fastapi = "^0.85.0"
+uvicorn = "^0.18.3"
 
 [tool.poetry.dev-dependencies]
 responses = "~0.13"

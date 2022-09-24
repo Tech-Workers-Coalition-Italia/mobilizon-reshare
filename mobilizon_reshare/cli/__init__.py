@@ -1,28 +1,17 @@
 import asyncio
 import functools
 import logging
-import traceback
-from logging.config import dictConfig
-from pathlib import Path
 import sys
+import traceback
 
 from mobilizon_reshare.config.command import CommandConfig
-from mobilizon_reshare.config.config import get_settings
-from mobilizon_reshare.storage.db import tear_down, MoReDB
+from mobilizon_reshare.storage.db import tear_down, init
 
 logger = logging.getLogger(__name__)
 
 
 async def graceful_exit():
     await tear_down()
-
-
-async def init():
-    settings = get_settings()
-    dictConfig(settings["logging"])
-    db_path = Path(settings.db_path)
-    db = MoReDB(db_path)
-    await db.setup()
 
 
 async def _safe_execution(function):

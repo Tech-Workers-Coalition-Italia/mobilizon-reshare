@@ -1,24 +1,25 @@
 import functools
 
 import click
+import uvicorn
 from click import pass_context
 
-from mobilizon_reshare.config.command import CommandConfig
 from mobilizon_reshare.cli import safe_execution
 from mobilizon_reshare.cli.commands.format.format import format_event
 from mobilizon_reshare.cli.commands.list.list_event import list_events
 from mobilizon_reshare.cli.commands.list.list_publication import list_publications
-from mobilizon_reshare.cli.commands.recap.main import recap_command as recap_main
-from mobilizon_reshare.cli.commands.start.main import start_command as start_main
-from mobilizon_reshare.cli.commands.pull.main import pull_command as pull_main
 from mobilizon_reshare.cli.commands.publish.main import publish_command as publish_main
-from mobilizon_reshare.config.config import current_version, get_settings
-from mobilizon_reshare.config.publishers import publisher_names
-from mobilizon_reshare.event.event import EventPublicationStatus
+from mobilizon_reshare.cli.commands.pull.main import pull_command as pull_main
+from mobilizon_reshare.cli.commands.recap.main import recap_command as recap_main
 from mobilizon_reshare.cli.commands.retry.main import (
     retry_event_command,
     retry_publication_command,
 )
+from mobilizon_reshare.cli.commands.start.main import start_command as start_main
+from mobilizon_reshare.config.command import CommandConfig
+from mobilizon_reshare.config.config import current_version, get_settings
+from mobilizon_reshare.config.publishers import publisher_names
+from mobilizon_reshare.event.event import EventPublicationStatus
 from mobilizon_reshare.models.publication import PublicationStatus
 from mobilizon_reshare.publishers import get_active_publishers
 
@@ -247,6 +248,13 @@ def event_retry(event_id):
 @click.argument("publication-id", type=click.UUID)
 def publication_retry(publication_id):
     safe_execution(functools.partial(retry_publication_command, publication_id),)
+
+
+@mobilizon_reshare.command("web")
+def web():
+    uvicorn.run(
+        "mobilizon_reshare.web.backend.main:app", host="0.0.0.0", port=8000, reload=True
+    )
 
 
 if __name__ == "__main__":
