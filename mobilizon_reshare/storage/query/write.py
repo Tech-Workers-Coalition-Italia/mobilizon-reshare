@@ -8,7 +8,9 @@ from mobilizon_reshare.event.event import MobilizonEvent
 from mobilizon_reshare.models.event import Event
 from mobilizon_reshare.models.publication import Publication
 from mobilizon_reshare.models.publisher import Publisher
-from mobilizon_reshare.publishers.coordinator import PublisherCoordinatorReport
+from mobilizon_reshare.publishers.coordinators.event_publishing.publish import (
+    PublisherCoordinatorReport,
+)
 from mobilizon_reshare.storage.query.converter import event_to_model
 from mobilizon_reshare.storage.query.read import (
     events_without_publications,
@@ -91,9 +93,7 @@ async def create_unpublished_events(
 
 
 @atomic()
-async def update_publishers(
-    names: Iterable[str],
-) -> None:
+async def update_publishers(names: Iterable[str],) -> None:
     names = set(names)
     known_publisher_names = set(p.name for p in await Publisher.all())
     for name in names.difference(known_publisher_names):

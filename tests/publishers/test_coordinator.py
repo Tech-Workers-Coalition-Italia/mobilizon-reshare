@@ -12,11 +12,15 @@ from mobilizon_reshare.models.publication import (
 )
 from mobilizon_reshare.models.publisher import Publisher
 from mobilizon_reshare.publishers.abstract import EventPublication, RecapPublication
-from mobilizon_reshare.publishers.coordinator import (
-    PublisherCoordinatorReport,
-    EventPublicationReport,
-    PublisherCoordinator,
+from mobilizon_reshare.publishers.coordinators.event_publishing.notify import (
     PublicationFailureNotifiersCoordinator,
+)
+from mobilizon_reshare.publishers.coordinators.event_publishing.publish import (
+    EventPublicationReport,
+    PublisherCoordinatorReport,
+    PublisherCoordinator,
+)
+from mobilizon_reshare.publishers.coordinators.recap_publishing.recap import (
     RecapCoordinator,
 )
 from mobilizon_reshare.storage.query.converter import (

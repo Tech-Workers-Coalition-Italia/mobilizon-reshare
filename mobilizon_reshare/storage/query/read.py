@@ -63,8 +63,7 @@ async def events_with_status(
 
 
 async def get_all_publications(
-    from_date: Optional[Arrow] = None,
-    to_date: Optional[Arrow] = None,
+    from_date: Optional[Arrow] = None, to_date: Optional[Arrow] = None,
 ) -> Iterable[Publication]:
     return await prefetch_publication_relations(
         _add_date_window(Publication.all(), "timestamp", from_date, to_date)
@@ -72,8 +71,7 @@ async def get_all_publications(
 
 
 async def get_all_events(
-    from_date: Optional[Arrow] = None,
-    to_date: Optional[Arrow] = None,
+    from_date: Optional[Arrow] = None, to_date: Optional[Arrow] = None,
 ) -> list[MobilizonEvent]:
     return [
         event_from_model(event)
@@ -133,8 +131,7 @@ async def publications_with_status(
 
 
 async def events_without_publications(
-    from_date: Optional[Arrow] = None,
-    to_date: Optional[Arrow] = None,
+    from_date: Optional[Arrow] = None, to_date: Optional[Arrow] = None,
 ) -> list[MobilizonEvent]:
     query = Event.filter(publications__id=None)
     events = await prefetch_event_relations(

@@ -6,18 +6,22 @@ from mobilizon_reshare.event.event import MobilizonEvent
 from mobilizon_reshare.event.event_selection_strategies import select_event_to_publish
 from mobilizon_reshare.publishers import get_active_publishers
 from mobilizon_reshare.publishers.abstract import EventPublication
-from mobilizon_reshare.publishers.coordinator import (
+from mobilizon_reshare.publishers.coordinators.event_publishing.notify import (
     PublicationFailureNotifiersCoordinator,
-    PublisherCoordinatorReport,
 )
-from mobilizon_reshare.publishers.coordinator import PublisherCoordinator
+from mobilizon_reshare.publishers.coordinators.event_publishing.publish import (
+    PublisherCoordinatorReport,
+    PublisherCoordinator,
+)
 from mobilizon_reshare.storage.query.read import (
     get_published_events,
     build_publications,
     events_without_publications,
 )
 from mobilizon_reshare.storage.query.write import save_publication_report
-from mobilizon_reshare.publishers.coordinator import DryRunPublisherCoordinator
+from mobilizon_reshare.publishers.coordinators.event_publishing.dry_run import (
+    DryRunPublisherCoordinator,
+)
 
 logger = logging.getLogger(__name__)
 

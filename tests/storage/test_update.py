@@ -5,9 +5,9 @@ import pytest
 from mobilizon_reshare.models.publication import PublicationStatus, Publication
 from mobilizon_reshare.models.publisher import Publisher
 from mobilizon_reshare.publishers.abstract import EventPublication
-from mobilizon_reshare.publishers.coordinator import (
-    PublisherCoordinatorReport,
+from mobilizon_reshare.publishers.coordinators.event_publishing.publish import (
     EventPublicationReport,
+    PublisherCoordinatorReport,
 )
 from mobilizon_reshare.publishers.platforms.telegram import (
     TelegramFormatter,
@@ -18,9 +18,7 @@ from mobilizon_reshare.storage.query.write import (
     update_publishers,
     create_unpublished_events,
 )
-from tests.storage import (
-    complete_specification,
-)
+from tests.storage import complete_specification
 from tests.conftest import event_6, event_0, event_1, event_2, event_3, event_3_updated
 
 two_publishers_specification = {"publisher": ["telegram", "twitter"]}
@@ -68,10 +66,7 @@ two_events_specification = {
     ],
 )
 async def test_update_publishers(
-    specification,
-    names,
-    expected_result,
-    generate_models,
+    specification, names, expected_result, generate_models,
 ):
     await generate_models(specification)
     await update_publishers(names)
@@ -127,10 +122,7 @@ async def test_update_publishers(
     ],
 )
 async def test_create_unpublished_events(
-    specification,
-    events_from_mobilizon,
-    expected_result,
-    generate_models,
+    specification, events_from_mobilizon, expected_result, generate_models,
 ):
     await generate_models(specification)
 
@@ -171,11 +163,7 @@ async def test_create_unpublished_events(
     ],
 )
 async def test_save_publication_report(
-    specification,
-    report,
-    event,
-    expected_result,
-    generate_models,
+    specification, report, event, expected_result, generate_models,
 ):
     await generate_models(specification)
     known_publication_ids = set(p.id for p in await Publication.all())

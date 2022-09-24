@@ -155,7 +155,7 @@ def initialize_db_tests(request) -> None:
         await Tortoise.init(config)
         try:
             await Tortoise._drop_databases()
-        except:  # pragma: nocoverage
+        except:  # noqa
             pass
 
         await Tortoise.init(config, _create_db=True)
@@ -197,9 +197,7 @@ def event_model_generator():
 
 @pytest.fixture()
 def publisher_model_generator():
-    def _publisher_model_generator(
-        idx=1,
-    ):
+    def _publisher_model_generator(idx=1,):
         return Publisher(name=f"publisher_{idx}", account_ref=f"account_ref_{idx}")
 
     return _publisher_model_generator
@@ -436,10 +434,7 @@ def mock_mobilizon_success_answer(mobilizon_answer, mobilizon_url):
     with responses.RequestsMock() as rsps:
 
         rsps.add(
-            responses.POST,
-            mobilizon_url,
-            json=mobilizon_answer,
-            status=200,
+            responses.POST, mobilizon_url, json=mobilizon_answer, status=200,
         )
         yield
 
@@ -451,10 +446,7 @@ def mock_multiple_success_answer(multiple_answers, mobilizon_url):
 
         for answer in multiple_answers:
             rsps.add(
-                responses.POST,
-                mobilizon_url,
-                json=answer,
-                status=200,
+                responses.POST, mobilizon_url, json=answer, status=200,
             )
 
         yield
