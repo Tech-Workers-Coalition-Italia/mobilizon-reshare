@@ -1,9 +1,8 @@
-import asyncio
 import importlib.resources
 import os
+import time
 from collections import UserList
 from datetime import datetime, timedelta, timezone
-import time
 from typing import Union
 from uuid import UUID
 
@@ -130,7 +129,7 @@ async def stored_event(event) -> Event:
 
 
 @pytest.fixture(scope="function", autouse=True)
-def initialize_db_tests(request) -> None:
+async def initialize_db_tests(request) -> None:
     config = {
         "connections": {
             "default": os.environ.get("TORTOISE_TEST_DB", "sqlite://:memory:")
@@ -161,10 +160,9 @@ def initialize_db_tests(request) -> None:
         await Tortoise.init(config, _create_db=True)
         await Tortoise.generate_schemas(safe=False)
 
-    loop = asyncio.get_event_loop()
-    loop.run_until_complete(_init_db())
-
-    request.addfinalizer(lambda: loop.run_until_complete(Tortoise._drop_databases()))
+    await _init_db()
+    yield
+    await Tortoise._drop_databases()
 
 
 @pytest.fixture()
