@@ -1,7 +1,6 @@
 [default]
 local_state_dir = "/var/mobilizon_reshare"
-db_name = "events.db"
-db_path = "@format {this.local_state_dir}/{this.db_name}"
+db_url = "sqlite:///var/mobilizon_reshare/events.db"
 locale= "en-us"
 
 [default.source.mobilizon]
