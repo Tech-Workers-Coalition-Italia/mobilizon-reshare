@@ -46,6 +46,7 @@ class MoReDB:
         migration_queries_location = pkg_resources.resource_filename(
             "mobilizon_reshare", "migrations"
         )
+
         command = Command(
             tortoise_config=get_tortoise_orm(),
             app="models",

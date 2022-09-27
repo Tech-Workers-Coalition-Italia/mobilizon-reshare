@@ -1,0 +1,45 @@
+version: "3.7"
+services:
+  mobilizon-reshare:
+    image: fishinthecalculator/mobilizon-reshare:v0.3.2
+    environment:
+      SECRETS_FOR_DYNACONF: /etc/xdg/mobilizon-reshare/0.3.2/.secrets.toml
+      ENV_FOR_DYNACONF: production
+      MOBILIZON_RESHARE_INTERVAL: "*/15 10-18 * * 0-4"
+    volumes:
+      - ./.secrets.toml:/etc/xdg/mobilizon-reshare/0.3.2/.secrets.toml:ro
+      - ./mobilizon_reshare.toml:/etc/xdg/mobilizon-reshare/0.3.2/mobilizon_reshare.toml:ro
+      - ./var:/var/lib/mobilizon-reshare
+      - /etc/localtime:/etc/localtime:ro
+      - /etc/timezone:/etc/timezone:ro
+  db:
+      image: postgres:13
+      env_file:
+         - ./.env
+      volumes:
+        - postgres-db-volume:/var/lib/postgresql/data
+      healthcheck:
+        test: ["CMD", "pg_isready", "-U", "mobilizon_reshare"]
+        interval: 5s
+        retries: 5
+      expose:
+        - 5432
+  web:
+    build: .
+    command: poetry run mobilizon-reshare web
+    #command: sh
+    environment:
+      SECRETS_FOR_DYNACONF: /app/.secrets.toml
+      SETTINGS_FILE_FOR_DYNACONF: /app/settings.toml
+      ENV_FOR_DYNACONF: development
+      MOBILIZON_RESHARE_INTERVAL: "*/15 10-18 * * 0-4"
+    volumes:
+      - ../reshare_exec/backupsecrets.toml:/app/.secrets.toml
+      - ../reshare_exec/settings_postgres.toml:/app/settings.toml
+      - /etc/localtime:/etc/localtime:ro
+      - /etc/timezone:/etc/timezone:ro
+      - postgres-db-volume:/var/lib/postgresql
+      - ./:/app
+
+volumes:
+  postgres-db-volume:
