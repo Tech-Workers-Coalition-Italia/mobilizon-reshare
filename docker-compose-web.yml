@@ -20,14 +20,15 @@ services:
       SECRETS_FOR_DYNACONF: /app/.secrets.toml
       SETTINGS_FILE_FOR_DYNACONF: /app/settings.toml
       ENV_FOR_DYNACONF: development
-      MOBILIZON_RESHARE_INTERVAL: "*/15 10-18 * * 0-4"
     volumes:
-      - ./.secrets.toml:/app/.secrets.toml
-      - ./mobilizon_reshare/settings.toml:/app/settings.toml
+      - ../reshare_exec/backupsecrets.toml:/app/.secrets.toml
+      - ../reshare_exec/settings_postgres.toml:/app/settings.toml
       - /etc/localtime:/etc/localtime:ro
       - /etc/timezone:/etc/timezone:ro
       - postgres-db-volume:/var/lib/postgresql
       - ./:/app
+    ports:
+      - 8000:8000
 
 volumes:
   postgres-db-volume:

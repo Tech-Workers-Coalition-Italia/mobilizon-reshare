@@ -42,15 +42,19 @@ TORTOISE_ORM = get_tortoise_orm()
 
 
 class MoReDB:
-    async def _implement_db_changes(self):
-        migration_queries_location = pkg_resources.resource_filename(
-            "mobilizon_reshare", "migrations"
+    def get_migration_location(self):
+        scheme = get_db_url().scheme
+        return pkg_resources.resource_filename(
+            "mobilizon_reshare", f"migrations/{scheme}"
         )
 
+    async def _implement_db_changes(self):
+
+        logging.info("Performing aerich migrations.")
         command = Command(
             tortoise_config=get_tortoise_orm(),
             app="models",
-            location=migration_queries_location,
+            location=self.get_migration_location(),
         )
         await command.init()
         migrations = await command.upgrade()
