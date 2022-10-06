@@ -10,8 +10,8 @@ services:
         test: ["CMD", "pg_isready", "-U", "mobilizon_reshare"]
         interval: 5s
         retries: 5
-      expose:
-        - 5432
+      ports:
+        - 5432:5432
   web:
     build: .
     command: poetry run mobilizon-reshare web

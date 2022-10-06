@@ -1,0 +1,4 @@
+[tool.aerich]
+tortoise_orm = "mobilizon_reshare.storage.db.TORTOISE_ORM"
+location = "."
+src_folder = "./."

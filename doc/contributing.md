@@ -43,3 +43,7 @@ Aerich picks up the migrations according to the scheme of the db in the configur
 
 Currently the consistency of the migrations for the different databases is not tested so please pay extra care when 
 committing a change and request special review.
+
+Aerich configuration is specified in the pyproject.toml file. Since it doesn't support multiple databases, we have two 
+configuration files that allow to run aerich on different databases if you enter their respective migration folders.
+You can find them in mobilizon_reshare/migrations.
