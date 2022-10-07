@@ -1,0 +1,12 @@
+version: "3.7"
+services:
+  db:
+      image: postgres:13
+      env_file:
+         - ./.env
+      healthcheck:
+        test: ["CMD", "pg_isready", "-U", "mobilizon_reshare"]
+        interval: 5s
+        retries: 5
+      ports:
+        - 5432:5432

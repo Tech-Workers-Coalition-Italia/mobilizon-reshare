@@ -7,7 +7,10 @@ import urllib3.util
 from aerich import Command
 from tortoise import Tortoise
 
-from mobilizon_reshare.config.config import get_settings
+from mobilizon_reshare.config.config import (
+    get_settings,
+    get_settings_without_validation,
+)
 from mobilizon_reshare.config.publishers import publisher_names
 from mobilizon_reshare.storage.query.write import update_publishers
 
@@ -15,10 +18,11 @@ logger = logging.getLogger(__name__)
 
 
 def get_db_url() -> urllib3.util.Url:
-    return urllib3.util.parse_url(get_settings().db_url)
+    return urllib3.util.parse_url(get_settings_without_validation().db_url)
 
 
 def get_tortoise_orm():
+
     return {
         "connections": {"default": get_db_url().url},
         "apps": {
@@ -49,7 +53,6 @@ class MoReDB:
         )
 
     async def _implement_db_changes(self):
-
         logging.info("Performing aerich migrations.")
         command = Command(
             tortoise_config=get_tortoise_orm(),

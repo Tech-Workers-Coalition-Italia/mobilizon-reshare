@@ -130,3 +130,7 @@ class CustomConfig:
 
 def get_settings():
     return CustomConfig.get_instance().settings
+
+
+def get_settings_without_validation():
+    return build_settings()
