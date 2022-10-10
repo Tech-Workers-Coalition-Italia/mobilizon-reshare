@@ -30,8 +30,8 @@ def register_endpoints(app):
 
 
 @app.on_event("startup")
-async def init_app():
+async def init_app(init_logging=True):
     check_database()
-    await init_db()
+    await init_db(init_logging=init_logging)
     register_endpoints(app)
     return app

@@ -19,7 +19,7 @@ def test_check_database_sqlite(caplog):
 @pytest.mark.asyncio
 async def test_check_database_cli(caplog):
     with caplog.at_level(logging.WARNING):
-        await init_app()
+        await init_app(init_logging=False)
         assert caplog.messages == [
             "Database is SQLite. This might create issues when running the web application. "
             "Please use a PostgreSQL or MariaDB backend."

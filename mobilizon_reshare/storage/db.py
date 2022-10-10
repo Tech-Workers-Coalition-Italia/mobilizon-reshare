@@ -62,7 +62,7 @@ class MoReDB:
         await command.init()
         migrations = await command.upgrade()
         if migrations:
-            logging.warning("Updated database to latest version")
+            logging.info("Updated database to latest version")
 
     async def setup(self):
         await self._implement_db_changes()
@@ -84,10 +84,10 @@ async def tear_down():
     return await Tortoise.close_connections()
 
 
-async def init():
-    # init logging
-    settings = get_settings()
-    dictConfig(settings["logging"])
+async def init(init_logging=True):
+
+    if init_logging:
+        dictConfig(get_settings()["logging"])
 
     # init storage
     url = get_db_url()
