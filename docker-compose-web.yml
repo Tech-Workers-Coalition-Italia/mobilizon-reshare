@@ -21,8 +21,8 @@ services:
       SETTINGS_FILE_FOR_DYNACONF: /app/settings.toml
       ENV_FOR_DYNACONF: development
     volumes:
-      - ../reshare_exec/backupsecrets.toml:/app/.secrets.toml
-      - ../reshare_exec/settings_postgres.toml:/app/settings.toml
+      - ./sample_settings/docker_web/.sample_secrets.toml:/app/.secrets.toml
+      - ./sample_settings/docker_web/settings.toml:/app/settings.toml
       - /etc/localtime:/etc/localtime:ro
       - /etc/timezone:/etc/timezone:ro
       - postgres-db-volume:/var/lib/postgresql

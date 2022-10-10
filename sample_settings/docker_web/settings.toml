@@ -1,0 +1,33 @@
+[default]
+debug = false
+default = true
+local_state_dir = "/var/lib/mobilizon-reshare"
+#db_path = "@format {this.local_state_dir}/events.db"
+db_url = "@format postgres://mobilizon_reshare:mobilizon_reshare@db:5432/mobilizon_reshare"
+
+[default.source.mobilizon]
+url="https://some-mobilizon.com/api"
+group="my_group"
+
+[default.selection]
+strategy = "next_event"
+
+[default.selection.strategy_options]
+break_between_events_in_minutes = 360
+
+[default.logging]
+version = 1
+disable_existing_loggers = false
+
+[default.logging.formatters.standard]
+format = '[%(asctime)s] [%(levelno)s] [%(levelname)s] %(message)s'
+
+[default.logging.handlers.console]
+level = "DEBUG"
+class = "logging.StreamHandler"
+formatter = "standard"
+stream = "ext://sys.stderr"
+
+[default.logging.root]
+level = "DEBUG"
+handlers = ['console']
