@@ -2,7 +2,10 @@
 
 set -eu
 
-
+echo "This script currently doesn't work correctly due to a bug in aerich. Do not use until said bug
+is fixed"
+echo "For more info: https://github.com/tortoise/aerich/issues/270"
+exit
 get_abs_filename() {
   # $1 : relative filename
   echo "$(cd "$(dirname "$1")" && pwd)/"
