@@ -73,11 +73,15 @@ class MoReDB:
 
 class MoReSQLiteDB(MoReDB):
     def __init__(self):
-        self.path = Path(get_db_url().path)
-        # TODO: Check if DB is openable/"queriable"
-        self.is_init = self.path.exists() and (not self.path.is_dir())
-        if not self.is_init:
-            self.path.parent.mkdir(parents=True, exist_ok=True)
+
+        if (
+            get_db_url().path
+        ):  # if in-memory sqlite there's no path so nothing has to be initialized
+            self.path = Path(get_db_url().path)
+            # TODO: Check if DB is openable/"queriable"
+            self.is_init = self.path.exists() and (not self.path.is_dir())
+            if not self.is_init:
+                self.path.parent.mkdir(parents=True, exist_ok=True)
 
 
 async def tear_down():
