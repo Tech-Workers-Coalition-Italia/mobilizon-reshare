@@ -1,0 +1,34 @@
+version: "3.7"
+services:
+  db:
+      image: postgres:13
+      env_file:
+         - ./.env
+      volumes:
+        - postgres-db-volume:/var/lib/postgresql/data
+      healthcheck:
+        test: ["CMD", "pg_isready", "-U", "mobilizon_reshare"]
+        interval: 5s
+        retries: 5
+      ports:
+        - 5432:5432
+  web:
+    build: .
+    command: poetry run mobilizon-reshare web
+    #command: sh
+    environment:
+      SECRETS_FOR_DYNACONF: /app/.secrets.toml
+      SETTINGS_FILE_FOR_DYNACONF: /app/settings.toml
+      ENV_FOR_DYNACONF: development
+    volumes:
+      - ./sample_settings/docker_web/.sample_secrets.toml:/app/.secrets.toml
+      - ./sample_settings/docker_web/settings.toml:/app/settings.toml
+      - /etc/localtime:/etc/localtime:ro
+      - /etc/timezone:/etc/timezone:ro
+      - postgres-db-volume:/var/lib/postgresql
+      - ./:/app
+    ports:
+      - 8000:8000
+
+volumes:
+  postgres-db-volume:

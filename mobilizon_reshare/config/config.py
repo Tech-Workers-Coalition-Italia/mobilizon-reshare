@@ -20,7 +20,7 @@ base_validators = [
     # url of the main Mobilizon instance to download events from
     Validator("source.mobilizon.url", must_exist=True, is_type_of=str),
     Validator("source.mobilizon.group", must_exist=True, is_type_of=str),
-    Validator("db_path", must_exist=True, is_type_of=str),
+    Validator("db_url", must_exist=True, is_type_of=str),
     Validator("locale", must_exist=True, is_type_of=str, default="en-us"),
 ]
 
@@ -130,3 +130,7 @@ class CustomConfig:
 
 def get_settings():
     return CustomConfig.get_instance().settings
+
+
+def get_settings_without_validation():
+    return build_settings()
