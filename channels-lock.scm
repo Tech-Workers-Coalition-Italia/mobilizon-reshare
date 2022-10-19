@@ -10,7 +10,7 @@
   (name 'guix)
   (url "https://git.savannah.gnu.org/git/guix.git")
   (commit
-   "cda3de3b7de46346457e75eb7022bc76a34c2d4f")
+   "cd0d27f30dc2274fbf8477f44275d9184521f044")
   (introduction
    (make-channel-introduction
     "afb9f2752315f131e4ddd44eba02eed403365085"
