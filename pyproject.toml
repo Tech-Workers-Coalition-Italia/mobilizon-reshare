@@ -11,7 +11,7 @@ license = "Coopyleft"
 [tool.poetry.dependencies]
 python = "^3.9"
 dynaconf = "~3.1"
-tortoise-orm = {extras = ["asyncpg"], version = "^0.19.2"}
+tortoise-orm = {extras = ["asyncpg"], version = "~0.19"}
 aiosqlite = "~0.17"
 Jinja2 = "~3.1"
 requests = "~2.27"
@@ -23,8 +23,8 @@ appdirs = "~1.4"
 tweepy = "~4.4"
 facebook-sdk = "~3.1"
 aerich = "~0.6"
-fastapi = "^0.85.0"
-uvicorn = "^0.18.3"
+fastapi = "~0.85"
+uvicorn = "~0.17"
 
 [tool.poetry.dev-dependencies]
 responses = "~0.13"
@@ -37,7 +37,7 @@ Sphinx = "~4.4"
 sphinxcontrib-napoleon = "~0.7"
 sphinx-material = "~0.0"
 sphinx-autodoc-typehints = "~1.17"
-httpx = "^0.23.0"
+httpx = "~0.23"
 
 
 

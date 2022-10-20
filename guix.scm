@@ -63,14 +63,18 @@
       (name "mobilizon-reshare.git")
       (version (git-version source-version revision commit))
       (source mobilizon-reshare-git-origin-with-setup.py)
+      (native-inputs
+       (modify-inputs (package-native-inputs mobilizon-reshare)
+         (prepend python-httpx python-fastapi)))
       (propagated-inputs
        (modify-inputs (package-propagated-inputs mobilizon-reshare)
+         (prepend python-asyncpg python-uvicorn)
          (replace "python-aerich"
                    python-aerich)
          (replace "python-click"
                    python-click)
          (replace "dynaconf"
-                   dynaconf)
+                   dynaconf-3.1.11)
          (replace "python-facebook-sdk"
                    python-facebook-sdk)
          (replace "python-requests"
