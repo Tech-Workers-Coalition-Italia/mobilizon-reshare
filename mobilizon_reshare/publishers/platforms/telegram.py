@@ -35,11 +35,13 @@ class TelegramFormatter(AbstractEventFormatter):
     _conf = ("publisher", "telegram")
 
     def _validate_event(self, event: MobilizonEvent) -> None:
+
         description = event.description
         if not (description and description.strip()):
             self._log_error("No description was found", raise_error=InvalidEvent)
 
     def _validate_message(self, message: str) -> None:
+
         if (
             len("".join(BeautifulSoup(message, "html.parser").findAll(text=True)))
             >= 4096
@@ -74,7 +76,8 @@ class TelegramFormatter(AbstractEventFormatter):
             tag.unwrap()
         # cleaning html trailing whitespace
         for tag in html.findAll("a"):
-            tag["href"] = tag["href"].replace(" ", "").strip().lstrip()
+            if "href" in tag:
+                tag["href"] = tag["href"].replace(" ", "").strip().lstrip()
         s = str(html)
         return re.sub(r"\n{2,}", "\n\n", s).strip()  # remove multiple newlines
 
@@ -103,7 +106,6 @@ class TelegramPlatform(AbstractPlatform):
 
     def _validate_response(self, res):
         try:
-
             res.raise_for_status()
         except requests.exceptions.HTTPError as e:
             self._log_error(
@@ -113,6 +115,7 @@ class TelegramPlatform(AbstractPlatform):
 
         try:
             data = res.json()
+
         except Exception as e:
             self._log_error(
                 f"Server returned invalid json data: {str(e)}",
