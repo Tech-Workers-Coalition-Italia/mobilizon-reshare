@@ -150,6 +150,13 @@ async def get_event(event_mobilizon_id: UUID) -> Event:
     return events[0]
 
 
+async def get_event_publications(
+    mobilizon_event: MobilizonEvent,
+) -> list[EventPublication]:
+    event = await get_event(mobilizon_event.mobilizon_id)
+    return [publication_from_orm(p, mobilizon_event) for p in event.publications]
+
+
 async def get_mobilizon_event(event_mobilizon_id: UUID) -> MobilizonEvent:
     return event_from_model(await get_event(event_mobilizon_id))
 
