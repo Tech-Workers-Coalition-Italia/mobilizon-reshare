@@ -3,7 +3,7 @@ from logging import DEBUG, INFO
 import pytest
 
 from mobilizon_reshare.storage.query.read import (
-    get_all_events,
+    get_all_mobilizon_events,
     events_without_publications,
 )
 from tests.commands.conftest import (
@@ -40,7 +40,7 @@ async def test_pull_no_event(
         assert "Pulled 0 events from Mobilizon." in caplog.text
         assert "There are now 0 unpublished events." in caplog.text
 
-        assert expected_result == await get_all_events()
+        assert expected_result == await get_all_mobilizon_events()
 
 
 @pytest.mark.asyncio
@@ -69,7 +69,7 @@ async def test_pull(
     with caplog.at_level(DEBUG):
         assert await pull() == expected_result
         assert f"Pulled {len(elements)} events from Mobilizon." in caplog.text
-        assert expected_result == await get_all_events()
+        assert expected_result == await get_all_mobilizon_events()
 
         assert (
             f"There are now {len(expected_result)} unpublished events." in caplog.text
@@ -112,7 +112,7 @@ async def test_pull_start(
 
     with caplog.at_level(INFO):
         assert await pull() == expected_pull
-        assert expected_pull == await get_all_events()
+        assert expected_pull == await get_all_mobilizon_events()
         assert expected_pull == await events_without_publications()
 
         report = await start(command_config)
@@ -123,7 +123,9 @@ async def test_pull_start(
         pull_ids = set(event.mobilizon_id for event in expected_pull)
         publish_ids = {expected_publish.mobilizon_id}
 
-        assert pull_ids == set(event.mobilizon_id for event in await get_all_events())
+        assert pull_ids == set(
+            event.mobilizon_id for event in await get_all_mobilizon_events()
+        )
         assert (pull_ids - publish_ids) == set(
             event.mobilizon_id for event in await events_without_publications()
         )
@@ -188,8 +190,8 @@ async def test_multiple_pull(
     with caplog.at_level(DEBUG):
         assert await pull()
         assert f"There are now {len(expected_first)} unpublished events." in caplog.text
-        assert expected_first == await get_all_events()
-        assert await events_without_publications() == await get_all_events()
+        assert expected_first == await get_all_mobilizon_events()
+        assert await events_without_publications() == await get_all_mobilizon_events()
 
         # I clean the message collector
         message_collector.data = []
@@ -200,6 +202,6 @@ async def test_multiple_pull(
         assert f"There are now {len(expected_last)} unpublished events." in caplog.text
 
         assert set(event.mobilizon_id for event in expected_last) == set(
-            event.mobilizon_id for event in await get_all_events()
+            event.mobilizon_id for event in await get_all_mobilizon_events()
         )
-        assert await events_without_publications() == await get_all_events()
+        assert await events_without_publications() == await get_all_mobilizon_events()

@@ -4,7 +4,7 @@ import pytest
 
 from mobilizon_reshare.config.command import CommandConfig
 from mobilizon_reshare.storage.query.converter import event_from_model, event_to_model
-from mobilizon_reshare.storage.query.read import get_all_events
+from mobilizon_reshare.storage.query.read import get_all_mobilizon_events
 from tests.commands.conftest import simple_event_element, second_event_element
 from mobilizon_reshare.event.event import EventPublicationStatus
 from mobilizon_reshare.main.start import start
@@ -222,7 +222,7 @@ async def test_start_second_execution(
             "event_1|desc_1",
         ]
         # I verify that the db event and the new event coming from mobilizon are both in the db
-        assert len(list(await get_all_events())) == 2
+        assert len(list(await get_all_mobilizon_events())) == 2
 
 
 @pytest.mark.parametrize(

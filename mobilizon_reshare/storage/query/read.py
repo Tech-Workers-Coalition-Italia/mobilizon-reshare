@@ -70,15 +70,18 @@ async def get_all_publications(
     )
 
 
-async def get_all_events(
+async def get_all_mobilizon_events(
     from_date: Optional[Arrow] = None, to_date: Optional[Arrow] = None,
 ) -> list[MobilizonEvent]:
-    return [
-        event_from_model(event)
-        for event in await prefetch_event_relations(
-            _add_date_window(Event.all(), "begin_datetime", from_date, to_date)
-        )
-    ]
+    return [event_from_model(event) for event in await get_all_events()]
+
+
+async def get_all_events(
+    from_date: Optional[Arrow] = None, to_date: Optional[Arrow] = None
+):
+    return await prefetch_event_relations(
+        _add_date_window(Event.all(), "begin_datetime", from_date, to_date)
+    )
 
 
 async def get_all_publishers() -> list[Publisher]:

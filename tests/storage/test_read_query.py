@@ -3,7 +3,7 @@ from uuid import UUID
 import pytest
 
 from mobilizon_reshare.storage.query.converter import event_to_model
-from mobilizon_reshare.storage.query.read import get_all_events
+from mobilizon_reshare.storage.query.read import get_all_mobilizon_events
 
 
 @pytest.mark.asyncio
@@ -14,4 +14,4 @@ async def test_get_all_events(event_generator):
     for e in all_events:
         await event_to_model(e).save()
 
-    assert list(await get_all_events()) == all_events
+    assert list(await get_all_mobilizon_events()) == all_events

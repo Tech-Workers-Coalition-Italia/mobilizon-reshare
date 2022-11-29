@@ -3,13 +3,15 @@ from enum import IntEnum
 from tortoise import fields
 from tortoise.models import Model
 
+from mobilizon_reshare.models import WithPydantic
+
 
 class PublicationStatus(IntEnum):
     FAILED = 0
     COMPLETED = 1
 
 
-class Publication(Model):
+class Publication(Model, WithPydantic):
     id = fields.UUIDField(pk=True)
     status = fields.IntEnumField(PublicationStatus)
 

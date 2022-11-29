@@ -1,11 +1,12 @@
 from tortoise import fields
 from tortoise.models import Model
 
+from mobilizon_reshare.models import WithPydantic
 from mobilizon_reshare.models.publication import PublicationStatus, Publication
 from mobilizon_reshare.models.publisher import Publisher
 
 
-class Event(Model):
+class Event(Model, WithPydantic):
     id = fields.UUIDField(pk=True)
     name = fields.TextField()
     description = fields.TextField(null=True)
