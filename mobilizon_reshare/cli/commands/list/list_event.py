@@ -10,7 +10,7 @@ from mobilizon_reshare.event.event_selection_strategies import select_unpublishe
 from mobilizon_reshare.storage.query.read import (
     get_published_events,
     events_with_status,
-    get_all_events,
+    get_all_mobilizon_events,
     events_without_publications,
 )
 
@@ -51,7 +51,7 @@ async def list_events(
     frm = Arrow.fromdatetime(frm) if frm else None
     to = Arrow.fromdatetime(to) if to else None
     if status is None:
-        events = await get_all_events(from_date=frm, to_date=to)
+        events = await get_all_mobilizon_events(from_date=frm, to_date=to)
     elif status == EventPublicationStatus.WAITING:
         events = await list_unpublished_events(frm=frm, to=to)
     else:

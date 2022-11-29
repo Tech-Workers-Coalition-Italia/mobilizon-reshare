@@ -65,8 +65,12 @@ class MoReDB:
             logging.info("Updated database to latest version")
 
     async def setup(self):
+        tortoise_config = get_tortoise_orm()
+        Tortoise.init_models(
+            tortoise_config["apps"]["models"]["models"], "models", _init_relations=True
+        )
         await self._implement_db_changes()
-        await Tortoise.init(config=get_tortoise_orm(),)
+        await Tortoise.init(config=tortoise_config)
         await Tortoise.generate_schemas()
         await update_publishers(publisher_names)
 

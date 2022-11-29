@@ -3,7 +3,7 @@ import json
 import pytest
 from httpx import AsyncClient
 
-from mobilizon_reshare.web.backend.main import event_pydantic
+from mobilizon_reshare.models.event import Event
 
 
 @pytest.mark.anyio
@@ -13,4 +13,5 @@ async def test_events(client: AsyncClient, event_model_generator):
 
     response = await client.get("/events")
     assert response.status_code == 200
-    assert response.json()[0] == [json.loads(event_pydantic.from_orm(event).json())][0]
+    expected = await Event.to_pydantic().from_tortoise_orm(event)
+    assert response.json()[0] == json.loads(expected.json())
