@@ -1,13 +1,15 @@
 from logging import DEBUG
+from uuid import UUID
 
 import pytest
 
 from mobilizon_reshare.dataclasses import EventPublicationStatus
 from mobilizon_reshare.dataclasses import MobilizonEvent
 from mobilizon_reshare.main.publish import select_and_publish, publish_event
+from mobilizon_reshare.models.notification import NotificationStatus, Notification
 from mobilizon_reshare.models.event import Event
 from mobilizon_reshare.models.publication import PublicationStatus
-from mobilizon_reshare.storage.query.read import get_all_publications
+from mobilizon_reshare.storage.query.read import get_all_publications, get_event
 from tests.conftest import event_0, event_1
 
 one_unpublished_event_specification = {
@@ -112,3 +114,50 @@ async def test_publish_event(
         assert len(publications) == len(expected)
         assert all(p.status == PublicationStatus.COMPLETED for p in publications)
         assert {p.publisher.name for p in publications} == expected
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize(
+    "publisher_class", [pytest.lazy_fixture("mock_publisher_invalid_class")]
+)
+async def test_notify_publisher_failure(
+    caplog,
+    mock_publisher_config,
+    message_collector,
+    generate_models,
+    mock_notifier_config,
+    command_config,
+):
+    await generate_models(one_unpublished_event_specification)
+
+    with caplog.at_level(DEBUG):
+        # calling the publish command
+        result = await select_and_publish(command_config)
+
+        assert not result.successful
+        assert len(result.reports) == 1
+        assert result.reports[0].published_content is None
+
+        # since the db contains at least one event, this has to be picked and published
+        event_model = await get_event(UUID(int=0))
+        # it should create a publication for each publisher and a notification for each notifier
+        publications = event_model.publications
+        assert len(publications) == 1, publications
+        publication = publications[0]
+        notifications: list[Notification] = list(publications[0].notifications)
+        assert len(notifications) == 2, notifications
+
+        # all the publications for event should be saved as FAILED
+        for n in notifications:
+            assert n.status == NotificationStatus.COMPLETED
+            assert (
+                n.message
+                == f"Publication {publication.id} failed with status: FAILED.\nReason: credentials error"
+                "\nPublisher: mock\nEvent: event_0"
+            )
+
+        # the derived status for the event should be FAILED
+        assert (
+            MobilizonEvent.from_model(event_model).status
+            == EventPublicationStatus.FAILED
+        )

@@ -16,7 +16,7 @@ class BasePublicationReport:
 
     def get_failure_message(self):
         return (
-            f"Publication failed with status: {self.status}.\n" f"Reason: {self.reason}"
+            f"Publication failed with status: {self.status.name}.\n" f"Reason: {self.reason}"
         )
 
 
@@ -26,7 +26,7 @@ class BaseCoordinatorReport:
 
     @property
     def successful(self):
-        return all(r.status == PublicationStatus.COMPLETED for r in self.reports)
+        return all(r.successful for r in self.reports)
 
 
 logger = logging.getLogger(__name__)

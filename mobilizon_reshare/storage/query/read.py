@@ -33,7 +33,7 @@ async def get_all_publishers() -> list[Publisher]:
 
 async def prefetch_event_relations(queryset: QuerySet[Event]) -> list[Event]:
     return (
-        await queryset.prefetch_related("publications__publisher")
+        await queryset.prefetch_related("publications__publisher", "publications__notifications")
         .order_by("begin_datetime")
         .distinct()
     )
@@ -46,6 +46,7 @@ async def prefetch_publication_relations(
         await queryset.prefetch_related(
             "publisher",
             "event",
+            "notifications",
             "event__publications",
             "event__publications__publisher",
         )

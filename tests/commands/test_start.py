@@ -186,7 +186,7 @@ async def test_start_publisher_failure(
 
         assert "Event to publish found" in caplog.text
         assert message_collector == [
-            f"Publication {p.id} failed with status: 0."
+            f"Publication {p.id} failed with status: FAILED."
             f"\nReason: credentials error\nPublisher: mock\nEvent: test event"
             for p in publications
             for _ in range(2)

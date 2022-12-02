@@ -9,10 +9,15 @@ from mobilizon_reshare.dataclasses.event import (
     get_mobilizon_events_with_status,
     get_mobilizon_events_without_publications,
 )
+from mobilizon_reshare.storage.query.read import (
+    get_all_events,
+    get_event,
+)
 from mobilizon_reshare.dataclasses.publication import build_publications_for_event
 from mobilizon_reshare.models.publication import PublicationStatus
 from mobilizon_reshare.storage.query.read import publications_with_status
 from tests import today
+from tests.commands.test_publish import one_unpublished_event_specification
 from tests.conftest import event_0, event_1, event_3
 from tests.storage import complete_specification
 from tests.storage import result_publication
@@ -151,6 +156,14 @@ async def test_events_without_publications(spec, expected_events, generate_model
     unpublished_events = list(await get_mobilizon_events_without_publications())
     assert len(unpublished_events) == len(expected_events)
     assert unpublished_events == expected_events
+
+
+@pytest.mark.asyncio
+async def test_get_all_events(generate_models):
+    await generate_models(one_unpublished_event_specification)
+
+    all_events = [await get_event(event_0.mobilizon_id)]
+    assert list(await get_all_events()) == all_events
 
 
 @pytest.mark.asyncio

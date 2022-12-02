@@ -122,16 +122,16 @@ async def test_retry_publication_missing(
 async def test_event_retry_failure(
     event_with_failed_publication,
     mock_publisher_config,
+    mock_notifier_config,
     failed_publication: Publication,
-    caplog,
 ):
 
-    with caplog.at_level(ERROR):
-        await retry_event(event_with_failed_publication.mobilizon_id)
-        assert (
-            f"Publication {failed_publication.id} failed with status: 0.\nReason: credentials error"
-            in caplog.text
-        )
+    report = await retry_event(event_with_failed_publication.mobilizon_id)
+    assert len(report.reports) == 1
+    assert (
+        f"Publication {failed_publication.id} failed with status: FAILED.\nReason: credentials error"
+        in report.reports[0].get_failure_message()
+    )
 
     p = await Publication.filter(id=failed_publication.id).first()
     assert p.status == PublicationStatus.FAILED, p.id
@@ -144,15 +144,17 @@ async def test_event_retry_failure(
 async def test_publication_retry_failure(
     event_with_failed_publication,
     mock_publisher_config,
+    mock_notifier_config,
     failed_publication: Publication,
     caplog,
 ):
 
     with caplog.at_level(ERROR):
-        await retry_publication(failed_publication.id)
+        report = await retry_publication(failed_publication.id)
+        assert len(report.reports) == 1
         assert (
-            f"Publication {failed_publication.id} failed with status: 0.\nReason: credentials error"
-            in caplog.text
+            f"Publication {failed_publication.id} failed with status: FAILED.\nReason: credentials error"
+            in report.reports[0].get_failure_message()
         )
     p = await Publication.filter(id=failed_publication.id).first()
     assert p.status == PublicationStatus.FAILED, p.id

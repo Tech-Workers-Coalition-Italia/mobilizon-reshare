@@ -9,10 +9,14 @@ from mobilizon_reshare.dataclasses.event import (
     get_mobilizon_events_without_publications,
 )
 from mobilizon_reshare.models.event import Event
+from mobilizon_reshare.models.notification import Notification
 from mobilizon_reshare.models.publication import Publication
 from mobilizon_reshare.models.publisher import Publisher
 from mobilizon_reshare.publishers.coordinators.event_publishing import (
     EventPublicationReport,
+)
+from mobilizon_reshare.publishers.coordinators.event_publishing.notify import (
+    NotifierCoordinatorReport,
 )
 from mobilizon_reshare.publishers.coordinators.event_publishing.publish import (
     PublisherCoordinatorReport,
@@ -62,6 +66,24 @@ async def save_publication_report(
             mobilizon_id=publication_report.publication.event.mobilizon_id
         ).first()
         await upsert_publication(publication_report, event)
+
+
+@atomic()
+async def save_notification_report(
+    coordinator_report: NotifierCoordinatorReport,
+) -> None:
+    """
+    Store a notification process outcome
+    """
+    for report in coordinator_report.reports:
+        publisher = await Publisher.filter(name=report.notification.publisher.name).first()
+
+        await Notification.create(
+            publication_id=report.notification.publication.id,
+            target_id=publisher.id,
+            status=report.status,
+            message=report.reason,
+        )
 
 
 @atomic()

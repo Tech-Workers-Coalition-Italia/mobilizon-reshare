@@ -5,10 +5,8 @@ from tortoise.models import Model
 
 
 class NotificationStatus(IntEnum):
-    WAITING = 1
-    FAILED = 2
-    PARTIAL = 3
-    COMPLETED = 4
+    FAILED = 0
+    COMPLETED = 1
 
 
 class Notification(Model):

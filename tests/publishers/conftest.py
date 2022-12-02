@@ -78,3 +78,21 @@ def mock_publisher_invalid_response(message_collector):
             pass
 
     return MockPublisher()
+
+
+@pytest.fixture
+def mock_zulip_publisher_invalid_response(message_collector):
+    class MockPublisher(AbstractPlatform):
+
+        name = "zulip"
+
+        def _send(self, message, event):
+            message_collector.append(message)
+
+        def _validate_response(self, response):
+            raise InvalidResponse("Invalid response")
+
+        def validate_credentials(self) -> None:
+            pass
+
+    return MockPublisher()

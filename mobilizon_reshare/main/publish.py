@@ -23,7 +23,10 @@ from mobilizon_reshare.publishers.coordinators.event_publishing.publish import (
     PublisherCoordinatorReport,
     PublisherCoordinator,
 )
-from mobilizon_reshare.storage.query.write import save_publication_report
+from mobilizon_reshare.storage.query.write import (
+    save_publication_report,
+    save_notification_report,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -31,14 +34,16 @@ logger = logging.getLogger(__name__)
 async def publish_publications(
     publications: list[_EventPublication],
 ) -> PublisherCoordinatorReport:
-    report = PublisherCoordinator(publications).run()
+    publishers_report = PublisherCoordinator(publications).run()
+    await save_publication_report(publishers_report)
 
-    await save_publication_report(report)
-    for publication_report in report.reports:
+    for publication_report in publishers_report.reports:
         if not publication_report.successful:
-            PublicationFailureNotifiersCoordinator(publication_report,).notify_failure()
+            notifiers_report = PublicationFailureNotifiersCoordinator(publication_report,).notify_failure()
+            if notifiers_report:
+                await save_notification_report(notifiers_report)
 
-    return report
+    return publishers_report
 
 
 def perform_dry_run(publications: list[_EventPublication]):
