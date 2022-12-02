@@ -25,7 +25,6 @@ from mobilizon_reshare.publishers.abstract import (
 )
 from mobilizon_reshare.publishers.exceptions import PublisherError, InvalidResponse
 from mobilizon_reshare.storage.query.converter import event_to_model
-from mobilizon_reshare.storage.query.write import get_publisher_by_name
 from tests import today
 
 with importlib.resources.path(
@@ -195,8 +194,10 @@ def event_model_generator():
 
 @pytest.fixture()
 def publisher_model_generator():
-    def _publisher_model_generator(idx=1,):
-        return Publisher(name=f"publisher_{idx}", account_ref=f"account_ref_{idx}")
+    def _publisher_model_generator(idx=1, name=None):
+        return Publisher(
+            name=name or f"publisher_{idx}", account_ref=f"account_ref_{idx}"
+        )
 
     return _publisher_model_generator
 
@@ -509,13 +510,13 @@ async def event_with_failed_publication(
 
 
 @pytest.fixture
-async def failed_publication(stored_event) -> Publication:
+async def failed_publication(stored_event, mock_publisher) -> Publication:
 
     p = Publication(
         event=stored_event,
         status=PublicationStatus.FAILED,
         timestamp=arrow.now().datetime,
-        publisher=await get_publisher_by_name("mock"),
+        publisher=mock_publisher,
     )
     await p.save()
     return p
@@ -524,3 +525,10 @@ async def failed_publication(stored_event) -> Publication:
 @pytest.fixture
 def command_config():
     return CommandConfig(dry_run=False)
+
+
+@pytest.fixture()
+async def mock_publisher(publisher_model_generator):
+    publisher = await publisher_model_generator(name="mock")
+    await publisher.save()
+    return publisher

@@ -1,6 +1,7 @@
 import logging
 
 from fastapi import FastAPI
+from fastapi_pagination import add_pagination
 
 from mobilizon_reshare.storage.db import init as init_db, get_db_url
 from mobilizon_reshare.web.backend.events.endpoints import (
@@ -11,7 +12,6 @@ from mobilizon_reshare.web.backend.publications.endpoints import (
 )
 
 app = FastAPI()
-
 logger = logging.getLogger(__name__)
 
 
@@ -30,9 +30,15 @@ def register_endpoints(app):
     register_publication_endpoints(app)
 
 
+def init_endpoints(app):
+
+    register_endpoints(app)
+    add_pagination(app)
+
+
 @app.on_event("startup")
 async def init_app(init_logging=True):
     check_database()
     await init_db(init_logging=init_logging)
-    register_endpoints(app)
+    init_endpoints(app)
     return app
