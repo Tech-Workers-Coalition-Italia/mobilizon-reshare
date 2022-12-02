@@ -14,4 +14,4 @@ async def test_events(client: AsyncClient, event_model_generator):
     response = await client.get("/events")
     assert response.status_code == 200
     expected = await Event.to_pydantic().from_tortoise_orm(event)
-    assert response.json()[0] == json.loads(expected.json())
+    assert response.json()["items"][0] == json.loads(expected.json())
