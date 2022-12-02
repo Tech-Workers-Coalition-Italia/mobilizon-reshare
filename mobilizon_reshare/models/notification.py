@@ -17,9 +17,7 @@ class Notification(Model):
 
     message = fields.TextField()
 
-    target = fields.ForeignKeyField(
-        "models.Publisher", related_name="notifications", null=True
-    )
+    target = fields.ForeignKeyField("models.Publisher", null=True, related_name=False,)
 
     publication = fields.ForeignKeyField(
         "models.Publication", related_name="notifications", null=True
