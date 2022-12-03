@@ -3,10 +3,9 @@ from logging import DEBUG, INFO
 import pytest
 
 from mobilizon_reshare.config.command import CommandConfig
-from mobilizon_reshare.storage.query.converter import event_from_model, event_to_model
 from mobilizon_reshare.storage.query.read import get_all_mobilizon_events
 from tests.commands.conftest import simple_event_element, second_event_element
-from mobilizon_reshare.event.event import EventPublicationStatus
+from mobilizon_reshare.event.event import EventPublicationStatus, MobilizonEvent
 from mobilizon_reshare.main.start import start
 from mobilizon_reshare.models.event import Event
 from mobilizon_reshare.models.publication import PublicationStatus
@@ -86,7 +85,8 @@ async def test_start_new_event(
 
         # the derived status for the event should be COMPLETED
         assert (
-            event_from_model(all_events[0]).status == EventPublicationStatus.COMPLETED
+            MobilizonEvent.from_model(all_events[0]).status
+            == EventPublicationStatus.COMPLETED
         )
 
 
@@ -107,7 +107,7 @@ async def test_start_event_from_db(
     command_config,
 ):
     event = event_generator()
-    event_model = event_to_model(event)
+    event_model = event.to_model()
     await event_model.save()
 
     with caplog.at_level(DEBUG):
@@ -136,7 +136,10 @@ async def test_start_event_from_db(
             assert p.status == PublicationStatus.COMPLETED
 
         # the derived status for the event should be COMPLETED
-        assert event_from_model(event_model).status == EventPublicationStatus.COMPLETED
+        assert (
+            MobilizonEvent.from_model(event_model).status
+            == EventPublicationStatus.COMPLETED
+        )
 
 
 @pytest.mark.asyncio
@@ -157,7 +160,7 @@ async def test_start_publisher_failure(
     command_config,
 ):
     event = event_generator()
-    event_model = event_to_model(event)
+    event_model = event.to_model()
     await event_model.save()
 
     with caplog.at_level(DEBUG):
@@ -188,7 +191,10 @@ async def test_start_publisher_failure(
             for _ in range(2)
         ]  # 2 publications failed * 2 notifiers
         # the derived status for the event should be FAILED
-        assert event_from_model(event_model).status == EventPublicationStatus.FAILED
+        assert (
+            MobilizonEvent.from_model(event_model).status
+            == EventPublicationStatus.FAILED
+        )
 
 
 @pytest.mark.asyncio

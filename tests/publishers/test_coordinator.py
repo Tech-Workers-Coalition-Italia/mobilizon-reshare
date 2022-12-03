@@ -23,10 +23,6 @@ from mobilizon_reshare.publishers.coordinators.event_publishing.publish import (
 from mobilizon_reshare.publishers.coordinators.recap_publishing.recap import (
     RecapCoordinator,
 )
-from mobilizon_reshare.storage.query.converter import (
-    event_to_model,
-    publication_from_orm,
-)
 from tests import today
 
 
@@ -96,7 +92,7 @@ async def mock_publications(
 ):
     result = []
     for i in range(num_publications):
-        event = event_to_model(test_event)
+        event = test_event.to_model()
         await event.save()
         publisher = Publisher(name="telegram")
         await publisher.save()
@@ -107,7 +103,7 @@ async def mock_publications(
             timestamp=today + timedelta(hours=i),
             reason=None,
         )
-        publication = publication_from_orm(publication, test_event)
+        publication = EventPublication.from_orm(publication, test_event)
         publication.publisher = mock_publisher_valid
         publication.formatter = mock_formatter_valid
         result.append(publication)
