@@ -1,6 +1,6 @@
 import click
 
-from mobilizon_reshare.event.event import MobilizonEvent
+from mobilizon_reshare.dataclasses.event import MobilizonEvent
 from mobilizon_reshare.models.event import Event
 from mobilizon_reshare.publishers.platforms.platform_mapping import get_formatter_class
 

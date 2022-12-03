@@ -7,11 +7,11 @@ from tortoise.exceptions import DoesNotExist
 from tortoise.queryset import QuerySet
 from tortoise.transactions import atomic
 
-from mobilizon_reshare.event.event import MobilizonEvent, EventPublicationStatus
+from mobilizon_reshare.dataclasses.event import MobilizonEvent, EventPublicationStatus
 from mobilizon_reshare.models.event import Event
 from mobilizon_reshare.models.publication import Publication, PublicationStatus
 from mobilizon_reshare.models.publisher import Publisher
-from mobilizon_reshare.publishers.abstract import EventPublication
+from mobilizon_reshare.dataclasses.publication import EventPublication
 
 from mobilizon_reshare.storage.query.exceptions import EventNotFound
 

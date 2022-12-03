@@ -3,7 +3,7 @@ from arrow import arrow
 
 from mobilizon_reshare.cli.commands.list.list_event import list_events
 from mobilizon_reshare.cli.commands.list.list_publication import list_publications
-from mobilizon_reshare.event.event import EventPublicationStatus
+from mobilizon_reshare.dataclasses.event import EventPublicationStatus
 from mobilizon_reshare.models.publication import PublicationStatus
 
 spec = {

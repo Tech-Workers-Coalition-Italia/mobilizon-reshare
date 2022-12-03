@@ -3,7 +3,7 @@ from uuid import UUID
 import arrow
 import pytest
 
-from mobilizon_reshare.event.event import MobilizonEvent
+from mobilizon_reshare.dataclasses.event import MobilizonEvent
 from mobilizon_reshare.mobilizon.events import (
     get_mobilizon_future_events,
     MobilizonRequestFailed,

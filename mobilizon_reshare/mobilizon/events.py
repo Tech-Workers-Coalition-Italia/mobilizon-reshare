@@ -8,7 +8,7 @@ import arrow
 import requests
 
 from mobilizon_reshare.config.config import get_settings
-from mobilizon_reshare.event.event import MobilizonEvent, EventPublicationStatus
+from mobilizon_reshare.dataclasses.event import MobilizonEvent, EventPublicationStatus
 
 logger = logging.getLogger(__name__)
 

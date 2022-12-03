@@ -4,9 +4,9 @@ from typing import Optional, List
 from arrow import now
 
 from mobilizon_reshare.config.command import CommandConfig
-from mobilizon_reshare.event.event import EventPublicationStatus, MobilizonEvent
+from mobilizon_reshare.dataclasses.event import EventPublicationStatus, MobilizonEvent
 from mobilizon_reshare.publishers import get_active_publishers
-from mobilizon_reshare.publishers.abstract import RecapPublication
+from mobilizon_reshare.dataclasses.publication import RecapPublication
 from mobilizon_reshare.publishers.coordinators.event_publishing.notify import (
     PublicationFailureNotifiersCoordinator,
 )

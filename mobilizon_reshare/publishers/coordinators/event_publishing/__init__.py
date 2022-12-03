@@ -4,7 +4,7 @@ from dataclasses import dataclass
 from typing import List, Optional
 
 from mobilizon_reshare.models.publication import PublicationStatus
-from mobilizon_reshare.publishers.abstract import EventPublication
+from mobilizon_reshare.dataclasses.publication import EventPublication
 from mobilizon_reshare.publishers.coordinators import BasePublicationReport
 
 

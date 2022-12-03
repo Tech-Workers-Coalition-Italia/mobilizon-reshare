@@ -5,7 +5,7 @@ from typing import List, Optional
 import arrow
 
 from mobilizon_reshare.config.config import get_settings
-from mobilizon_reshare.event.event import MobilizonEvent
+from mobilizon_reshare.dataclasses.event import MobilizonEvent
 
 logger = logging.getLogger(__name__)
 

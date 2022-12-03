@@ -3,7 +3,7 @@ from dataclasses import dataclass
 from typing import Sequence
 import logging
 from mobilizon_reshare.models.publication import PublicationStatus
-from mobilizon_reshare.publishers.abstract import EventPublication
+from mobilizon_reshare.dataclasses.publication import EventPublication
 from mobilizon_reshare.publishers.coordinators import BaseCoordinatorReport
 from mobilizon_reshare.publishers.coordinators.event_publishing import (
     BaseEventPublishingCoordinator,

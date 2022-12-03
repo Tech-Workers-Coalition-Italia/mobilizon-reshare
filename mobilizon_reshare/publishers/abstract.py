@@ -1,17 +1,14 @@
 import inspect
 import logging
 from abc import ABC, abstractmethod
-from dataclasses import dataclass
-from typing import List, Optional
-from uuid import UUID
+from typing import Optional
 
 from dynaconf.utils.boxing import DynaBox
 from jinja2 import Environment, FileSystemLoader, Template
 
 from mobilizon_reshare.config.config import get_settings
-from mobilizon_reshare.event.event import MobilizonEvent
+from mobilizon_reshare.dataclasses.event import MobilizonEvent
 from .exceptions import InvalidAttribute
-from ..models.publication import Publication
 
 JINJA_ENV = Environment(loader=FileSystemLoader("/"))
 
@@ -176,32 +173,3 @@ class AbstractEventFormatter(LoggerMixin, ConfLoaderMixin):
 
     def _preprocess_message(self, message: str):
         return message
-
-
-@dataclass
-class BasePublication:
-    publisher: AbstractPlatform
-    formatter: AbstractEventFormatter
-
-
-@dataclass
-class EventPublication(BasePublication):
-    event: MobilizonEvent
-    id: UUID
-
-    @classmethod
-    def from_orm(cls, model: Publication, event: MobilizonEvent):
-        # imported here to avoid circular dependencies
-        from mobilizon_reshare.publishers.platforms.platform_mapping import (
-            get_publisher_class,
-            get_formatter_class,
-        )
-
-        publisher = get_publisher_class(model.publisher.name)()
-        formatter = get_formatter_class(model.publisher.name)()
-        return cls(publisher, formatter, event, model.id,)
-
-
-@dataclass
-class RecapPublication(BasePublication):
-    events: List[MobilizonEvent]

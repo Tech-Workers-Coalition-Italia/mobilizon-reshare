@@ -2,10 +2,10 @@ import logging.config
 from typing import Optional, Iterator
 
 from mobilizon_reshare.config.command import CommandConfig
-from mobilizon_reshare.event.event import MobilizonEvent
+from mobilizon_reshare.dataclasses.event import MobilizonEvent
 from mobilizon_reshare.event.event_selection_strategies import select_event_to_publish
 from mobilizon_reshare.publishers import get_active_publishers
-from mobilizon_reshare.publishers.abstract import EventPublication
+from mobilizon_reshare.dataclasses.publication import EventPublication
 from mobilizon_reshare.publishers.coordinators.event_publishing.notify import (
     PublicationFailureNotifiersCoordinator,
 )

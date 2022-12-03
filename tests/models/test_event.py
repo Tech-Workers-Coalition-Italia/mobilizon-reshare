@@ -5,7 +5,7 @@ import arrow
 import pytest
 import tortoise.timezone
 
-from mobilizon_reshare.event.event import EventPublicationStatus, MobilizonEvent
+from mobilizon_reshare.dataclasses.event import EventPublicationStatus, MobilizonEvent
 from mobilizon_reshare.models.event import Event
 from mobilizon_reshare.models.publication import PublicationStatus
 

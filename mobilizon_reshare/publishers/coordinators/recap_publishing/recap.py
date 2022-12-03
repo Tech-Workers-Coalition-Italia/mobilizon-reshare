@@ -3,7 +3,7 @@ from dataclasses import dataclass
 from typing import Optional, Sequence, List
 
 from mobilizon_reshare.models.publication import PublicationStatus
-from mobilizon_reshare.publishers.abstract import RecapPublication
+from mobilizon_reshare.dataclasses.publication import RecapPublication
 from mobilizon_reshare.publishers.coordinators import (
     BasePublicationReport,
     BaseCoordinatorReport,

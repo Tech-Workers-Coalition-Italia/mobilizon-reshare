@@ -5,13 +5,13 @@ from unittest.mock import MagicMock
 
 import pytest
 
-from mobilizon_reshare.event.event import MobilizonEvent
+from mobilizon_reshare.dataclasses.event import MobilizonEvent
 from mobilizon_reshare.models.publication import (
     PublicationStatus,
     Publication as PublicationModel,
 )
 from mobilizon_reshare.models.publisher import Publisher
-from mobilizon_reshare.publishers.abstract import EventPublication, RecapPublication
+from mobilizon_reshare.dataclasses.publication import EventPublication, RecapPublication
 from mobilizon_reshare.publishers.coordinators.event_publishing.notify import (
     PublicationFailureNotifiersCoordinator,
 )
