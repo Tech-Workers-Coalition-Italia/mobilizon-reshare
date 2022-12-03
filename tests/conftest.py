@@ -24,7 +24,6 @@ from mobilizon_reshare.publishers.abstract import (
     AbstractEventFormatter,
 )
 from mobilizon_reshare.publishers.exceptions import PublisherError, InvalidResponse
-from mobilizon_reshare.storage.query.converter import event_to_model
 from tests import today
 
 with importlib.resources.path(
@@ -121,7 +120,7 @@ def event() -> MobilizonEvent:
 
 @pytest.fixture
 async def stored_event(event) -> Event:
-    model = event_to_model(event)
+    model = event.to_model()
     await model.save()
     await model.fetch_related("publications")
     return model

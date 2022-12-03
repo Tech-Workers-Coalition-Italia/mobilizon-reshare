@@ -5,14 +5,9 @@ import arrow
 import pytest
 import tortoise.timezone
 
-from mobilizon_reshare.event.event import EventPublicationStatus
+from mobilizon_reshare.event.event import EventPublicationStatus, MobilizonEvent
 from mobilizon_reshare.models.event import Event
 from mobilizon_reshare.models.publication import PublicationStatus
-from mobilizon_reshare.storage.query.converter import (
-    event_from_model,
-    event_to_model,
-    compute_event_status,
-)
 
 
 @pytest.mark.asyncio
@@ -93,7 +88,7 @@ async def test_event_sort_by_date(event_model_generator):
 
 @pytest.mark.asyncio
 async def test_mobilizon_event_to_model(event):
-    event_model = event_to_model(event)
+    event_model = event.to_model()
     await event_model.save()
 
     event_db = await Event.all().first()
@@ -141,7 +136,7 @@ async def test_mobilizon_event_from_model(
         .prefetch_related("publications__publisher")
         .first()
     )
-    event = event_from_model(event=event_db)
+    event = MobilizonEvent.from_model(event=event_db)
 
     begin_date_utc = arrow.Arrow(year=2021, month=1, day=1, hour=11, minute=30)
 
@@ -196,4 +191,4 @@ async def test_mobilizon_event_compute_status_partial(
         )
         await publication.save()
         publications.append(publication)
-    assert compute_event_status(publications) == expected_result
+    assert MobilizonEvent._compute_event_status(publications) == expected_result
