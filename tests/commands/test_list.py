@@ -3,7 +3,7 @@ from arrow import arrow
 
 from mobilizon_reshare.cli.commands.list.list_event import list_events
 from mobilizon_reshare.cli.commands.list.list_publication import list_publications
-from mobilizon_reshare.dataclasses.event import EventPublicationStatus
+from mobilizon_reshare.dataclasses.event import _EventPublicationStatus
 from mobilizon_reshare.models.publication import PublicationStatus
 
 spec = {
@@ -40,7 +40,7 @@ async def test_list_events(capsys, generate_models):
 @pytest.mark.asyncio
 async def test_list_events_with_status(capsys, generate_models):
     await generate_models(spec)
-    await list_events(status=EventPublicationStatus.WAITING)
+    await list_events(status=_EventPublicationStatus.WAITING)
     output = capsys.readouterr()
     assert clean_output(output) == [
         "event_0                    WAITING   00000000-0000-0000-0000-000000000000"
@@ -114,7 +114,7 @@ async def test_list_publications_empty(capsys, generate_models):
 
 @pytest.mark.asyncio
 async def test_list_events_empty_with_status(capsys, generate_models):
-    await list_events(status=EventPublicationStatus.FAILED)
+    await list_events(status=_EventPublicationStatus.FAILED)
     output = capsys.readouterr()
     assert clean_output(output) == ["No event found with status: FAILED"]
 

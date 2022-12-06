@@ -3,17 +3,16 @@ import logging
 from dataclasses import dataclass
 from typing import List, Optional
 
+from mobilizon_reshare.dataclasses.publication import _EventPublication
 from mobilizon_reshare.models.publication import PublicationStatus
-from mobilizon_reshare.dataclasses.publication import EventPublication
 from mobilizon_reshare.publishers.coordinators import BasePublicationReport
-
 
 logger = logging.getLogger(__name__)
 
 
 @dataclass
 class EventPublicationReport(BasePublicationReport):
-    publication: EventPublication
+    publication: _EventPublication
     published_content: Optional[str] = dataclasses.field(default=None)
 
     def get_failure_message(self):
@@ -29,7 +28,7 @@ class EventPublicationReport(BasePublicationReport):
 
 
 class BaseEventPublishingCoordinator:
-    def __init__(self, publications: List[EventPublication]):
+    def __init__(self, publications: List[_EventPublication]):
         self.publications = publications
 
     def _safe_run(self, reasons, f, *args, **kwargs):

@@ -6,7 +6,7 @@ import requests
 from requests import Response
 from requests.auth import HTTPBasicAuth
 
-from mobilizon_reshare.dataclasses.event import MobilizonEvent
+from mobilizon_reshare.dataclasses import MobilizonEvent
 from mobilizon_reshare.formatting.description import html_to_markdown
 from mobilizon_reshare.publishers.abstract import (
     AbstractPlatform,

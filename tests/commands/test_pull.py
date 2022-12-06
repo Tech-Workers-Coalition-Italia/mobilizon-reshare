@@ -2,16 +2,14 @@ from logging import DEBUG, INFO
 
 import pytest
 
-from mobilizon_reshare.storage.query.read import (
-    get_all_mobilizon_events,
-    events_without_publications,
-)
+from mobilizon_reshare.dataclasses.event import get_all_mobilizon_events
+from mobilizon_reshare.dataclasses.to_split import events_without_publications
+from mobilizon_reshare.main.pull import pull
+from mobilizon_reshare.main.start import start
 from tests.commands.conftest import (
     second_event_element,
     first_event_element,
 )
-from mobilizon_reshare.main.pull import pull
-from mobilizon_reshare.main.start import start
 from tests.conftest import event_0, event_1
 
 empty_specification = {"event": 0, "publications": [], "publisher": []}

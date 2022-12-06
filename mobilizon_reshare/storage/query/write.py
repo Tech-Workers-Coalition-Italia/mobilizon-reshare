@@ -4,19 +4,19 @@ from typing import Iterable, Optional
 import arrow
 from tortoise.transactions import atomic
 
-from mobilizon_reshare.dataclasses.event import MobilizonEvent
+from mobilizon_reshare.dataclasses import MobilizonEvent
+from mobilizon_reshare.dataclasses.to_split import (
+    events_without_publications,
+    get_publisher_by_name,
+    is_known,
+)
 from mobilizon_reshare.models.event import Event
 from mobilizon_reshare.models.publication import Publication
 from mobilizon_reshare.models.publisher import Publisher
 from mobilizon_reshare.publishers.coordinators.event_publishing.publish import (
     PublisherCoordinatorReport,
 )
-from mobilizon_reshare.storage.query.read import (
-    events_without_publications,
-    is_known,
-    get_publisher_by_name,
-    get_event,
-)
+from mobilizon_reshare.storage.query.read import get_event
 
 
 async def create_publisher(name: str, account_ref: Optional[str] = None) -> None:

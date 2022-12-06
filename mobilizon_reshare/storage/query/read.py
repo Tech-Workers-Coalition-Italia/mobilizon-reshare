@@ -1,61 +1,14 @@
-from functools import partial
-from typing import Iterable, Optional, Iterator
+from typing import Iterable, Optional
 from uuid import UUID
 
 from arrow import Arrow
-from tortoise.exceptions import DoesNotExist
 from tortoise.queryset import QuerySet
 from tortoise.transactions import atomic
 
-from mobilizon_reshare.dataclasses.event import MobilizonEvent, EventPublicationStatus
 from mobilizon_reshare.models.event import Event
 from mobilizon_reshare.models.publication import Publication, PublicationStatus
 from mobilizon_reshare.models.publisher import Publisher
-from mobilizon_reshare.dataclasses.publication import EventPublication
-
 from mobilizon_reshare.storage.query.exceptions import EventNotFound
-
-
-async def get_published_events(
-    from_date: Optional[Arrow] = None, to_date: Optional[Arrow] = None
-) -> Iterable[MobilizonEvent]:
-    """
-    Retrieves events that are not waiting. Function could be renamed to something more fitting
-    :return:
-    """
-    return await events_with_status(
-        [
-            EventPublicationStatus.COMPLETED,
-            EventPublicationStatus.PARTIAL,
-            EventPublicationStatus.FAILED,
-        ],
-        from_date=from_date,
-        to_date=to_date,
-    )
-
-
-async def events_with_status(
-    status: list[EventPublicationStatus],
-    from_date: Optional[Arrow] = None,
-    to_date: Optional[Arrow] = None,
-) -> Iterable[MobilizonEvent]:
-    def _filter_event_with_status(event: Event) -> bool:
-        # This computes the status client-side instead of running in the DB. It shouldn't pose a performance problem
-        # in the short term, but should be moved to the query if possible.
-        event_status = MobilizonEvent._compute_event_status(list(event.publications))
-        return event_status in status
-
-    query = Event.all()
-
-    return map(
-        MobilizonEvent.from_model,
-        filter(
-            _filter_event_with_status,
-            await prefetch_event_relations(
-                _add_date_window(query, "begin_datetime", from_date, to_date)
-            ),
-        ),
-    )
 
 
 async def get_all_publications(
@@ -64,12 +17,6 @@ async def get_all_publications(
     return await prefetch_publication_relations(
         _add_date_window(Publication.all(), "timestamp", from_date, to_date)
     )
-
-
-async def get_all_mobilizon_events(
-    from_date: Optional[Arrow] = None, to_date: Optional[Arrow] = None,
-) -> list[MobilizonEvent]:
-    return [MobilizonEvent.from_model(event) for event in await get_all_events()]
 
 
 async def get_all_events(
@@ -129,16 +76,6 @@ async def publications_with_status(
     )
 
 
-async def events_without_publications(
-    from_date: Optional[Arrow] = None, to_date: Optional[Arrow] = None,
-) -> list[MobilizonEvent]:
-    query = Event.filter(publications__id=None)
-    events = await prefetch_event_relations(
-        _add_date_window(query, "begin_datetime", from_date, to_date)
-    )
-    return [MobilizonEvent.from_model(event) for event in events]
-
-
 async def get_event(event_mobilizon_id: UUID) -> Event:
     events = await prefetch_event_relations(
         Event.filter(mobilizon_id=event_mobilizon_id)
@@ -147,75 +84,3 @@ async def get_event(event_mobilizon_id: UUID) -> Event:
         raise EventNotFound(f"No event with mobilizon_id {event_mobilizon_id} found.")
 
     return events[0]
-
-
-async def get_event_publications(
-    mobilizon_event: MobilizonEvent,
-) -> list[EventPublication]:
-    event = await get_event(mobilizon_event.mobilizon_id)
-    return [EventPublication.from_orm(p, mobilizon_event) for p in event.publications]
-
-
-async def get_mobilizon_event(event_mobilizon_id: UUID) -> MobilizonEvent:
-    return MobilizonEvent.from_model(await get_event(event_mobilizon_id))
-
-
-async def get_publisher_by_name(name) -> Publisher:
-    return await Publisher.filter(name=name).first()
-
-
-async def is_known(event: MobilizonEvent) -> bool:
-    try:
-        await get_event(event.mobilizon_id)
-        return True
-    except EventNotFound:
-        return False
-
-
-@atomic()
-async def build_publications(
-    event: MobilizonEvent, publishers: Iterator[str]
-) -> list[EventPublication]:
-    event_model = await get_event(event.mobilizon_id)
-    models = [
-        await event_model.build_publication_by_publisher_name(name)
-        for name in publishers
-    ]
-    return [EventPublication.from_orm(m, event) for m in models]
-
-
-@atomic()
-async def get_failed_publications_for_event(
-    event_mobilizon_id: UUID,
-) -> list[EventPublication]:
-    event = await get_event(event_mobilizon_id)
-    failed_publications = list(
-        filter(
-            lambda publications: publications.status == PublicationStatus.FAILED,
-            event.publications,
-        )
-    )
-    for p in failed_publications:
-        await p.fetch_related("publisher")
-    mobilizon_event = MobilizonEvent.from_model(event)
-    return list(
-        map(
-            partial(EventPublication.from_orm, event=mobilizon_event),
-            failed_publications,
-        )
-    )
-
-
-@atomic()
-async def get_publication(publication_id: UUID):
-    try:
-        publication = await prefetch_publication_relations(
-            Publication.get(id=publication_id).first()
-        )
-        # TODO: this is redundant but there's some prefetch problem otherwise
-        publication.event = await get_event(publication.event.mobilizon_id)
-        return EventPublication.from_orm(
-            event=MobilizonEvent.from_model(publication.event), model=publication
-        )
-    except DoesNotExist:
-        return None

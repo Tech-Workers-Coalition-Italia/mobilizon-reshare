@@ -2,10 +2,18 @@ import logging.config
 from typing import Optional, Iterator
 
 from mobilizon_reshare.config.command import CommandConfig
-from mobilizon_reshare.dataclasses.event import MobilizonEvent
+from mobilizon_reshare.dataclasses import MobilizonEvent
+from mobilizon_reshare.dataclasses.event import get_published_events
+from mobilizon_reshare.dataclasses.publication import _EventPublication
+from mobilizon_reshare.dataclasses.to_split import (
+    events_without_publications,
+    build_publications,
+)
 from mobilizon_reshare.event.event_selection_strategies import select_event_to_publish
 from mobilizon_reshare.publishers import get_active_publishers
-from mobilizon_reshare.dataclasses.publication import EventPublication
+from mobilizon_reshare.publishers.coordinators.event_publishing.dry_run import (
+    DryRunPublisherCoordinator,
+)
 from mobilizon_reshare.publishers.coordinators.event_publishing.notify import (
     PublicationFailureNotifiersCoordinator,
 )
@@ -13,21 +21,13 @@ from mobilizon_reshare.publishers.coordinators.event_publishing.publish import (
     PublisherCoordinatorReport,
     PublisherCoordinator,
 )
-from mobilizon_reshare.storage.query.read import (
-    get_published_events,
-    build_publications,
-    events_without_publications,
-)
 from mobilizon_reshare.storage.query.write import save_publication_report
-from mobilizon_reshare.publishers.coordinators.event_publishing.dry_run import (
-    DryRunPublisherCoordinator,
-)
 
 logger = logging.getLogger(__name__)
 
 
 async def publish_publications(
-    publications: list[EventPublication],
+    publications: list[_EventPublication],
 ) -> PublisherCoordinatorReport:
     report = PublisherCoordinator(publications).run()
 
@@ -39,7 +39,7 @@ async def publish_publications(
     return report
 
 
-def perform_dry_run(publications: list[EventPublication]):
+def perform_dry_run(publications: list[_EventPublication]):
     return DryRunPublisherCoordinator(publications).run()
 
 

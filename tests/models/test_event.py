@@ -5,7 +5,9 @@ import arrow
 import pytest
 import tortoise.timezone
 
-from mobilizon_reshare.dataclasses.event import EventPublicationStatus, MobilizonEvent
+from mobilizon_reshare.dataclasses import EventPublicationStatus
+from mobilizon_reshare.dataclasses import MobilizonEvent
+from mobilizon_reshare.dataclasses.event_publication_status import _compute_event_status
 from mobilizon_reshare.models.event import Event
 from mobilizon_reshare.models.publication import PublicationStatus
 
@@ -191,4 +193,4 @@ async def test_mobilizon_event_compute_status_partial(
         )
         await publication.save()
         publications.append(publication)
-    assert MobilizonEvent._compute_event_status(publications) == expected_result
+    assert _compute_event_status(publications) == expected_result

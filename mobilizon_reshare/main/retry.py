@@ -2,15 +2,15 @@ import logging
 from typing import Optional
 from uuid import UUID
 
+from mobilizon_reshare.dataclasses.to_split import (
+    get_publication,
+    get_failed_publications_for_event,
+)
 from mobilizon_reshare.main.publish import publish_publications
 from mobilizon_reshare.publishers.coordinators.event_publishing.publish import (
     PublisherCoordinatorReport,
 )
 from mobilizon_reshare.storage.query.exceptions import EventNotFound
-from mobilizon_reshare.storage.query.read import (
-    get_failed_publications_for_event,
-    get_publication,
-)
 
 logger = logging.getLogger(__name__)
 

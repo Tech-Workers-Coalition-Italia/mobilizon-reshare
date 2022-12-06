@@ -19,7 +19,7 @@ from mobilizon_reshare.cli.commands.start.main import start_command as start_mai
 from mobilizon_reshare.config.command import CommandConfig
 from mobilizon_reshare.config.config import current_version, get_settings
 from mobilizon_reshare.config.publishers import publisher_names
-from mobilizon_reshare.dataclasses.event import EventPublicationStatus
+from mobilizon_reshare.dataclasses.event import _EventPublicationStatus
 from mobilizon_reshare.models.publication import PublicationStatus
 from mobilizon_reshare.publishers import get_active_publishers
 
@@ -49,10 +49,10 @@ def print_platforms(ctx, param, value):
 
 status_name_to_enum = {
     "event": {
-        "waiting": EventPublicationStatus.WAITING,
-        "completed": EventPublicationStatus.COMPLETED,
-        "failed": EventPublicationStatus.FAILED,
-        "partial": EventPublicationStatus.PARTIAL,
+        "waiting": _EventPublicationStatus.WAITING,
+        "completed": _EventPublicationStatus.COMPLETED,
+        "failed": _EventPublicationStatus.FAILED,
+        "partial": _EventPublicationStatus.PARTIAL,
         "all": None,
     },
     "publication": {

@@ -5,7 +5,7 @@ import pkg_resources
 import requests
 from requests import Response
 
-from mobilizon_reshare.dataclasses.event import MobilizonEvent
+from mobilizon_reshare.dataclasses import MobilizonEvent
 from mobilizon_reshare.publishers.abstract import (
     AbstractPlatform,
     AbstractEventFormatter,

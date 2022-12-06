@@ -1,6 +1,6 @@
 import logging.config
 
-from mobilizon_reshare.dataclasses.event import MobilizonEvent
+from mobilizon_reshare.dataclasses import MobilizonEvent
 from mobilizon_reshare.mobilizon.events import get_mobilizon_future_events
 from mobilizon_reshare.storage.query.write import create_unpublished_events
 

@@ -4,19 +4,21 @@ from uuid import UUID
 import arrow
 import pytest
 
-from mobilizon_reshare.dataclasses.event import EventPublicationStatus
-from mobilizon_reshare.models.publication import PublicationStatus
-from mobilizon_reshare.storage.query.read import (
+from mobilizon_reshare.dataclasses.event import (
+    _EventPublicationStatus,
     get_published_events,
-    events_with_status,
-    publications_with_status,
-    events_without_publications,
-    build_publications,
-    get_event_publications,
+    get_mobilizon_events_with_status,
 )
+from mobilizon_reshare.dataclasses.to_split import (
+    events_without_publications,
+    get_event_publications,
+    build_publications,
+)
+from mobilizon_reshare.models.publication import PublicationStatus
+from mobilizon_reshare.storage.query.read import publications_with_status
 from tests import today
-from tests.storage import complete_specification
 from tests.conftest import event_0, event_1, event_3
+from tests.storage import complete_specification
 from tests.storage import result_publication
 
 
@@ -69,11 +71,11 @@ async def test_publications_with_status(
 @pytest.mark.asyncio
 @pytest.mark.parametrize(
     "status, expected_events_count",
-    [(EventPublicationStatus.COMPLETED, 2), (EventPublicationStatus.PARTIAL, 1)],
+    [(_EventPublicationStatus.COMPLETED, 2), (_EventPublicationStatus.PARTIAL, 1)],
 )
 async def test_event_with_status(generate_models, status, expected_events_count):
     await generate_models(complete_specification)
-    result = list(await events_with_status([status]))
+    result = list(await get_mobilizon_events_with_status([status]))
 
     assert len(result) == expected_events_count
 
@@ -83,25 +85,25 @@ async def test_event_with_status(generate_models, status, expected_events_count)
     "status, expected_events_count, begin_window, end_window",
     [
         (
-            EventPublicationStatus.COMPLETED,
+            _EventPublicationStatus.COMPLETED,
             2,
             arrow.get(today + timedelta(hours=-1)),
             None,
         ),
         (
-            EventPublicationStatus.COMPLETED,
+            _EventPublicationStatus.COMPLETED,
             1,
             arrow.get(today + timedelta(hours=1)),
             None,
         ),
         (
-            EventPublicationStatus.COMPLETED,
+            _EventPublicationStatus.COMPLETED,
             1,
             arrow.get(today + timedelta(hours=-2)),
             arrow.get(today + timedelta(hours=1)),
         ),
         (
-            EventPublicationStatus.COMPLETED,
+            _EventPublicationStatus.COMPLETED,
             0,
             arrow.get(today + timedelta(hours=-2)),
             arrow.get(today + timedelta(hours=0)),
@@ -113,7 +115,9 @@ async def test_event_with_status_window(
 ):
     await generate_models(complete_specification)
     result = list(
-        await events_with_status([status], from_date=begin_window, to_date=end_window)
+        await get_mobilizon_events_with_status(
+            [status], from_date=begin_window, to_date=end_window
+        )
     )
 
     assert len(result) == expected_events_count

@@ -3,6 +3,7 @@ import requests
 import responses
 
 from mobilizon_reshare.config.config import get_settings
+from mobilizon_reshare.dataclasses.to_split import build_publications
 from mobilizon_reshare.models.publication import PublicationStatus
 from mobilizon_reshare.publishers.coordinators.event_publishing.publish import (
     PublisherCoordinator,
@@ -14,7 +15,7 @@ from mobilizon_reshare.publishers.exceptions import (
     HTTPResponseError,
 )
 from mobilizon_reshare.publishers.platforms.zulip import ZulipFormatter, ZulipPublisher
-from mobilizon_reshare.storage.query.read import build_publications, get_all_publishers
+from mobilizon_reshare.storage.query.read import get_all_publishers
 
 one_publication_specification = {
     "event": 1,

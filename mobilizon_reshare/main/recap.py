@@ -4,23 +4,24 @@ from typing import Optional, List
 from arrow import now
 
 from mobilizon_reshare.config.command import CommandConfig
-from mobilizon_reshare.dataclasses.event import EventPublicationStatus, MobilizonEvent
-from mobilizon_reshare.publishers import get_active_publishers
+from mobilizon_reshare.dataclasses import EventPublicationStatus
+from mobilizon_reshare.dataclasses import MobilizonEvent
+from mobilizon_reshare.dataclasses.event import get_mobilizon_events_with_status
 from mobilizon_reshare.dataclasses.publication import RecapPublication
+from mobilizon_reshare.publishers import get_active_publishers
+from mobilizon_reshare.publishers.coordinators import BaseCoordinatorReport
 from mobilizon_reshare.publishers.coordinators.event_publishing.notify import (
     PublicationFailureNotifiersCoordinator,
+)
+from mobilizon_reshare.publishers.coordinators.recap_publishing.dry_run import (
+    DryRunRecapCoordinator,
 )
 from mobilizon_reshare.publishers.coordinators.recap_publishing.recap import (
     RecapCoordinator,
 )
-from mobilizon_reshare.publishers.coordinators import BaseCoordinatorReport
 from mobilizon_reshare.publishers.platforms.platform_mapping import (
     get_publisher_class,
     get_formatter_class,
-)
-from mobilizon_reshare.storage.query.read import events_with_status
-from mobilizon_reshare.publishers.coordinators.recap_publishing.dry_run import (
-    DryRunRecapCoordinator,
 )
 
 logger = logging.getLogger(__name__)
@@ -28,7 +29,7 @@ logger = logging.getLogger(__name__)
 
 async def select_events_to_recap() -> List[MobilizonEvent]:
     return list(
-        await events_with_status(
+        await get_mobilizon_events_with_status(
             status=[EventPublicationStatus.COMPLETED], from_date=now()
         )
     )

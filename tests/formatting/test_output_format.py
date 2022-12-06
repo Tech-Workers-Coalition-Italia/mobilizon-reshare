@@ -4,7 +4,7 @@ from uuid import UUID
 import arrow
 import pytest
 
-from mobilizon_reshare.dataclasses.event import MobilizonEvent
+from mobilizon_reshare.dataclasses import MobilizonEvent
 from mobilizon_reshare.publishers.platforms.platform_mapping import get_formatter_class
 
 begin_date = arrow.get(datetime(year=2021, month=1, day=1, hour=11, minute=30,))

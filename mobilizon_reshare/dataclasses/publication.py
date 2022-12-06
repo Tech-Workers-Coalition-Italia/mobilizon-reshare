@@ -2,9 +2,8 @@ from dataclasses import dataclass
 from typing import List
 from uuid import UUID
 
-from mobilizon_reshare.dataclasses.event import MobilizonEvent
+from mobilizon_reshare.dataclasses.event import _MobilizonEvent
 from mobilizon_reshare.models.publication import Publication
-
 from mobilizon_reshare.publishers.abstract import (
     AbstractPlatform,
     AbstractEventFormatter,
@@ -18,12 +17,12 @@ class BasePublication:
 
 
 @dataclass
-class EventPublication(BasePublication):
-    event: MobilizonEvent
+class _EventPublication(BasePublication):
+    event: _MobilizonEvent
     id: UUID
 
     @classmethod
-    def from_orm(cls, model: Publication, event: MobilizonEvent):
+    def from_orm(cls, model: Publication, event: _MobilizonEvent):
         # imported here to avoid circular dependencies
         from mobilizon_reshare.publishers.platforms.platform_mapping import (
             get_publisher_class,
@@ -37,4 +36,4 @@ class EventPublication(BasePublication):
 
 @dataclass
 class RecapPublication(BasePublication):
-    events: List[MobilizonEvent]
+    events: List[_MobilizonEvent]

@@ -2,8 +2,9 @@ from logging import DEBUG
 
 import pytest
 
+from mobilizon_reshare.dataclasses import EventPublicationStatus
+from mobilizon_reshare.dataclasses import MobilizonEvent
 from mobilizon_reshare.main.publish import select_and_publish, publish_event
-from mobilizon_reshare.dataclasses.event import EventPublicationStatus, MobilizonEvent
 from mobilizon_reshare.models.event import Event
 from mobilizon_reshare.models.publication import PublicationStatus
 from mobilizon_reshare.storage.query.read import get_all_publications
