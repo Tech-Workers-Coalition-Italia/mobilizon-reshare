@@ -46,13 +46,6 @@ async def get_publisher_by_name(name) -> Publisher:
     return await Publisher.filter(name=name).first()
 
 
-async def get_event_publications(
-    mobilizon_event: MobilizonEvent,
-) -> list[EventPublication]:
-    event = await get_event(mobilizon_event.mobilizon_id)
-    return [EventPublication.from_orm(p, mobilizon_event) for p in event.publications]
-
-
 async def is_known(event: MobilizonEvent) -> bool:
     try:
         await get_event(event.mobilizon_id)

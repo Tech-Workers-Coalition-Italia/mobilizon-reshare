@@ -1,5 +1,4 @@
 from datetime import timedelta
-from uuid import UUID
 
 import arrow
 import pytest
@@ -11,7 +10,6 @@ from mobilizon_reshare.dataclasses.event import (
 )
 from mobilizon_reshare.dataclasses.to_split import (
     events_without_publications,
-    get_event_publications,
     build_publications,
 )
 from mobilizon_reshare.models.publication import PublicationStatus
@@ -193,52 +191,3 @@ async def test_build_publications(
     for p in publications:
         assert p.event == event
         assert p.publisher.name in mock_active_publishers
-
-
-@pytest.mark.asyncio
-@pytest.mark.parametrize(
-    "mock_active_publishers, spec, event, publications_ids",
-    [
-        (
-            ["telegram", "zulip", "mastodon", "facebook"],
-            {"event": 2, "publications": [], "publisher": ["zulip"]},
-            event_0,
-            [],
-        ),
-        (
-            ["telegram", "zulip", "mastodon", "facebook"],
-            {
-                "event": 2,
-                "publications": [
-                    {
-                        "event_idx": 1,
-                        "publisher_idx": 0,
-                        "status": PublicationStatus.COMPLETED,
-                    },
-                    {
-                        "event_idx": 0,
-                        "publisher_idx": 0,
-                        "status": PublicationStatus.FAILED,
-                    },
-                ],
-                "publisher": ["zulip"],
-            },
-            event_1,
-            # This tuples are made like so: (event_mobilizon_id, publication_id)
-            [(UUID(int=1), UUID(int=0))],
-        ),
-    ],
-    indirect=["mock_active_publishers"],
-)
-async def test_get_event_publications(
-    mock_active_publishers, spec, event, publications_ids, generate_models
-):
-    await generate_models(spec)
-
-    publications = list(await get_event_publications(event))
-
-    assert len(publications) == len(publications_ids)
-
-    for i, p in enumerate(publications):
-        assert p.event.mobilizon_id == publications_ids[i][0]
-        assert p.id == publications_ids[i][1]
