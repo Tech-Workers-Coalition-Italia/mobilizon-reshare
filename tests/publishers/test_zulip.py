@@ -14,7 +14,6 @@ from mobilizon_reshare.publishers.exceptions import (
     HTTPResponseError,
 )
 from mobilizon_reshare.publishers.platforms.zulip import ZulipFormatter, ZulipPublisher
-from mobilizon_reshare.storage.query.converter import event_to_model
 from mobilizon_reshare.storage.query.read import build_publications, get_all_publishers
 
 one_publication_specification = {
@@ -103,7 +102,7 @@ async def setup_db(generate_models):
 @pytest.fixture
 @pytest.mark.asyncio
 async def unsaved_publications(setup_db, event):
-    await event_to_model(event).save()
+    await event.to_model().save()
     publishers = [p.name for p in await get_all_publishers()]
     return await build_publications(event, publishers)
 

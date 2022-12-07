@@ -3,7 +3,7 @@ import urllib3
 from httpx import AsyncClient
 
 from mobilizon_reshare.storage import db
-from mobilizon_reshare.web.backend.main import app, register_endpoints
+from mobilizon_reshare.web.backend.main import app, init_endpoints
 
 
 @pytest.fixture(scope="session")
@@ -13,7 +13,8 @@ def anyio_backend():
 
 @pytest.fixture()
 async def client():
-    register_endpoints(app)
+    init_endpoints(app)
+
     async with AsyncClient(app=app, base_url="http://test") as client:
         yield client
 

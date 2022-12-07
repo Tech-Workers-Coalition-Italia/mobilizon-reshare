@@ -3,8 +3,7 @@ from logging import DEBUG
 import pytest
 
 from mobilizon_reshare.main.publish import select_and_publish, publish_event
-from mobilizon_reshare.storage.query.converter import event_from_model
-from mobilizon_reshare.event.event import EventPublicationStatus
+from mobilizon_reshare.event.event import EventPublicationStatus, MobilizonEvent
 from mobilizon_reshare.models.event import Event
 from mobilizon_reshare.models.publication import PublicationStatus
 from mobilizon_reshare.storage.query.read import get_all_publications
@@ -75,7 +74,9 @@ async def test_select_and_publish_new_event(
             assert p.status == PublicationStatus.COMPLETED
 
         # the derived status for the event should be COMPLETED
-        assert event_from_model(event).status == EventPublicationStatus.COMPLETED
+        assert (
+            MobilizonEvent.from_model(event).status == EventPublicationStatus.COMPLETED
+        )
 
 
 @pytest.mark.asyncio

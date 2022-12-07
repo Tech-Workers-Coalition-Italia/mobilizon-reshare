@@ -12,11 +12,7 @@ from mobilizon_reshare.models.event import Event
 from mobilizon_reshare.models.publication import Publication, PublicationStatus
 from mobilizon_reshare.models.publisher import Publisher
 from mobilizon_reshare.publishers.abstract import EventPublication
-from mobilizon_reshare.storage.query.converter import (
-    event_from_model,
-    compute_event_status,
-    publication_from_orm,
-)
+
 from mobilizon_reshare.storage.query.exceptions import EventNotFound
 
 
@@ -46,13 +42,13 @@ async def events_with_status(
     def _filter_event_with_status(event: Event) -> bool:
         # This computes the status client-side instead of running in the DB. It shouldn't pose a performance problem
         # in the short term, but should be moved to the query if possible.
-        event_status = compute_event_status(list(event.publications))
+        event_status = MobilizonEvent._compute_event_status(list(event.publications))
         return event_status in status
 
     query = Event.all()
 
     return map(
-        event_from_model,
+        MobilizonEvent.from_model,
         filter(
             _filter_event_with_status,
             await prefetch_event_relations(
@@ -70,15 +66,18 @@ async def get_all_publications(
     )
 
 
-async def get_all_events(
+async def get_all_mobilizon_events(
     from_date: Optional[Arrow] = None, to_date: Optional[Arrow] = None,
 ) -> list[MobilizonEvent]:
-    return [
-        event_from_model(event)
-        for event in await prefetch_event_relations(
-            _add_date_window(Event.all(), "begin_datetime", from_date, to_date)
-        )
-    ]
+    return [MobilizonEvent.from_model(event) for event in await get_all_events()]
+
+
+async def get_all_events(
+    from_date: Optional[Arrow] = None, to_date: Optional[Arrow] = None
+):
+    return await prefetch_event_relations(
+        _add_date_window(Event.all(), "begin_datetime", from_date, to_date)
+    )
 
 
 async def get_all_publishers() -> list[Publisher]:
@@ -137,7 +136,7 @@ async def events_without_publications(
     events = await prefetch_event_relations(
         _add_date_window(query, "begin_datetime", from_date, to_date)
     )
-    return [event_from_model(event) for event in events]
+    return [MobilizonEvent.from_model(event) for event in events]
 
 
 async def get_event(event_mobilizon_id: UUID) -> Event:
@@ -154,11 +153,11 @@ async def get_event_publications(
     mobilizon_event: MobilizonEvent,
 ) -> list[EventPublication]:
     event = await get_event(mobilizon_event.mobilizon_id)
-    return [publication_from_orm(p, mobilizon_event) for p in event.publications]
+    return [EventPublication.from_orm(p, mobilizon_event) for p in event.publications]
 
 
 async def get_mobilizon_event(event_mobilizon_id: UUID) -> MobilizonEvent:
-    return event_from_model(await get_event(event_mobilizon_id))
+    return MobilizonEvent.from_model(await get_event(event_mobilizon_id))
 
 
 async def get_publisher_by_name(name) -> Publisher:
@@ -182,7 +181,7 @@ async def build_publications(
         await event_model.build_publication_by_publisher_name(name)
         for name in publishers
     ]
-    return [publication_from_orm(m, event) for m in models]
+    return [EventPublication.from_orm(m, event) for m in models]
 
 
 @atomic()
@@ -198,9 +197,12 @@ async def get_failed_publications_for_event(
     )
     for p in failed_publications:
         await p.fetch_related("publisher")
-    mobilizon_event = event_from_model(event)
+    mobilizon_event = MobilizonEvent.from_model(event)
     return list(
-        map(partial(publication_from_orm, event=mobilizon_event), failed_publications)
+        map(
+            partial(EventPublication.from_orm, event=mobilizon_event),
+            failed_publications,
+        )
     )
 
 
@@ -212,8 +214,8 @@ async def get_publication(publication_id: UUID):
         )
         # TODO: this is redundant but there's some prefetch problem otherwise
         publication.event = await get_event(publication.event.mobilizon_id)
-        return publication_from_orm(
-            event=event_from_model(publication.event), model=publication
+        return EventPublication.from_orm(
+            event=MobilizonEvent.from_model(publication.event), model=publication
         )
     except DoesNotExist:
         return None
