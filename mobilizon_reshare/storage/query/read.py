@@ -43,7 +43,12 @@ async def prefetch_publication_relations(
     queryset: QuerySet[Publication],
 ) -> list[Publication]:
     publication = (
-        await queryset.prefetch_related("publisher", "event")
+        await queryset.prefetch_related(
+            "publisher",
+            "event",
+            "event__publications",
+            "event__publications__publisher",
+        )
         .order_by("timestamp")
         .distinct()
     )

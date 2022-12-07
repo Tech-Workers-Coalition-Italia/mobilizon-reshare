@@ -35,8 +35,6 @@ async def get_publication(publication_id: UUID):
         publication = await prefetch_publication_relations(
             Publication.get(id=publication_id).first()
         )
-        # TODO: this is redundant but there's some prefetch problem otherwise
-        publication.event = await get_event(publication.event.mobilizon_id)
         return EventPublication.from_orm(
             event=MobilizonEvent.from_model(publication.event), model=publication
         )
