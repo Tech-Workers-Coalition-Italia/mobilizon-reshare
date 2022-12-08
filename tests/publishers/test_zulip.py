@@ -3,7 +3,7 @@ import requests
 import responses
 
 from mobilizon_reshare.config.config import get_settings
-from mobilizon_reshare.dataclasses.to_split import build_publications
+from mobilizon_reshare.dataclasses.publication import build_publications_for_event
 from mobilizon_reshare.models.publication import PublicationStatus
 from mobilizon_reshare.publishers.coordinators.event_publishing.publish import (
     PublisherCoordinator,
@@ -105,7 +105,7 @@ async def setup_db(generate_models):
 async def unsaved_publications(setup_db, event):
     await event.to_model().save()
     publishers = [p.name for p in await get_all_publishers()]
-    return await build_publications(event, publishers)
+    return await build_publications_for_event(event, publishers)
 
 
 @pytest.mark.asyncio

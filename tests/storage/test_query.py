@@ -8,10 +8,8 @@ from mobilizon_reshare.dataclasses.event import (
     get_published_events,
     get_mobilizon_events_with_status,
 )
-from mobilizon_reshare.dataclasses.to_split import (
-    events_without_publications,
-    build_publications,
-)
+from mobilizon_reshare.dataclasses.publication import build_publications_for_event
+from mobilizon_reshare.dataclasses.to_split import events_without_publications
 from mobilizon_reshare.models.publication import PublicationStatus
 from mobilizon_reshare.storage.query.read import publications_with_status
 from tests import today
@@ -184,7 +182,9 @@ async def test_build_publications(
 ):
     await generate_models(spec)
 
-    publications = list(await build_publications(event, mock_active_publishers))
+    publications = list(
+        await build_publications_for_event(event, mock_active_publishers)
+    )
 
     assert len(publications) == n_publications
 

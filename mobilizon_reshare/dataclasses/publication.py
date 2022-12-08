@@ -1,6 +1,8 @@
 from dataclasses import dataclass
-from typing import List
+from typing import List, Iterator
 from uuid import UUID
+
+from tortoise.transactions import atomic
 
 from mobilizon_reshare.dataclasses.event import _MobilizonEvent
 from mobilizon_reshare.models.publication import Publication
@@ -37,3 +39,11 @@ class _EventPublication(BasePublication):
 @dataclass
 class RecapPublication(BasePublication):
     events: List[_MobilizonEvent]
+
+
+@atomic()
+async def build_publications_for_event(
+    event: _MobilizonEvent, publishers: Iterator[str]
+) -> list[_EventPublication]:
+    publication_models = await event.to_model().build_publications(publishers)
+    return [_EventPublication.from_orm(m, event) for m in publication_models]

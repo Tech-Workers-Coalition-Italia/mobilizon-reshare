@@ -1,3 +1,5 @@
+from typing import Iterator
+
 from tortoise import fields
 from tortoise.models import Model
 
@@ -42,3 +44,8 @@ class Event(Model, WithPydantic):
             publisher_id=publisher.id,
             publisher=publisher,
         )
+
+    async def build_publications(self, publishers: Iterator[str]):
+        return [
+            await self.build_publication_by_publisher_name(name) for name in publishers
+        ]

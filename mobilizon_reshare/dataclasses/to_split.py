@@ -1,5 +1,5 @@
 from functools import partial
-from typing import Optional, Iterator
+from typing import Optional
 from uuid import UUID
 
 from arrow import Arrow
@@ -52,18 +52,6 @@ async def is_known(event: MobilizonEvent) -> bool:
         return True
     except EventNotFound:
         return False
-
-
-@atomic()
-async def build_publications(
-    event: MobilizonEvent, publishers: Iterator[str]
-) -> list[EventPublication]:
-    event_model = await get_event(event.mobilizon_id)
-    models = [
-        await event_model.build_publication_by_publisher_name(name)
-        for name in publishers
-    ]
-    return [EventPublication.from_orm(m, event) for m in models]
 
 
 @atomic()
