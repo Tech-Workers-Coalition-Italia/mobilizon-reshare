@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from functools import partial
 from typing import List, Iterator
 from uuid import UUID
 
@@ -10,6 +11,7 @@ from mobilizon_reshare.publishers.abstract import (
     AbstractPlatform,
     AbstractEventFormatter,
 )
+from mobilizon_reshare.storage.query.read import get_event
 
 
 @dataclass
@@ -47,3 +49,13 @@ async def build_publications_for_event(
 ) -> list[_EventPublication]:
     publication_models = await event.to_model().build_publications(publishers)
     return [_EventPublication.from_orm(m, event) for m in publication_models]
+
+
+async def get_failed_publications_for_event(
+    event: _MobilizonEvent,
+) -> List[_EventPublication]:
+    event_model = await get_event(event.mobilizon_id)
+    failed_publications = await event_model.get_failed_publications()
+    return list(
+        map(partial(_EventPublication.from_orm, event=event), failed_publications)
+    )

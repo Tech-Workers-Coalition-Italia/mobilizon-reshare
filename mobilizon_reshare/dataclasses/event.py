@@ -12,7 +12,7 @@ from mobilizon_reshare.dataclasses.event_publication_status import (
     _compute_event_status,
 )
 from mobilizon_reshare.models.event import Event
-from mobilizon_reshare.storage.query.read import get_all_events
+from mobilizon_reshare.storage.query.read import get_all_events, get_event
 
 
 @dataclass
@@ -95,6 +95,10 @@ class _MobilizonEvent:
         if db_id is not None:
             kwargs.update({"id": db_id})
         return Event(**kwargs)
+
+    @classmethod
+    async def retrieve(cls, mobilizon_id):
+        return cls.from_model(await get_event(mobilizon_id))
 
 
 async def get_all_mobilizon_events(

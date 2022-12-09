@@ -1,4 +1,3 @@
-from functools import partial
 from typing import Optional
 from uuid import UUID
 
@@ -8,7 +7,7 @@ from tortoise.transactions import atomic
 
 from mobilizon_reshare.dataclasses import MobilizonEvent, EventPublication
 from mobilizon_reshare.models.event import Event
-from mobilizon_reshare.models.publication import Publication, PublicationStatus
+from mobilizon_reshare.models.publication import Publication
 from mobilizon_reshare.models.publisher import Publisher
 from mobilizon_reshare.storage.query.exceptions import EventNotFound
 from mobilizon_reshare.storage.query.read import (
@@ -52,25 +51,3 @@ async def is_known(event: MobilizonEvent) -> bool:
         return True
     except EventNotFound:
         return False
-
-
-@atomic()
-async def get_failed_publications_for_event(
-    event_mobilizon_id: UUID,
-) -> list[EventPublication]:
-    event = await get_event(event_mobilizon_id)
-    failed_publications = list(
-        filter(
-            lambda publications: publications.status == PublicationStatus.FAILED,
-            event.publications,
-        )
-    )
-    for p in failed_publications:
-        await p.fetch_related("publisher")
-    mobilizon_event = MobilizonEvent.from_model(event)
-    return list(
-        map(
-            partial(EventPublication.from_orm, event=mobilizon_event),
-            failed_publications,
-        )
-    )
