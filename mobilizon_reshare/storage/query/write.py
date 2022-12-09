@@ -5,11 +5,7 @@ import arrow
 from tortoise.transactions import atomic
 
 from mobilizon_reshare.dataclasses import MobilizonEvent
-from mobilizon_reshare.dataclasses.to_split import (
-    events_without_publications,
-    get_publisher_by_name,
-    is_known,
-)
+from mobilizon_reshare.dataclasses.to_split import events_without_publications
 from mobilizon_reshare.models.event import Event
 from mobilizon_reshare.models.publication import Publication
 from mobilizon_reshare.models.publisher import Publisher
@@ -26,8 +22,8 @@ async def create_publisher(name: str, account_ref: Optional[str] = None) -> None
 @atomic()
 async def upsert_publication(publication_report, event):
 
-    publisher = await get_publisher_by_name(
-        name=publication_report.publication.publisher.name
+    publisher_model = await (
+        Publisher.get(name=publication_report.publication.publisher.name).first()
     )
     old_publication = await Publication.filter(
         id=publication_report.publication.id
@@ -44,7 +40,7 @@ async def upsert_publication(publication_report, event):
         await Publication.create(
             id=publication_report.publication.id,
             event_id=event.id,
-            publisher_id=publisher.id,
+            publisher_id=publisher_model.id,
             status=publication_report.status,
             reason=publication_report.reason,
             timestamp=arrow.now().datetime,
@@ -76,7 +72,7 @@ async def create_unpublished_events(
     """
     # There are three cases:
     for event in events_from_mobilizon:
-        if not await is_known(event):
+        if not await Event.exists(mobilizon_id=event.mobilizon_id):
             # Either an event is unknown
             await event.to_model().save()
         else:
