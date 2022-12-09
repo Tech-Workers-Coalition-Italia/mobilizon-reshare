@@ -11,7 +11,10 @@ from mobilizon_reshare.publishers.abstract import (
     AbstractPlatform,
     AbstractEventFormatter,
 )
-from mobilizon_reshare.storage.query.read import get_event
+from mobilizon_reshare.storage.query.read import (
+    get_event,
+    prefetch_publication_relations,
+)
 
 
 @dataclass
@@ -36,6 +39,14 @@ class _EventPublication(BasePublication):
         publisher = get_publisher_class(model.publisher.name)()
         formatter = get_formatter_class(model.publisher.name)()
         return cls(publisher, formatter, event, model.id,)
+
+    @classmethod
+    async def retrieve(cls, publication_id):
+        publication = await prefetch_publication_relations(
+            Publication.get(id=publication_id)
+        )
+        event = _MobilizonEvent.from_model(publication.event)
+        return cls.from_orm(publication, event)
 
 
 @dataclass

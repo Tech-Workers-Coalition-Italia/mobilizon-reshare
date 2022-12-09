@@ -2,9 +2,10 @@ import logging
 from typing import Optional
 from uuid import UUID
 
-from mobilizon_reshare.dataclasses import MobilizonEvent
+from tortoise.exceptions import DoesNotExist
+
+from mobilizon_reshare.dataclasses import MobilizonEvent, EventPublication
 from mobilizon_reshare.dataclasses.publication import get_failed_publications_for_event
-from mobilizon_reshare.dataclasses.to_split import get_publication
 from mobilizon_reshare.main.publish import publish_publications
 from mobilizon_reshare.publishers.coordinators.event_publishing.publish import (
     PublisherCoordinatorReport,
@@ -26,8 +27,9 @@ async def retry_event_publications(event_id) -> Optional[PublisherCoordinatorRep
 
 
 async def retry_publication(publication_id) -> Optional[PublisherCoordinatorReport]:
-    publication = await get_publication(publication_id)
-    if not publication:
+    try:
+        publication = await EventPublication.retrieve(publication_id)
+    except DoesNotExist:
         logger.info(f"Publication {publication_id} not found.")
         return
 
