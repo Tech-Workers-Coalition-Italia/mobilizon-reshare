@@ -7,9 +7,9 @@ from mobilizon_reshare.dataclasses.event import (
     _EventPublicationStatus,
     get_published_events,
     get_mobilizon_events_with_status,
+    get_mobilizon_events_without_publications,
 )
 from mobilizon_reshare.dataclasses.publication import build_publications_for_event
-from mobilizon_reshare.dataclasses.to_split import events_without_publications
 from mobilizon_reshare.models.publication import PublicationStatus
 from mobilizon_reshare.storage.query.read import publications_with_status
 from tests import today
@@ -148,7 +148,7 @@ async def test_event_with_status_window(
 )
 async def test_events_without_publications(spec, expected_events, generate_models):
     await generate_models(spec)
-    unpublished_events = list(await events_without_publications())
+    unpublished_events = list(await get_mobilizon_events_without_publications())
     assert len(unpublished_events) == len(expected_events)
     assert unpublished_events == expected_events
 

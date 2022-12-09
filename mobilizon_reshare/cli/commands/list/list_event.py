@@ -10,8 +10,8 @@ from mobilizon_reshare.dataclasses.event import (
     get_all_mobilizon_events,
     get_published_events,
     get_mobilizon_events_with_status,
+    get_mobilizon_events_without_publications,
 )
-from mobilizon_reshare.dataclasses.to_split import events_without_publications
 from mobilizon_reshare.event.event_selection_strategies import select_unpublished_events
 
 status_to_color = {
@@ -38,7 +38,9 @@ def pretty(event: MobilizonEvent):
 async def list_unpublished_events(frm: Arrow = None, to: Arrow = None):
     return select_unpublished_events(
         list(await get_published_events(from_date=frm, to_date=to)),
-        list(await events_without_publications(from_date=frm, to_date=to)),
+        list(
+            await get_mobilizon_events_without_publications(from_date=frm, to_date=to)
+        ),
     )
 
 

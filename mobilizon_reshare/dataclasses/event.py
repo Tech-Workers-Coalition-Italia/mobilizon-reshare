@@ -12,7 +12,11 @@ from mobilizon_reshare.dataclasses.event_publication_status import (
     _compute_event_status,
 )
 from mobilizon_reshare.models.event import Event
-from mobilizon_reshare.storage.query.read import get_all_events, get_event
+from mobilizon_reshare.storage.query.read import (
+    get_all_events,
+    get_event,
+    get_events_without_publications,
+)
 
 
 @dataclass
@@ -140,3 +144,14 @@ async def get_mobilizon_events_with_status(
         _MobilizonEvent.from_model,
         filter(_filter_event_with_status, await get_all_events(from_date, to_date)),
     )
+
+
+async def get_mobilizon_events_without_publications(
+    from_date: Optional[Arrow] = None, to_date: Optional[Arrow] = None,
+) -> list[_MobilizonEvent]:
+    return [
+        _MobilizonEvent.from_model(event)
+        for event in await get_events_without_publications(
+            from_date=from_date, to_date=to_date
+        )
+    ]

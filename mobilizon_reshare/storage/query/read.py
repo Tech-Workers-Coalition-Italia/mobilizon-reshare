@@ -89,3 +89,12 @@ async def get_event(event_mobilizon_id: UUID) -> Event:
         raise EventNotFound(f"No event with mobilizon_id {event_mobilizon_id} found.")
 
     return events[0]
+
+
+async def get_events_without_publications(
+    from_date: Optional[Arrow] = None, to_date: Optional[Arrow] = None,
+) -> list[Event]:
+    query = Event.filter(publications__id=None)
+    return await prefetch_event_relations(
+        _add_date_window(query, "begin_datetime", from_date, to_date)
+    )

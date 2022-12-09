@@ -5,7 +5,9 @@ import arrow
 from tortoise.transactions import atomic
 
 from mobilizon_reshare.dataclasses import MobilizonEvent
-from mobilizon_reshare.dataclasses.to_split import events_without_publications
+from mobilizon_reshare.dataclasses.event import (
+    get_mobilizon_events_without_publications,
+)
 from mobilizon_reshare.models.event import Event
 from mobilizon_reshare.models.publication import Publication
 from mobilizon_reshare.models.publisher import Publisher
@@ -82,7 +84,7 @@ async def create_unpublished_events(
                 await event.to_model(db_id=event_model.id).save(force_update=True)
             # Or it's known and unchanged, in which case we do nothing.
 
-    return await events_without_publications()
+    return await get_mobilizon_events_without_publications()
 
 
 @atomic()

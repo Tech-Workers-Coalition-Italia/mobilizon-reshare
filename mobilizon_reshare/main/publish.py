@@ -3,12 +3,14 @@ from typing import Optional, Iterator
 
 from mobilizon_reshare.config.command import CommandConfig
 from mobilizon_reshare.dataclasses import MobilizonEvent
-from mobilizon_reshare.dataclasses.event import get_published_events
+from mobilizon_reshare.dataclasses.event import (
+    get_published_events,
+    get_mobilizon_events_without_publications,
+)
 from mobilizon_reshare.dataclasses.publication import (
     _EventPublication,
     build_publications_for_event,
 )
-from mobilizon_reshare.dataclasses.to_split import events_without_publications
 from mobilizon_reshare.event.event_selection_strategies import select_event_to_publish
 from mobilizon_reshare.publishers import get_active_publishers
 from mobilizon_reshare.publishers.coordinators.event_publishing.dry_run import (
@@ -70,7 +72,7 @@ async def select_and_publish(
     :return:
     """
     if unpublished_events is None:
-        unpublished_events = await events_without_publications()
+        unpublished_events = await get_mobilizon_events_without_publications()
 
     event = select_event_to_publish(
         list(await get_published_events()), unpublished_events,
