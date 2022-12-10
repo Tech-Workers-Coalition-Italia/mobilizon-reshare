@@ -1,5 +1,5 @@
 import logging
-from typing import Iterable, Optional
+from typing import Iterable
 
 import arrow
 from tortoise.transactions import atomic
@@ -11,18 +11,19 @@ from mobilizon_reshare.dataclasses.event import (
 from mobilizon_reshare.models.event import Event
 from mobilizon_reshare.models.publication import Publication
 from mobilizon_reshare.models.publisher import Publisher
+from mobilizon_reshare.publishers.coordinators.event_publishing import (
+    EventPublicationReport,
+)
 from mobilizon_reshare.publishers.coordinators.event_publishing.publish import (
     PublisherCoordinatorReport,
 )
 from mobilizon_reshare.storage.query.read import get_event
 
 
-async def create_publisher(name: str, account_ref: Optional[str] = None) -> None:
-    await Publisher.create(name=name, account_ref=account_ref)
-
-
 @atomic()
-async def upsert_publication(publication_report, event):
+async def upsert_publication(
+    publication_report: EventPublicationReport, event: MobilizonEvent
+):
 
     publisher_model = await (
         Publisher.get(name=publication_report.publication.publisher.name).first()
@@ -93,4 +94,4 @@ async def update_publishers(names: Iterable[str],) -> None:
     known_publisher_names = set(p.name for p in await Publisher.all())
     for name in names.difference(known_publisher_names):
         logging.info(f"Creating {name} publisher")
-        await create_publisher(name)
+        await Publisher.create(name=name, account_ref=None)
