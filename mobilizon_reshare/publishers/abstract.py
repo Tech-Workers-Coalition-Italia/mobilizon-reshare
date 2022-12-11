@@ -1,17 +1,14 @@
 import inspect
 import logging
 from abc import ABC, abstractmethod
-from dataclasses import dataclass
-from typing import List, Optional
-from uuid import UUID
+from typing import Optional
 
 from dynaconf.utils.boxing import DynaBox
 from jinja2 import Environment, FileSystemLoader, Template
 
 from mobilizon_reshare.config.config import get_settings
-from mobilizon_reshare.event.event import MobilizonEvent
 from .exceptions import InvalidAttribute
-from ..models.publication import Publication
+from ..dataclasses import _MobilizonEvent
 
 JINJA_ENV = Environment(loader=FileSystemLoader("/"))
 
@@ -84,10 +81,10 @@ class AbstractPlatform(ABC, LoggerMixin, ConfLoaderMixin):
         pass
 
     @abstractmethod
-    def _send(self, message: str, event: Optional[MobilizonEvent] = None):
+    def _send(self, message: str, event: Optional[_MobilizonEvent] = None):
         raise NotImplementedError  # pragma: no cover
 
-    def send(self, message: str, event: Optional[MobilizonEvent] = None):
+    def send(self, message: str, event: Optional[_MobilizonEvent] = None):
         """
         Sends a message to the target channel
         """
@@ -110,7 +107,7 @@ class AbstractPlatform(ABC, LoggerMixin, ConfLoaderMixin):
 
 class AbstractEventFormatter(LoggerMixin, ConfLoaderMixin):
     @abstractmethod
-    def _validate_event(self, event: MobilizonEvent) -> None:
+    def _validate_event(self, event: _MobilizonEvent) -> None:
         """
         Validates publisher's event.
         Should raise ``PublisherError`` (or one of its subclasses) if event
@@ -127,7 +124,7 @@ class AbstractEventFormatter(LoggerMixin, ConfLoaderMixin):
         """
         raise NotImplementedError  # pragma: no cover
 
-    def validate_event(self, event: MobilizonEvent) -> None:
+    def validate_event(self, event: _MobilizonEvent) -> None:
         self._validate_event(event)
         self._validate_message(self.get_message_from_event(event))
 
@@ -138,7 +135,7 @@ class AbstractEventFormatter(LoggerMixin, ConfLoaderMixin):
         """
         return event
 
-    def get_message_from_event(self, event: MobilizonEvent) -> str:
+    def get_message_from_event(self, event: _MobilizonEvent) -> str:
         """
         Retrieves a message from the event itself.
         """
@@ -167,7 +164,7 @@ class AbstractEventFormatter(LoggerMixin, ConfLoaderMixin):
         )
         return JINJA_ENV.get_template(template_path)
 
-    def get_recap_fragment(self, event: MobilizonEvent) -> str:
+    def get_recap_fragment(self, event: _MobilizonEvent) -> str:
         """
         Retrieves the fragment that describes a single event inside the event recap.
         """
@@ -176,32 +173,3 @@ class AbstractEventFormatter(LoggerMixin, ConfLoaderMixin):
 
     def _preprocess_message(self, message: str):
         return message
-
-
-@dataclass
-class BasePublication:
-    publisher: AbstractPlatform
-    formatter: AbstractEventFormatter
-
-
-@dataclass
-class EventPublication(BasePublication):
-    event: MobilizonEvent
-    id: UUID
-
-    @classmethod
-    def from_orm(cls, model: Publication, event: MobilizonEvent):
-        # imported here to avoid circular dependencies
-        from mobilizon_reshare.publishers.platforms.platform_mapping import (
-            get_publisher_class,
-            get_formatter_class,
-        )
-
-        publisher = get_publisher_class(model.publisher.name)()
-        formatter = get_formatter_class(model.publisher.name)()
-        return cls(publisher, formatter, event, model.id,)
-
-
-@dataclass
-class RecapPublication(BasePublication):
-    events: List[MobilizonEvent]

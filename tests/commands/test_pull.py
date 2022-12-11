@@ -2,16 +2,16 @@ from logging import DEBUG, INFO
 
 import pytest
 
-from mobilizon_reshare.storage.query.read import (
+from mobilizon_reshare.dataclasses.event import (
     get_all_mobilizon_events,
-    events_without_publications,
+    get_mobilizon_events_without_publications,
 )
+from mobilizon_reshare.main.pull import pull
+from mobilizon_reshare.main.start import start
 from tests.commands.conftest import (
     second_event_element,
     first_event_element,
 )
-from mobilizon_reshare.main.pull import pull
-from mobilizon_reshare.main.start import start
 from tests.conftest import event_0, event_1
 
 empty_specification = {"event": 0, "publications": [], "publisher": []}
@@ -74,7 +74,7 @@ async def test_pull(
         assert (
             f"There are now {len(expected_result)} unpublished events." in caplog.text
         )
-        assert expected_result == await events_without_publications()
+        assert expected_result == await get_mobilizon_events_without_publications()
 
 
 @pytest.mark.asyncio
@@ -113,7 +113,7 @@ async def test_pull_start(
     with caplog.at_level(INFO):
         assert await pull() == expected_pull
         assert expected_pull == await get_all_mobilizon_events()
-        assert expected_pull == await events_without_publications()
+        assert expected_pull == await get_mobilizon_events_without_publications()
 
         report = await start(command_config)
         assert report.successful
@@ -127,7 +127,8 @@ async def test_pull_start(
             event.mobilizon_id for event in await get_all_mobilizon_events()
         )
         assert (pull_ids - publish_ids) == set(
-            event.mobilizon_id for event in await events_without_publications()
+            event.mobilizon_id
+            for event in await get_mobilizon_events_without_publications()
         )
 
 
@@ -191,7 +192,10 @@ async def test_multiple_pull(
         assert await pull()
         assert f"There are now {len(expected_first)} unpublished events." in caplog.text
         assert expected_first == await get_all_mobilizon_events()
-        assert await events_without_publications() == await get_all_mobilizon_events()
+        assert (
+            await get_mobilizon_events_without_publications()
+            == await get_all_mobilizon_events()
+        )
 
         # I clean the message collector
         message_collector.data = []
@@ -204,4 +208,7 @@ async def test_multiple_pull(
         assert set(event.mobilizon_id for event in expected_last) == set(
             event.mobilizon_id for event in await get_all_mobilizon_events()
         )
-        assert await events_without_publications() == await get_all_mobilizon_events()
+        assert (
+            await get_mobilizon_events_without_publications()
+            == await get_all_mobilizon_events()
+        )

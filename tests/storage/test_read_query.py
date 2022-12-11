@@ -2,7 +2,7 @@ from uuid import UUID
 
 import pytest
 
-from mobilizon_reshare.storage.query.read import get_all_mobilizon_events
+from mobilizon_reshare.dataclasses.event import get_all_mobilizon_events
 
 
 @pytest.mark.asyncio

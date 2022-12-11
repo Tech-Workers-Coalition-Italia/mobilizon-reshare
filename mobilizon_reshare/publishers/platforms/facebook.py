@@ -4,7 +4,7 @@ import facebook
 import pkg_resources
 from facebook import GraphAPIError
 
-from mobilizon_reshare.event.event import MobilizonEvent
+from mobilizon_reshare.dataclasses import MobilizonEvent
 from mobilizon_reshare.formatting.description import html_to_plaintext
 from mobilizon_reshare.publishers.abstract import (
     AbstractPlatform,

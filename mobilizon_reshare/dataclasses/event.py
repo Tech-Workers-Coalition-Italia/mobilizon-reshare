@@ -1,25 +1,26 @@
 from dataclasses import dataclass, asdict
-from enum import IntEnum
-from typing import Optional
+from typing import Optional, Iterable
 from uuid import UUID
 
 import arrow
+from arrow import Arrow
 from jinja2 import Template
 
 from mobilizon_reshare.config.config import get_settings
+from mobilizon_reshare.dataclasses.event_publication_status import (
+    _EventPublicationStatus,
+    _compute_event_status,
+)
 from mobilizon_reshare.models.event import Event
-from mobilizon_reshare.models.publication import PublicationStatus, Publication
-
-
-class EventPublicationStatus(IntEnum):
-    WAITING = 1
-    FAILED = 2
-    COMPLETED = 3
-    PARTIAL = 4
+from mobilizon_reshare.storage.query.read import (
+    get_all_events,
+    get_event,
+    get_events_without_publications,
+)
 
 
 @dataclass
-class MobilizonEvent:
+class _MobilizonEvent:
     """Class representing an event retrieved from Mobilizon."""
 
     name: str
@@ -32,7 +33,7 @@ class MobilizonEvent:
     thumbnail_link: Optional[str] = None
     location: Optional[str] = None
     publication_time: Optional[dict[str, arrow.Arrow]] = None
-    status: EventPublicationStatus = EventPublicationStatus.WAITING
+    status: _EventPublicationStatus = _EventPublicationStatus.WAITING
 
     def __post_init__(self):
         assert self.begin_datetime.tzinfo == self.end_datetime.tzinfo
@@ -41,9 +42,9 @@ class MobilizonEvent:
             self.publication_time = {}
         if self.publication_time:
             assert self.status in [
-                EventPublicationStatus.COMPLETED,
-                EventPublicationStatus.PARTIAL,
-                EventPublicationStatus.FAILED,
+                _EventPublicationStatus.COMPLETED,
+                _EventPublicationStatus.PARTIAL,
+                _EventPublicationStatus.FAILED,
             ]
 
     def _fill_template(self, pattern: Template) -> str:
@@ -55,11 +56,11 @@ class MobilizonEvent:
 
     @classmethod
     def from_model(cls, event: Event):
-        publication_status = cls._compute_event_status(list(event.publications))
+        publication_status = _compute_event_status(list(event.publications))
         publication_time = {}
 
         for pub in event.publications:
-            if publication_status != EventPublicationStatus.WAITING:
+            if publication_status != _EventPublicationStatus.WAITING:
                 assert pub.timestamp is not None
                 publication_time[pub.publisher.name] = arrow.get(pub.timestamp).to(
                     "local"
@@ -99,23 +100,58 @@ class MobilizonEvent:
             kwargs.update({"id": db_id})
         return Event(**kwargs)
 
-    @staticmethod
-    def _compute_event_status(
-        publications: list[Publication],
-    ) -> EventPublicationStatus:
-        if not publications:
-            return EventPublicationStatus.WAITING
+    @classmethod
+    async def retrieve(cls, mobilizon_id):
+        return cls.from_model(await get_event(mobilizon_id))
 
-        unique_statuses: set[PublicationStatus] = set(
-            pub.status for pub in publications
+
+async def get_all_mobilizon_events(
+    from_date: Optional[Arrow] = None, to_date: Optional[Arrow] = None,
+) -> list[_MobilizonEvent]:
+    return [_MobilizonEvent.from_model(event) for event in await get_all_events()]
+
+
+async def get_published_events(
+    from_date: Optional[Arrow] = None, to_date: Optional[Arrow] = None
+) -> Iterable[_MobilizonEvent]:
+    """
+    Retrieves events that are not waiting. Function could be renamed to something more fitting
+    :return:
+    """
+    return await get_mobilizon_events_with_status(
+        [
+            _EventPublicationStatus.COMPLETED,
+            _EventPublicationStatus.PARTIAL,
+            _EventPublicationStatus.FAILED,
+        ],
+        from_date=from_date,
+        to_date=to_date,
+    )
+
+
+async def get_mobilizon_events_with_status(
+    status: list[_EventPublicationStatus],
+    from_date: Optional[Arrow] = None,
+    to_date: Optional[Arrow] = None,
+) -> Iterable[_MobilizonEvent]:
+    def _filter_event_with_status(event: Event) -> bool:
+        # This computes the status client-side instead of running in the DB. It shouldn't pose a performance problem
+        # in the short term, but should be moved to the query if possible.
+        event_status = _compute_event_status(list(event.publications))
+        return event_status in status
+
+    return map(
+        _MobilizonEvent.from_model,
+        filter(_filter_event_with_status, await get_all_events(from_date, to_date)),
+    )
+
+
+async def get_mobilizon_events_without_publications(
+    from_date: Optional[Arrow] = None, to_date: Optional[Arrow] = None,
+) -> list[_MobilizonEvent]:
+    return [
+        _MobilizonEvent.from_model(event)
+        for event in await get_events_without_publications(
+            from_date=from_date, to_date=to_date
         )
-
-        if unique_statuses == {
-            PublicationStatus.COMPLETED,
-            PublicationStatus.FAILED,
-        }:
-            return EventPublicationStatus.PARTIAL
-        elif len(unique_statuses) == 1:
-            return EventPublicationStatus[unique_statuses.pop().name]
-
-        raise ValueError(f"Illegal combination of PublicationStatus: {unique_statuses}")
+    ]

@@ -1,33 +1,32 @@
 import logging
-from typing import Iterable, Optional
+from typing import Iterable
 
 import arrow
 from tortoise.transactions import atomic
 
-from mobilizon_reshare.event.event import MobilizonEvent
+from mobilizon_reshare.dataclasses import MobilizonEvent
+from mobilizon_reshare.dataclasses.event import (
+    get_mobilizon_events_without_publications,
+)
 from mobilizon_reshare.models.event import Event
 from mobilizon_reshare.models.publication import Publication
 from mobilizon_reshare.models.publisher import Publisher
+from mobilizon_reshare.publishers.coordinators.event_publishing import (
+    EventPublicationReport,
+)
 from mobilizon_reshare.publishers.coordinators.event_publishing.publish import (
     PublisherCoordinatorReport,
 )
-from mobilizon_reshare.storage.query.read import (
-    events_without_publications,
-    is_known,
-    get_publisher_by_name,
-    get_event,
-)
-
-
-async def create_publisher(name: str, account_ref: Optional[str] = None) -> None:
-    await Publisher.create(name=name, account_ref=account_ref)
+from mobilizon_reshare.storage.query.read import get_event
 
 
 @atomic()
-async def upsert_publication(publication_report, event):
+async def upsert_publication(
+    publication_report: EventPublicationReport, event: MobilizonEvent
+):
 
-    publisher = await get_publisher_by_name(
-        name=publication_report.publication.publisher.name
+    publisher_model = await (
+        Publisher.get(name=publication_report.publication.publisher.name).first()
     )
     old_publication = await Publication.filter(
         id=publication_report.publication.id
@@ -44,7 +43,7 @@ async def upsert_publication(publication_report, event):
         await Publication.create(
             id=publication_report.publication.id,
             event_id=event.id,
-            publisher_id=publisher.id,
+            publisher_id=publisher_model.id,
             status=publication_report.status,
             reason=publication_report.reason,
             timestamp=arrow.now().datetime,
@@ -76,7 +75,7 @@ async def create_unpublished_events(
     """
     # There are three cases:
     for event in events_from_mobilizon:
-        if not await is_known(event):
+        if not await Event.exists(mobilizon_id=event.mobilizon_id):
             # Either an event is unknown
             await event.to_model().save()
         else:
@@ -86,7 +85,7 @@ async def create_unpublished_events(
                 await event.to_model(db_id=event_model.id).save(force_update=True)
             # Or it's known and unchanged, in which case we do nothing.
 
-    return await events_without_publications()
+    return await get_mobilizon_events_without_publications()
 
 
 @atomic()
@@ -95,4 +94,4 @@ async def update_publishers(names: Iterable[str],) -> None:
     known_publisher_names = set(p.name for p in await Publisher.all())
     for name in names.difference(known_publisher_names):
         logging.info(f"Creating {name} publisher")
-        await create_publisher(name)
+        await Publisher.create(name=name, account_ref=None)

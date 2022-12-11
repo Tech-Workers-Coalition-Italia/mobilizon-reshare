@@ -1,9 +1,10 @@
 import dataclasses
+import logging
 from dataclasses import dataclass
 from typing import Sequence
-import logging
+
+from mobilizon_reshare.dataclasses.publication import _EventPublication
 from mobilizon_reshare.models.publication import PublicationStatus
-from mobilizon_reshare.publishers.abstract import EventPublication
 from mobilizon_reshare.publishers.coordinators import BaseCoordinatorReport
 from mobilizon_reshare.publishers.coordinators.event_publishing import (
     BaseEventPublishingCoordinator,
@@ -17,7 +18,7 @@ logger = logging.getLogger(__name__)
 @dataclass
 class PublisherCoordinatorReport(BaseCoordinatorReport):
     reports: Sequence[EventPublicationReport]
-    publications: Sequence[EventPublication] = dataclasses.field(default_factory=list)
+    publications: Sequence[_EventPublication] = dataclasses.field(default_factory=list)
 
     def __str__(self):
         platform_messages = []

@@ -2,9 +2,9 @@ from uuid import UUID
 
 import pytest
 
+from mobilizon_reshare.dataclasses.publication import _EventPublication
 from mobilizon_reshare.models.publication import PublicationStatus, Publication
 from mobilizon_reshare.models.publisher import Publisher
-from mobilizon_reshare.publishers.abstract import EventPublication
 from mobilizon_reshare.publishers.coordinators.event_publishing.publish import (
     EventPublicationReport,
     PublisherCoordinatorReport,
@@ -18,8 +18,8 @@ from mobilizon_reshare.storage.query.write import (
     update_publishers,
     create_unpublished_events,
 )
-from tests.storage import complete_specification
 from tests.conftest import event_6, event_0, event_1, event_2, event_3, event_3_updated
+from tests.storage import complete_specification
 
 two_publishers_specification = {"publisher": ["telegram", "twitter"]}
 
@@ -144,7 +144,7 @@ async def test_create_unpublished_events(
                     EventPublicationReport(
                         status=PublicationStatus.COMPLETED,
                         reason="",
-                        publication=EventPublication(
+                        publication=_EventPublication(
                             id=UUID(int=6),
                             formatter=TelegramFormatter(),
                             event=event_1,

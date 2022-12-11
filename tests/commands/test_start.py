@@ -3,12 +3,13 @@ from logging import DEBUG, INFO
 import pytest
 
 from mobilizon_reshare.config.command import CommandConfig
-from mobilizon_reshare.storage.query.read import get_all_mobilizon_events
-from tests.commands.conftest import simple_event_element, second_event_element
-from mobilizon_reshare.event.event import EventPublicationStatus, MobilizonEvent
+from mobilizon_reshare.dataclasses import EventPublicationStatus
+from mobilizon_reshare.dataclasses import MobilizonEvent
+from mobilizon_reshare.dataclasses.event import get_all_mobilizon_events
 from mobilizon_reshare.main.start import start
 from mobilizon_reshare.models.event import Event
 from mobilizon_reshare.models.publication import PublicationStatus
+from tests.commands.conftest import simple_event_element, second_event_element
 
 one_published_event_specification = {
     "event": 1,

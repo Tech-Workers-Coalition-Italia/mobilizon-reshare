@@ -8,7 +8,7 @@ import arrow
 import requests
 
 from mobilizon_reshare.config.config import get_settings
-from mobilizon_reshare.event.event import MobilizonEvent, EventPublicationStatus
+from mobilizon_reshare.dataclasses import MobilizonEvent, _EventPublicationStatus
 
 logger = logging.getLogger(__name__)
 
@@ -43,7 +43,7 @@ def parse_event(data):
         thumbnail_link=parse_picture(data),
         location=parse_location(data),
         publication_time=None,
-        status=EventPublicationStatus.WAITING,
+        status=_EventPublicationStatus.WAITING,
         last_update_time=arrow.get(data["updatedAt"]) if "updatedAt" in data else None,
     )
 

@@ -14,7 +14,7 @@ from tortoise import Tortoise
 import mobilizon_reshare
 from mobilizon_reshare.config.command import CommandConfig
 from mobilizon_reshare.config.config import get_settings
-from mobilizon_reshare.event.event import MobilizonEvent, EventPublicationStatus
+from mobilizon_reshare.dataclasses import MobilizonEvent, EventPublicationStatus
 from mobilizon_reshare.models.event import Event
 from mobilizon_reshare.models.notification import Notification, NotificationStatus
 from mobilizon_reshare.models.publication import Publication, PublicationStatus

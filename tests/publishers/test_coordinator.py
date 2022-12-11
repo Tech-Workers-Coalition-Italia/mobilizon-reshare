@@ -1,17 +1,20 @@
 import logging
 from datetime import timedelta
-from uuid import UUID
 from unittest.mock import MagicMock
+from uuid import UUID
 
 import pytest
 
-from mobilizon_reshare.event.event import MobilizonEvent
+from mobilizon_reshare.dataclasses import MobilizonEvent
+from mobilizon_reshare.dataclasses.publication import (
+    _EventPublication,
+    RecapPublication,
+)
 from mobilizon_reshare.models.publication import (
     PublicationStatus,
     Publication as PublicationModel,
 )
 from mobilizon_reshare.models.publisher import Publisher
-from mobilizon_reshare.publishers.abstract import EventPublication, RecapPublication
 from mobilizon_reshare.publishers.coordinators.event_publishing.notify import (
     PublicationFailureNotifiersCoordinator,
 )
@@ -31,7 +34,7 @@ def failure_report(mock_publisher_invalid, event):
     return EventPublicationReport(
         status=PublicationStatus.FAILED,
         reason="some failure",
-        publication=EventPublication(
+        publication=_EventPublication(
             publisher=mock_publisher_invalid,
             formatter=None,
             event=event,
@@ -103,7 +106,7 @@ async def mock_publications(
             timestamp=today + timedelta(hours=i),
             reason=None,
         )
-        publication = EventPublication.from_orm(publication, test_event)
+        publication = _EventPublication.from_orm(publication, test_event)
         publication.publisher = mock_publisher_valid
         publication.formatter = mock_formatter_valid
         result.append(publication)

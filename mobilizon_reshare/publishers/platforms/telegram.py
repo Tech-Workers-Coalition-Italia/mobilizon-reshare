@@ -6,7 +6,7 @@ import requests
 from bs4 import BeautifulSoup
 from requests import Response
 
-from mobilizon_reshare.event.event import MobilizonEvent
+from mobilizon_reshare.dataclasses import MobilizonEvent
 from mobilizon_reshare.publishers.abstract import (
     AbstractEventFormatter,
     AbstractPlatform,

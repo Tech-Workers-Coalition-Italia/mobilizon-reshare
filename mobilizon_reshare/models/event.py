@@ -1,5 +1,8 @@
+from typing import Iterator
+
 from tortoise import fields
 from tortoise.models import Model
+from tortoise.transactions import atomic
 
 from mobilizon_reshare.models import WithPydantic
 from mobilizon_reshare.models.publication import PublicationStatus, Publication
@@ -41,4 +44,18 @@ class Event(Model, WithPydantic):
             event_id=self.id,
             publisher_id=publisher.id,
             publisher=publisher,
+        )
+
+    async def build_publications(self, publishers: Iterator[str]):
+        return [
+            await self.build_publication_by_publisher_name(name) for name in publishers
+        ]
+
+    @atomic()
+    async def get_failed_publications(self,) -> list[Publication]:
+        return list(
+            filter(
+                lambda publications: publications.status == PublicationStatus.FAILED,
+                self.publications,
+            )
         )

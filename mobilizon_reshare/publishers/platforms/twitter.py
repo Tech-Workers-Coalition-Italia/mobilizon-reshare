@@ -4,7 +4,7 @@ import pkg_resources
 from tweepy import OAuthHandler, API, TweepyException
 from tweepy.models import Status
 
-from mobilizon_reshare.event.event import MobilizonEvent
+from mobilizon_reshare.dataclasses import MobilizonEvent
 from mobilizon_reshare.publishers.abstract import (
     AbstractPlatform,
     AbstractEventFormatter,
