@@ -1,7 +1,7 @@
 version: "3.7"
 services:
   mobilizon-reshare:
-    image: fishinthecalculator/mobilizon-reshare:v0.3.2
+    image: twcita/mobilizon-reshare:v0.3.2
     environment:
       SECRETS_FOR_DYNACONF: /etc/xdg/mobilizon-reshare/0.3.2/.secrets.toml
       ENV_FOR_DYNACONF: production

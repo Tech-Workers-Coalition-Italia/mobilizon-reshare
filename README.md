@@ -24,7 +24,7 @@ to publish an event, with the minimization of human effort as its first priority
 
 ## Installation
 
-`mobilizon_reshare` is distributed through [Pypi](https://pypi.org/project/mobilizon-reshare/) and [DockerHub](https://hub.docker.com/r/fishinthecalculator/mobilizon-reshare). Use
+`mobilizon_reshare` is distributed through [Pypi](https://pypi.org/project/mobilizon-reshare/) and [DockerHub](https://hub.docker.com/r/twcita/mobilizon-reshare). Use
 
 ```shell
 $ pip install mobilizon-reshare
