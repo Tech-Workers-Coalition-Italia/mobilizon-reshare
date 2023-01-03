@@ -25,16 +25,18 @@ Hurray 🎉 ! Now you can hack on `mobilizon-reshare` without worrying about dep
 
 #### Debian/Ubuntu/Linx Mint and derivatives
 
-If you run Ubuntu 20.04, Linux Mint 20, Debian Bullseye or later (or one of their derivatives) installing Guix is achieved with:
+If you are running Debian or a derivative such as Ubuntu or Linux Mint installing Guix is achieved with:
 
 ```shell
 $ sudo apt install guix
 ```
 
-If you want to find out which version of Debian you are running you can use:
+#### openSUSE
+
+Likewise on openSUSE:
 
 ```shell
-$ sudo cat /etc/debian_release
+$ sudo zypper install guix
 ```
 
 #### Arch Linux
