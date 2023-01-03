@@ -1,7 +1,7 @@
 # Hacking with Guix on Mobilizon Reshare
 To setup a development environment to hack on `mobilizon-reshare` you can use [Guix](https://guix.gnu.org/) and [direnv](https://direnv.net/).
 
-If you already have `guix` and `direnv` installed on your system, the development environment setup is as easy as:
+If you already have `guix` and `direnv` installed on your system, and you [created](#configuring-direnv) your `direnvrc` the development environment setup is as easy as:
 
 ```shell
 $ git clone https://github.com/Tech-Workers-Coalition-Italia/mobilizon-reshare
@@ -18,11 +18,12 @@ $
 
 Hurray 🎉 ! Now you can hack on `mobilizon-reshare` without worrying about dependencies.
 
-## Installing Guix
+## Guix
+## Installation
 
 *Caveat:* Guix currently runs only on Linux, if you run a different OS you're probably better off with something like [poetry](https://python-poetry.org/). Just beware that you may end up with slightly different behavior, since `poetry` only locks Python dependencies.
 
-### Debian/Ubuntu/Linx Mint and derivatives
+#### Debian/Ubuntu/Linx Mint and derivatives
 
 If you run Ubuntu 20.04, Linux Mint 20, Debian Bullseye or later (or one of their derivatives) installing Guix is achieved with:
 
@@ -36,11 +37,11 @@ If you want to find out which version of Debian you are running you can use:
 $ sudo cat /etc/debian_release
 ```
 
-### Arch Linux
+#### Arch Linux
 
 The Arch Wiki has a very good [article](https://wiki.archlinux.org/title/Guix).
 
-### Other distributions
+#### Other distributions
 
 For every other distributions you can install Guix with the installer script. It will guide you through the process of installing Guix.
 
@@ -48,9 +49,9 @@ For every other distributions you can install Guix with the installer script. It
 $ curl https://git.savannah.gnu.org/cgit/guix.git/plain/etc/guix-install.sh | sudo bash
 ```
 
-Beware that piping to `sudo bash` is usually a *very* bad idea. Before running the above command please read the script and the Guix manual.
+Beware that piping to `sudo bash` is usually a *very* bad idea. Before running the above command please read the script and the [Guix manual](https://guix.gnu.org/en/manual/en/guix.html#Binary-Installation).
 
-## Configuring Guix
+### Configuring Guix
 
 To make Guix applications work out of the box you should add the following variables to your `.bash_profile` (or its equivalent for shells other than Bash):
 
@@ -77,7 +78,9 @@ $ guix install nss-certs
 $ sudo -i guix install glibc-locales
 ```
 
-## Installing direnv
+## direnv
+
+### Installation
 
 Once you have Guix properly setup, you can install `direnv` with:
 
@@ -86,6 +89,32 @@ $ guix install direnv
 ```
 
 then you should [hook it](https://direnv.net/docs/hook.html) into your shell.
+
+### Configuring direnv
+Once you have `guix` and `direnv` installed on your system, you need to update your `direnvrc` (or create it, if you don't have one) with the following content:
+
+```shell
+$ cat ~/.config/direnv/direnvrc
+# This configuration comes from the Guix Cookbook
+# https://guix.gnu.org/cookbook/en/guix-cookbook.html#Environment-management
+
+# Thanks <https://github.com/direnv/direnv/issues/73#issuecomment-152284914>
+export_function()
+{
+  local name=$1
+  local alias_dir=$PWD/.direnv/aliases
+  mkdir -p "$alias_dir"
+  PATH_add "$alias_dir"
+  local target="$alias_dir/$name"
+  if declare -f "$name" >/dev/null; then
+    echo "#!$SHELL" > "$target"
+    declare -f "$name" >> "$target" 2>/dev/null
+    # Notice that we add shell variables to the function trigger.
+    echo "$name \$*" >> "$target"
+    chmod +x "$target"
+  fi
+}
+```
 
 ## Troubleshooting
 
