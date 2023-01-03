@@ -1,7 +1,7 @@
 # Hacking with Guix on Mobilizon Reshare
 To setup a development environment to hack on `mobilizon-reshare` you can use [Guix](https://guix.gnu.org/) and [direnv](https://direnv.net/).
 
-If you already have `guix` and `direnv` installed on your system, and you [created](#configuring-direnv) your `direnvrc` the development environment setup is as easy as:
+If you already have `guix` and `direnv` installed on your system, the development environment setup is as easy as:
 
 ```shell
 $ git clone https://github.com/Tech-Workers-Coalition-Italia/mobilizon-reshare
@@ -91,32 +91,6 @@ $ guix install direnv
 ```
 
 then you should [hook it](https://direnv.net/docs/hook.html) into your shell.
-
-### Configuring direnv
-Once you have `guix` and `direnv` installed on your system, you need to update your `direnvrc` (or create it, if you don't have one) with the following content:
-
-```shell
-$ cat ~/.config/direnv/direnvrc
-# This configuration comes from the Guix Cookbook
-# https://guix.gnu.org/cookbook/en/guix-cookbook.html#Environment-management
-
-# Thanks <https://github.com/direnv/direnv/issues/73#issuecomment-152284914>
-export_function()
-{
-  local name=$1
-  local alias_dir=$PWD/.direnv/aliases
-  mkdir -p "$alias_dir"
-  PATH_add "$alias_dir"
-  local target="$alias_dir/$name"
-  if declare -f "$name" >/dev/null; then
-    echo "#!$SHELL" > "$target"
-    declare -f "$name" >> "$target" 2>/dev/null
-    # Notice that we add shell variables to the function trigger.
-    echo "$name \$*" >> "$target"
-    chmod +x "$target"
-  fi
-}
-```
 
 ## Troubleshooting
 
