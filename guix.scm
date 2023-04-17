@@ -21,6 +21,32 @@
               #:recursive? #t
               #:select? (git-predicate %source-dir)))
 
+(use-modules (guix download)
+             (guix transformations))
+(define-public python-tweepy-4.13
+  (package
+    (inherit python-tweepy)
+    (version "4.13.0")
+    (source (origin
+              (method url-fetch)
+              (uri (pypi-uri "tweepy" version))
+              (sha256
+               (base32
+                "123cikpmp2m360pxh2qarb4kkjmv8wi2prx7df178rlzbwrjax09"))))
+    (arguments
+     `(#:tests? #f))))
+
+(define-public python-oauthlib-3.2
+  (package
+   (inherit python-oauthlib)
+   (version "3.2.2")
+   (source (origin
+             (method url-fetch)
+             (uri (pypi-uri "oauthlib" version))
+             (sha256
+              (base32
+               "066r7mimlpb5q1fr2f1z59l4jc89kv4h2kgkcifyqav6544w8ncq"))))))
+
 (define-public mobilizon-reshare.git
   (let ((source-version (with-input-from-file
                             (string-append %source-dir
@@ -40,10 +66,12 @@
               (delete 'patch-pyproject.toml)))))
       (native-inputs
        (modify-inputs (package-native-inputs mobilizon-reshare)
-         (prepend python-httpx python-fastapi)))
+         (prepend python-httpx python-fastapi python-fastapi-pagination)))
       (propagated-inputs
        (modify-inputs (package-propagated-inputs mobilizon-reshare)
          (prepend python-asyncpg python-uvicorn)
+         (replace "python-tweepy"
+                   python-tweepy-4.13)
          (replace "dynaconf"
                    dynaconf-3.1.11)
          (replace "python-markdownify"
@@ -73,4 +101,7 @@
    (description "This script is intended to start a scheduler
 running @code{mobilizon-reshare}.")))
 
-mobilizon-reshare.git
+(define-public patch-for-mobilizon-reshare-0.3.3
+  (package-input-rewriting/spec `(("python-oauthlib". ,(const python-oauthlib-3.2)))))
+
+(patch-for-mobilizon-reshare-0.3.3 mobilizon-reshare.git)
