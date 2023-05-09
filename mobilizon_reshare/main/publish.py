@@ -35,7 +35,7 @@ async def publish_publications(
 
     await save_publication_report(report)
     for publication_report in report.reports:
-        if not publication_report.succesful:
+        if not publication_report.successful:
             PublicationFailureNotifiersCoordinator(publication_report,).notify_failure()
 
     return report
