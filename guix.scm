@@ -75,9 +75,7 @@
          (replace "dynaconf"
                    dynaconf-3.1.11)
          (replace "python-markdownify"
-                   python-markdownify)
-         (replace "python-tortoise-orm"
-                   python-tortoise-orm))))))
+                   python-markdownify))))))
 
 (define-public mobilizon-reshare-scheduler
  (package (inherit mobilizon-reshare.git)
@@ -102,6 +100,8 @@
 running @code{mobilizon-reshare}.")))
 
 (define-public patch-for-mobilizon-reshare-0.3.3
-  (package-input-rewriting/spec `(("python-oauthlib". ,(const python-oauthlib-3.2)))))
+  (package-input-rewriting/spec `(("python-oauthlib" . ,(const python-oauthlib-3.2))
+                                  ("python-beautifulsoup4" . ,(const python-beautifulsoup4))
+                                  ("python-tortoise-orm" . ,(const python-tortoise-orm)))))
 
 (patch-for-mobilizon-reshare-0.3.3 mobilizon-reshare.git)
