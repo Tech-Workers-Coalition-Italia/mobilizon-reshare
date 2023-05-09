@@ -38,7 +38,7 @@ class BaseEventPublishingCoordinator:
         except Exception as e:
             return reasons + [str(e)]
 
-    def _validate(self):
+    def _validate(self) -> List[EventPublicationReport]:
         errors = []
 
         for publication in self.publications:
