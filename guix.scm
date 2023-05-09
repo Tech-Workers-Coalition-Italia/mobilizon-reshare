@@ -47,7 +47,7 @@
               (base32
                "066r7mimlpb5q1fr2f1z59l4jc89kv4h2kgkcifyqav6544w8ncq"))))))
 
-(define-public mobilizon-reshare.git
+(define _mobilizon-reshare.git
   (let ((source-version (with-input-from-file
                             (string-append %source-dir
                                            "/mobilizon_reshare/VERSION")
@@ -63,19 +63,35 @@
        (substitute-keyword-arguments (package-arguments mobilizon-reshare)
          ((#:phases phases)
           #~(modify-phases #$phases
+              (add-after 'unpack 'patch-version
+                (lambda _
+                  (with-output-to-file "mobilizon_reshare/VERSION"
+                   (lambda _
+                     (display #$version)))))
               (delete 'patch-pyproject.toml)))))
       (native-inputs
        (modify-inputs (package-native-inputs mobilizon-reshare)
-         (prepend python-httpx python-fastapi python-fastapi-pagination)))
+         (prepend python-httpx)))
       (propagated-inputs
        (modify-inputs (package-propagated-inputs mobilizon-reshare)
-         (prepend python-asyncpg python-uvicorn)
+         (prepend python-asyncpg
+                  python-uvicorn
+                  python-fastapi
+                  python-fastapi-pagination)
          (replace "python-tweepy"
                    python-tweepy-4.13)
          (replace "dynaconf"
                    dynaconf-3.1.11)
          (replace "python-markdownify"
                    python-markdownify))))))
+
+(define-public patch-for-mobilizon-reshare-0.3.3
+  (package-input-rewriting/spec `(("python-oauthlib" . ,(const python-oauthlib-3.2))
+                                  ("python-beautifulsoup4" . ,(const python-beautifulsoup4))
+                                  ("python-tortoise-orm" . ,(const python-tortoise-orm)))))
+
+(define-public mobilizon-reshare.git
+  (patch-for-mobilizon-reshare-0.3.3 _mobilizon-reshare.git))
 
 (define-public mobilizon-reshare-scheduler
  (package (inherit mobilizon-reshare.git)
@@ -99,9 +115,4 @@
    (description "This script is intended to start a scheduler
 running @code{mobilizon-reshare}.")))
 
-(define-public patch-for-mobilizon-reshare-0.3.3
-  (package-input-rewriting/spec `(("python-oauthlib" . ,(const python-oauthlib-3.2))
-                                  ("python-beautifulsoup4" . ,(const python-beautifulsoup4))
-                                  ("python-tortoise-orm" . ,(const python-tortoise-orm)))))
-
-(patch-for-mobilizon-reshare-0.3.3 mobilizon-reshare.git)
+mobilizon-reshare.git
