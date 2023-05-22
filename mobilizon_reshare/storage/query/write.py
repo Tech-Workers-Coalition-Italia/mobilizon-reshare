@@ -22,7 +22,7 @@ from mobilizon_reshare.storage.query.read import get_event
 
 @atomic()
 async def upsert_publication(
-    publication_report: EventPublicationReport, event: MobilizonEvent
+    publication_report: EventPublicationReport, event: Event
 ):
 
     publisher_model = await (

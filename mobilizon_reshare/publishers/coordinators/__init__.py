@@ -11,7 +11,7 @@ class BasePublicationReport:
     reason: Optional[str]
 
     @property
-    def succesful(self):
+    def successful(self):
         return self.status == PublicationStatus.COMPLETED
 
     def get_failure_message(self):

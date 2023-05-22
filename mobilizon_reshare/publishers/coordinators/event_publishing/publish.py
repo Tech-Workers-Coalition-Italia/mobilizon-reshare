@@ -1,7 +1,7 @@
 import dataclasses
 import logging
 from dataclasses import dataclass
-from typing import Sequence
+from typing import Sequence, List
 
 from mobilizon_reshare.dataclasses.publication import _EventPublication
 from mobilizon_reshare.models.publication import PublicationStatus
@@ -39,18 +39,18 @@ class PublisherCoordinator(BaseEventPublishingCoordinator):
     """
 
     def run(self) -> PublisherCoordinatorReport:
-        errors = self._validate()
-        if errors:
-            return PublisherCoordinatorReport(
-                reports=errors, publications=self.publications
-            )
+        validation_reports = self._validate()
+        valid_publications = self._filter_publications(validation_reports)
+        publishing_reports = self._publish(valid_publications)
+        return PublisherCoordinatorReport(
+            publications=self.publications,
+            reports=validation_reports + publishing_reports
+        )
 
-        return self._publish()
-
-    def _publish(self) -> PublisherCoordinatorReport:
+    def _publish(self, publications: Sequence[_EventPublication]) -> List[EventPublicationReport]:
         reports = []
 
-        for publication in self.publications:
+        for publication in publications:
 
             try:
                 publication_report = self._publish_publication(publication)
@@ -65,9 +65,7 @@ class PublisherCoordinator(BaseEventPublishingCoordinator):
                     )
                 )
 
-        return PublisherCoordinatorReport(
-            publications=self.publications, reports=reports
-        )
+        return reports
 
     @staticmethod
     def _publish_publication(publication):

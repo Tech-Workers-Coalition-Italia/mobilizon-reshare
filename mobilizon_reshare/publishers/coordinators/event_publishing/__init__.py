@@ -1,7 +1,7 @@
 import dataclasses
 import logging
 from dataclasses import dataclass
-from typing import List, Optional
+from typing import List, Optional, Sequence
 
 from mobilizon_reshare.dataclasses.publication import _EventPublication
 from mobilizon_reshare.models.publication import PublicationStatus
@@ -38,7 +38,7 @@ class BaseEventPublishingCoordinator:
         except Exception as e:
             return reasons + [str(e)]
 
-    def _validate(self):
+    def _validate(self) -> List[EventPublicationReport]:
         errors = []
 
         for publication in self.publications:
@@ -60,3 +60,7 @@ class BaseEventPublishingCoordinator:
                 )
 
         return errors
+
+    def _filter_publications(self, errors: Sequence[EventPublicationReport]) -> List[_EventPublication]:
+        publishers_with_errors = set(e.publication.publisher for e in errors)
+        return [p for p in self.publications if p.publisher not in publishers_with_errors]

@@ -138,6 +138,24 @@ async def test_publication_coordinator_run_failure(
     assert list(report.reports)[0].reason == "credentials error, Invalid event error"
 
 
+@pytest.mark.parametrize("num_publications", [2])
+@pytest.mark.asyncio
+async def test_publication_coordinator_run_partial_failure(
+    mock_publications, mock_publisher_invalid, mock_formatter_invalid
+):
+
+    mock_publications[0].publisher = mock_publisher_invalid
+    mock_publications[0].formatter = mock_formatter_invalid
+    coordinator = PublisherCoordinator(mock_publications)
+
+    report = coordinator.run()
+    assert len(report.reports) == 2
+    assert not list(report.reports)[0].successful
+    assert list(report.reports)[0].reason == "credentials error, Invalid event error"
+    assert list(report.reports)[1].successful
+    assert list(report.reports)[1].reason is None
+
+
 @pytest.mark.parametrize("num_publications", [1])
 @pytest.mark.asyncio
 async def test_publication_coordinator_run_failure_response(
