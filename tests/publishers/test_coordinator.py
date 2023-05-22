@@ -115,8 +115,12 @@ async def mock_publications(
 
 @pytest.mark.parametrize("num_publications", [2])
 @pytest.mark.asyncio
-async def test_publication_coordinator_run_success(mock_publications,):
-    coordinator = PublisherCoordinator(publications=mock_publications,)
+async def test_publication_coordinator_run_success(
+    mock_publications,
+):
+    coordinator = PublisherCoordinator(
+        publications=mock_publications,
+    )
     report = coordinator.run()
     assert len(report.reports) == 2
     assert report.successful, "\n".join(map(lambda rep: rep.reason, report.reports))
@@ -173,12 +177,12 @@ async def test_publication_coordinator_run_failure_response(
 
 @pytest.mark.asyncio
 async def test_notifier_coordinator_publication_failed(
-    mock_publisher_valid, failure_report
+    mock_zulip_publisher, failure_report
 ):
     mock_send = MagicMock()
-    mock_publisher_valid._send = mock_send
+    mock_zulip_publisher._send = mock_send
     coordinator = PublicationFailureNotifiersCoordinator(
-        failure_report, [mock_publisher_valid, mock_publisher_valid]
+        failure_report, [mock_zulip_publisher, mock_zulip_publisher]
     )
     coordinator.notify_failure()
 
@@ -188,18 +192,18 @@ async def test_notifier_coordinator_publication_failed(
 
 @pytest.mark.asyncio
 async def test_notifier_coordinator_error(
-    failure_report, mock_publisher_invalid_response, caplog
+    failure_report, mock_zulip_publisher_invalid_response, caplog
 ):
     mock_send = MagicMock()
-    mock_publisher_invalid_response._send = mock_send
+    mock_zulip_publisher_invalid_response._send = mock_send
 
     coordinator = PublicationFailureNotifiersCoordinator(
         failure_report,
-        [mock_publisher_invalid_response, mock_publisher_invalid_response],
+        [mock_zulip_publisher_invalid_response, mock_zulip_publisher_invalid_response],
     )
     with caplog.at_level(logging.CRITICAL):
         coordinator.notify_failure()
-        assert "Failed to send" in caplog.text
+        assert "Failed to notify failure of" in caplog.text
         assert failure_report.get_failure_message() in caplog.text
     # 4 = 2 reports * 2 notifiers
     assert mock_send.call_count == 2

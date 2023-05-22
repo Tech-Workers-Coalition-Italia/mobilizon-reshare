@@ -8,7 +8,6 @@ import mobilizon_reshare.publishers
 import mobilizon_reshare.storage.query.read
 from mobilizon_reshare.models.publisher import Publisher
 import mobilizon_reshare.main.recap
-from mobilizon_reshare.publishers.coordinators.event_publishing import notify
 from tests import today
 from tests.conftest import event_1, event_0
 
@@ -138,15 +137,41 @@ async def mock_notifier_config(monkeypatch, publisher_class, mock_formatter_clas
         return mock_formatter_class
 
     monkeypatch.setattr(
-        notify, "get_notifier_class", _mock_notifier_class,
+        mobilizon_reshare.publishers.coordinators.event_publishing.notify,
+        "get_notifier_class",
+        _mock_notifier_class,
+    )
+    monkeypatch.setattr(
+        mobilizon_reshare.publishers.coordinators.event_publishing.notify,
+        "get_formatter_class",
+        _mock_format_class,
+    )
+    monkeypatch.setattr(
+        mobilizon_reshare.publishers.coordinators.event_publishing.notify,
+        "get_notifier_class",
+        _mock_notifier_class,
     )
     monkeypatch.setattr(
         mobilizon_reshare.publishers.platforms.platform_mapping,
         "get_formatter_class",
         _mock_format_class,
     )
+    monkeypatch.setattr(
+        mobilizon_reshare.publishers.coordinators.event_publishing.notify,
+        "get_formatter_class",
+        _mock_format_class,
+    )
 
-    monkeypatch.setattr(notify, "get_active_notifiers", _mock_active_notifier)
+    monkeypatch.setattr(
+        mobilizon_reshare.publishers.coordinators.event_publishing.notify,
+        "get_active_notifiers",
+        _mock_active_notifier,
+    )
+    monkeypatch.setattr(
+        mobilizon_reshare.config.notifiers,
+        "get_active_notifiers",
+        lambda s: [],
+    )
 
 
 @pytest.fixture

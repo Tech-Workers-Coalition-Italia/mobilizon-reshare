@@ -51,7 +51,7 @@ def generate_event_status(published):
 
 
 def generate_notification_status(published):
-    return NotificationStatus.COMPLETED if published else NotificationStatus.WAITING
+    return NotificationStatus.COMPLETED if published else NotificationStatus.FAILED
 
 
 @pytest.fixture(scope="session", autouse=True)
@@ -419,6 +419,12 @@ def mock_zulip_publisher_class(message_collector):
 def mock_publisher_valid(message_collector, mock_publisher_class):
 
     return mock_publisher_class()
+
+
+@pytest.fixture
+def mock_zulip_publisher(message_collector, mock_zulip_publisher_class):
+
+    return mock_zulip_publisher_class()
 
 
 @pytest.fixture

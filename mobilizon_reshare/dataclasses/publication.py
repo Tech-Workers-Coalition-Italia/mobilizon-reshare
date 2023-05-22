@@ -54,6 +54,11 @@ class RecapPublication(BasePublication):
     events: List[_MobilizonEvent]
 
 
+@dataclass
+class _PublicationNotification(BasePublication):
+    publication: _EventPublication
+
+
 @atomic()
 async def build_publications_for_event(
     event: _MobilizonEvent, publishers: Iterator[str]

@@ -20,7 +20,7 @@ class EventPublicationReport(BasePublicationReport):
             logger.error("Report of failure without reason.", exc_info=True)
 
         return (
-            f"Publication {self.publication.id} failed with status: {self.status}.\n"
+            f"Publication {self.publication.id} failed with status: {self.status.name}.\n"
             f"Reason: {self.reason}\n"
             f"Publisher: {self.publication.publisher.name}\n"
             f"Event: {self.publication.event.name}"

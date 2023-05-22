@@ -2,8 +2,9 @@
 debug = false
 default = true
 local_state_dir = "/var/lib/mobilizon-reshare"
-#db_path = "@format {this.local_state_dir}/events.db"
+#db_url = "@format sqlite://{this.local_state_dir}/events.db"
 db_url = "@format postgres://mobilizon_reshare:mobilizon_reshare@db:5432/mobilizon_reshare"
+locale = "en-uk"
 
 [default.source.mobilizon]
 url="https://some-mobilizon.com/api"
@@ -28,6 +29,15 @@ class = "logging.StreamHandler"
 formatter = "standard"
 stream = "ext://sys.stderr"
 
+[default.logging.handlers.file]
+level = "INFO"
+class = "logging.handlers.RotatingFileHandler"
+formatter = "standard"
+filename = "@format {this.local_state_dir}/mobilizon_reshare.log"
+maxBytes = 52428800
+backupCount = 500
+encoding = "utf8"
+
 [default.logging.root]
-level = "DEBUG"
-handlers = ['console']
+level = "INFO"
+handlers = ['console', 'file']
