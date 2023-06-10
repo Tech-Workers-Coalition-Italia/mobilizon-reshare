@@ -61,7 +61,7 @@ jobs:
           IMAGE_TAG: ${{ steps.vars.outputs.tag }}
           IMAGE_NAME_TAG: mobilizon-reshare-scheduler:latest
         with:
-          name: fishinthecalculator/mobilizon-reshare
+          name: twcita/mobilizon-reshare
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
           image: docker-image.tar.gz
