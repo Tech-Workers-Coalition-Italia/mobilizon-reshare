@@ -1,14 +1,14 @@
 version: "3.7"
 services:
   mobilizon-reshare:
-    image: twcita/mobilizon-reshare:v0.3.2
+    image: twcita/mobilizon-reshare:v0.3.5
     environment:
-      SECRETS_FOR_DYNACONF: /etc/xdg/mobilizon-reshare/0.3.2/.secrets.toml
+      SECRETS_FOR_DYNACONF: /etc/xdg/mobilizon-reshare/0.3.5/.secrets.toml
       ENV_FOR_DYNACONF: production
       MOBILIZON_RESHARE_INTERVAL: "*/15 10-18 * * 0-4"
     volumes:
-      - ./.secrets.toml:/etc/xdg/mobilizon-reshare/0.3.2/.secrets.toml:ro
-      - ./mobilizon_reshare.toml:/etc/xdg/mobilizon-reshare/0.3.2/mobilizon_reshare.toml:ro
+      - ./.secrets.toml:/etc/xdg/mobilizon-reshare/0.3.5/.secrets.toml:ro
+      - ./mobilizon_reshare.toml:/etc/xdg/mobilizon-reshare/0.3.5/mobilizon_reshare.toml:ro
       - ./var:/var/lib/mobilizon-reshare
       - /etc/localtime:/etc/localtime:ro
       - /etc/timezone:/etc/timezone:ro
