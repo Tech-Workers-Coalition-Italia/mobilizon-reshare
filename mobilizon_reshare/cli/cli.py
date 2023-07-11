@@ -88,26 +88,21 @@ publication_status_argument = click.argument(
     default="all",
     expose_value=True,
 )
-event_uuid_option = click.option(
-    "-E",
-    "--event",
+force_publish_option = click.option(
+    "-F",
+    "--force",
     type=click.UUID,
     expose_value=True,
-    help="Publish the given event.",
-)
-publication_uuid_option = click.option(
-    "-P",
-    "--publication",
-    type=click.UUID,
-    expose_value=True,
-    help="Publish the given publication.",
+    help="Publish the given event, bypassing all selection logic. This command WILL publish"
+    "regardless of the configured strategy, so use it with care.",
 )
 platform_name_option = click.option(
     "-p",
     "--platform",
     type=str,
     expose_value=True,
-    help="Publish to the given platform. This makes sense only for events.",
+    help="Restrict the platforms where the event will be published. This makes sense only in"
+    " case of force-publishing.",
 )
 list_supported_option = click.option(
     "--list-platforms",
@@ -182,11 +177,19 @@ def pull():
     help="Select an event with the current configured strategy"
     " and publish it to all active platforms."
 )
-@event_uuid_option
-@publication_uuid_option
+@force_publish_option
 @platform_name_option
-def publish():
-    safe_execution(publish_main,)
+@click.option(
+    "--dry-run",
+    "dry_run",
+    is_flag=True,
+    help="Prevents data to be published to platforms.",
+    default=False,
+)
+def publish(event, platform, dry_run):
+    safe_execution(functools.partial(
+            publish_main, event, platform
+        ), CommandConfig(dry_run=dry_run))
 
 
 @mobilizon_reshare.group(help="Operations that pertain to events")

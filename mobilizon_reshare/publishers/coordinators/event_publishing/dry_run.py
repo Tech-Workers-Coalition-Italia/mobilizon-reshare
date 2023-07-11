@@ -1,3 +1,4 @@
+import logging
 from typing import List, Sequence
 
 from mobilizon_reshare.dataclasses import _EventPublication
@@ -7,6 +8,8 @@ from mobilizon_reshare.publishers.coordinators.event_publishing.publish import (
     EventPublicationReport,
 )
 
+logger = logging.getLogger(__name__)
+
 
 class DryRunPublisherCoordinator(PublisherCoordinator):
     """
@@ -14,7 +17,7 @@ class DryRunPublisherCoordinator(PublisherCoordinator):
     """
 
     def _publish(self, publications: Sequence[_EventPublication]) -> List[EventPublicationReport]:
-        return [
+        reports = [
             EventPublicationReport(
                 status=PublicationStatus.COMPLETED,
                 publication=publication,
@@ -25,3 +28,9 @@ class DryRunPublisherCoordinator(PublisherCoordinator):
             )
             for publication in publications
         ]
+        logger.info("The following events would be published:")
+        for r in reports:
+            event_name = r.publication.event.name
+            publisher_name = r.publication.publisher.name
+            logger.info(f"{event_name} → {publisher_name}")
+        return reports
