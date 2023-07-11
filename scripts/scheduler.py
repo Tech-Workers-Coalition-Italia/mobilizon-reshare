@@ -16,19 +16,21 @@ from apscheduler.triggers.cron import CronTrigger
 from mobilizon_reshare.cli import _safe_execution
 from mobilizon_reshare.cli.commands.recap.main import recap
 from mobilizon_reshare.cli.commands.start.main import start
+from mobilizon_reshare.config.command import CommandConfig
 
 sched = AsyncIOScheduler()
+config = CommandConfig(dry_run=False)
 
 # Runs "start" from Monday to Friday every 15 mins
 sched.add_job(
-    partial(_safe_execution, start),
+    partial(_safe_execution, partial(start, config)),
     CronTrigger.from_crontab(
         os.environ.get("MOBILIZON_RESHARE_INTERVAL", "*/15 10-18 * * 0-4")
     ),
 )
 # Runs "recap" once a week
 sched.add_job(
-    partial(_safe_execution, recap),
+    partial(_safe_execution, partial(recap, config)),
     CronTrigger.from_crontab(
         os.environ.get("MOBILIZON_RESHARE_RECAP_INTERVAL", "5 11 * * 0")
     ),
