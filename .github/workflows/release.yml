@@ -59,7 +59,7 @@ jobs:
         uses: fishinthecalculator/publish-docker-image-action@v0.1.10
         env:
           IMAGE_TAG: ${{ steps.vars.outputs.tag }}
-          IMAGE_NAME_TAG: mobilizon-reshare-scheduler:latest
+          IMAGE_NAME_TAG: mobilizon-reshare-scheduler-python:latest
         with:
           name: twcita/mobilizon-reshare
           username: ${{ secrets.DOCKER_USERNAME }}
