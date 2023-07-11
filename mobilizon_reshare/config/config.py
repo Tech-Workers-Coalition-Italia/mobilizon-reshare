@@ -1,5 +1,6 @@
 import importlib.resources
 import logging
+from logging.config import dictConfig
 from pathlib import Path
 from typing import Optional
 
@@ -38,6 +39,12 @@ def current_version() -> str:
         return fp.read()
 
 
+def init_logging(settings: Optional[Dynaconf] = None):
+    if settings is None:
+        settings = get_settings()
+    dictConfig(settings["logging"])
+
+
 def get_settings_files_paths() -> Optional[str]:
 
     dirs = AppDirs(appname="mobilizon-reshare", version=current_version())
@@ -54,7 +61,7 @@ def get_settings_files_paths() -> Optional[str]:
             return config_path
 
 
-def build_settings(validators: Optional[list[Validator]] = None):
+def build_settings(validators: Optional[list[Validator]] = None) -> Dynaconf:
     """
     Creates a Dynaconf base object. Configuration files are checked in this order:
 
@@ -78,7 +85,7 @@ def build_settings(validators: Optional[list[Validator]] = None):
     return config
 
 
-def build_and_validate_settings():
+def build_and_validate_settings() -> Dynaconf:
     """
     Creates a settings object to be used in the application. It collects and apply generic validators and validators
     specific for each publisher, notifier and publication strategy.
@@ -128,9 +135,9 @@ class CustomConfig:
         cls._instance = None
 
 
-def get_settings():
+def get_settings() -> Dynaconf:
     return CustomConfig.get_instance().settings
 
 
-def get_settings_without_validation():
+def get_settings_without_validation() -> Dynaconf:
     return build_settings()

@@ -5,6 +5,7 @@ import sys
 import traceback
 
 from mobilizon_reshare.config.command import CommandConfig
+from mobilizon_reshare.config.config import init_logging
 from mobilizon_reshare.storage.db import tear_down, init
 
 logger = logging.getLogger(__name__)
@@ -15,6 +16,7 @@ async def graceful_exit():
 
 
 async def _safe_execution(function):
+    init_logging()
     await init()
 
     return_code = 1

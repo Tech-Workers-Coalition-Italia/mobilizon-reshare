@@ -17,7 +17,7 @@ from mobilizon_reshare.cli.commands.retry.main import (
 )
 from mobilizon_reshare.cli.commands.start.main import start_command as start_main
 from mobilizon_reshare.config.command import CommandConfig
-from mobilizon_reshare.config.config import current_version, get_settings
+from mobilizon_reshare.config.config import current_version, get_settings, init_logging
 from mobilizon_reshare.config.publishers import publisher_names
 from mobilizon_reshare.dataclasses.event import _EventPublicationStatus
 from mobilizon_reshare.models.publication import PublicationStatus
@@ -27,7 +27,8 @@ from mobilizon_reshare.publishers import get_active_publishers
 def test_settings(ctx, param, value):
     if not value or ctx.resilient_parsing:
         return
-    get_settings()
+    settings = get_settings()
+    init_logging(settings)
     click.echo("OK!")
     ctx.exit()
 
