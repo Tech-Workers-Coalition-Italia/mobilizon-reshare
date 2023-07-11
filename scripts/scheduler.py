@@ -14,23 +14,32 @@ from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from apscheduler.triggers.cron import CronTrigger
 
 from mobilizon_reshare.cli import _safe_execution
-from mobilizon_reshare.cli.commands.recap.main import recap
-from mobilizon_reshare.cli.commands.start.main import start
+from mobilizon_reshare.cli.commands.recap.main import recap as recap_main
+from mobilizon_reshare.cli.commands.start.main import start as start_main
 from mobilizon_reshare.config.command import CommandConfig
 
 sched = AsyncIOScheduler()
 config = CommandConfig(dry_run=False)
 
+
+async def start():
+    await start_main(config)
+
+
+async def recap():
+    await recap_main(config)
+
+
 # Runs "start" from Monday to Friday every 15 mins
 sched.add_job(
-    partial(_safe_execution, partial(start, config)),
+    partial(_safe_execution, start),
     CronTrigger.from_crontab(
-        os.environ.get("MOBILIZON_RESHARE_INTERVAL", "*/15 10-18 * * 0-4")
+        os.environ.get("MOBILIZON_RESHARE_INTERVAL", "*/15 10-18 * * 1-4")
     ),
 )
 # Runs "recap" once a week
 sched.add_job(
-    partial(_safe_execution, partial(recap, config)),
+    partial(_safe_execution, recap),
     CronTrigger.from_crontab(
         os.environ.get("MOBILIZON_RESHARE_RECAP_INTERVAL", "5 11 * * 0")
     ),
