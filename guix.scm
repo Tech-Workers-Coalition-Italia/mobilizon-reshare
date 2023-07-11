@@ -21,33 +21,7 @@
               #:recursive? #t
               #:select? (git-predicate %source-dir)))
 
-(use-modules (guix download)
-             (guix transformations))
-(define-public python-tweepy-4.13
-  (package
-    (inherit python-tweepy)
-    (version "4.13.0")
-    (source (origin
-              (method url-fetch)
-              (uri (pypi-uri "tweepy" version))
-              (sha256
-               (base32
-                "123cikpmp2m360pxh2qarb4kkjmv8wi2prx7df178rlzbwrjax09"))))
-    (arguments
-     `(#:tests? #f))))
-
-(define-public python-oauthlib-3.2
-  (package
-   (inherit python-oauthlib)
-   (version "3.2.2")
-   (source (origin
-             (method url-fetch)
-             (uri (pypi-uri "oauthlib" version))
-             (sha256
-              (base32
-               "066r7mimlpb5q1fr2f1z59l4jc89kv4h2kgkcifyqav6544w8ncq"))))))
-
-(define _mobilizon-reshare.git
+(define mobilizon-reshare.git
   (let ((source-version (with-input-from-file
                             (string-append %source-dir
                                            "/mobilizon_reshare/VERSION")
@@ -58,40 +32,7 @@
     (package (inherit mobilizon-reshare)
       (name "mobilizon-reshare.git")
       (version (git-version source-version revision commit))
-      (source mobilizon-reshare-git-origin)
-      (arguments
-       (substitute-keyword-arguments (package-arguments mobilizon-reshare)
-         ((#:phases phases)
-          #~(modify-phases #$phases
-              (add-after 'unpack 'patch-version
-                (lambda _
-                  (with-output-to-file "mobilizon_reshare/VERSION"
-                   (lambda _
-                     (display #$version)))))
-              (delete 'patch-pyproject.toml)))))
-      (native-inputs
-       (modify-inputs (package-native-inputs mobilizon-reshare)
-         (prepend python-httpx)))
-      (propagated-inputs
-       (modify-inputs (package-propagated-inputs mobilizon-reshare)
-         (prepend python-asyncpg
-                  python-uvicorn
-                  python-fastapi
-                  python-fastapi-pagination)
-         (replace "python-tweepy"
-                   python-tweepy-4.13)
-         (replace "dynaconf"
-                   dynaconf-3.1.11)
-         (replace "python-markdownify"
-                   python-markdownify))))))
-
-(define-public patch-for-mobilizon-reshare-0.3.3
-  (package-input-rewriting/spec `(("python-oauthlib" . ,(const python-oauthlib-3.2))
-                                  ("python-beautifulsoup4" . ,(const python-beautifulsoup4))
-                                  ("python-tortoise-orm" . ,(const python-tortoise-orm)))))
-
-(define-public mobilizon-reshare.git
-  (patch-for-mobilizon-reshare-0.3.3 _mobilizon-reshare.git))
+      (source mobilizon-reshare-git-origin))))
 
 (define-public mobilizon-reshare-scheduler
  (package (inherit mobilizon-reshare.git)

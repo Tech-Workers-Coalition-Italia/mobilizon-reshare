@@ -31,7 +31,7 @@ jobs:
 
       # Runs a set of commands using the runners shell
       - name: Build image
-        run: scripts/build_docker_image.sh
+        run: scripts/build_docker_image.sh -r
       - name: Upload pack (Docker)
         uses: actions/upload-artifact@v2
         with:
