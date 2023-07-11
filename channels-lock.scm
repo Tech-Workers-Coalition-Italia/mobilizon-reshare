@@ -4,7 +4,7 @@
 (list
  (channel
   (name 'mobilizon-reshare)
-  (url "https://github.com/fishinthecalculator/mobilizon-reshare-guix")
+  (url "https://git.sr.ht/~fishinthecalculator/mobilizon-reshare-guix")
   (branch "main"))
  (channel
   (name 'guix)

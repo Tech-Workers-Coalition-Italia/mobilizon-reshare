@@ -37,7 +37,7 @@ commands and their description.
 
 ### Guix package
 
-If you run Guix you can install `mobilizon-reshare` by adding our [Guix channel](https://github.com/fishinthecalculator/mobilizon-reshare-guix#configure) to your `.config/guix/channels.scm`.
+If you run Guix you can install `mobilizon-reshare` by adding our [Guix channel](https://git.sr.ht/~fishinthecalculator/mobilizon-reshare-guix#configure) to your `.config/guix/channels.scm`.
 
 
 
