@@ -1,5 +1,4 @@
 import logging
-from logging.config import dictConfig
 from pathlib import Path
 
 import pkg_resources
@@ -92,11 +91,7 @@ async def tear_down():
     return await Tortoise.close_connections()
 
 
-async def init(init_logging=True):
-
-    if init_logging:
-        dictConfig(get_settings()["logging"])
-
+async def init():
     # init storage
     url = get_db_url()
     if url.scheme == "sqlite":
