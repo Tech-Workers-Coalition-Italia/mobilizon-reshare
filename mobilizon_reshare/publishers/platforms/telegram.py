@@ -99,9 +99,14 @@ class TelegramPlatform(AbstractPlatform):
             )
 
     def _send(self, message: str, event: Optional[MobilizonEvent] = None) -> Response:
+        json_message = {"chat_id": self.conf.chat_id, "text": message, "parse_mode": "html"}
+
+        if self.conf.message_thread_id:
+            json_message["message_thread_id"] = self.conf.message_thread_id
+
         return requests.post(
             url=f"https://api.telegram.org/bot{self.conf.token}/sendMessage",
-            json={"chat_id": self.conf.chat_id, "text": message, "parse_mode": "html"},
+            json=json_message,
         )
 
     def _validate_response(self, res):

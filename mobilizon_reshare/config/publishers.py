@@ -3,6 +3,7 @@ from dynaconf import Validator
 
 telegram_validators = [
     Validator("publisher.telegram.chat_id", must_exist=True),
+    Validator("publisher.telegram.message_thread_id", default=None),
     Validator("publisher.telegram.msg_template_path", must_exist=True, default=None),
     Validator("publisher.telegram.recap_template_path", must_exist=True, default=None),
     Validator(

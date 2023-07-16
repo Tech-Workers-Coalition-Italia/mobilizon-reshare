@@ -1,6 +1,7 @@
 [default]
 local_state_dir = "/var/mobilizon_reshare"
-db_url = "sqlite:///var/mobilizon_reshare/events.db"
+log_dir = "@format {this.local_state_dir}"
+db_url = "@format sqlite://{this.local_state_dir}/events.db"
 locale= "en-us"
 
 [default.source.mobilizon]
@@ -31,7 +32,7 @@ stream = "ext://sys.stderr"
 level = "DEBUG"
 class = "logging.handlers.RotatingFileHandler"
 formatter = "standard"
-filename = "/var/log/mobilizon_reshare/mobilizon_reshare.log"
+filename = "@format {this.log_dir}/mobilizon_reshare.log"
 maxBytes = 52428800
 backupCount = 500
 encoding = "utf8"
