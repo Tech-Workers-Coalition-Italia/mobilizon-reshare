@@ -5,7 +5,7 @@ import pytest
 
 from mobilizon_reshare.dataclasses import EventPublicationStatus
 from mobilizon_reshare.dataclasses import MobilizonEvent
-from mobilizon_reshare.main.publish import select_and_publish, publish_event
+from mobilizon_reshare.main.publish import select_and_publish, publish_by_mobilizon_id
 from mobilizon_reshare.models.notification import NotificationStatus, Notification
 from mobilizon_reshare.models.event import Event
 from mobilizon_reshare.models.publication import PublicationStatus
@@ -104,7 +104,9 @@ async def test_publish_event(
     await generate_models(one_unpublished_event_specification)
     with caplog.at_level(DEBUG):
         # calling mobilizon-reshare publish -E <UUID> -p <platform>
-        report = await publish_event(event_0, command_config, publishers)
+        report = await publish_by_mobilizon_id(
+            event_0.mobilizon_id, command_config, publishers
+        )
         assert report is not None
         assert report.successful
 

@@ -108,7 +108,7 @@ class _MobilizonEvent:
 async def get_all_mobilizon_events(
     from_date: Optional[Arrow] = None, to_date: Optional[Arrow] = None,
 ) -> list[_MobilizonEvent]:
-    return [_MobilizonEvent.from_model(event) for event in await get_all_events()]
+    return [_MobilizonEvent.from_model(event) for event in await get_all_events(from_date, to_date)]
 
 
 async def get_published_events(
@@ -155,3 +155,10 @@ async def get_mobilizon_events_without_publications(
             from_date=from_date, to_date=to_date
         )
     ]
+
+
+async def get_mobilizon_event_by_id(
+    event_id: UUID,
+) -> _MobilizonEvent:
+    event = await get_event(event_id)
+    return _MobilizonEvent.from_model(event)

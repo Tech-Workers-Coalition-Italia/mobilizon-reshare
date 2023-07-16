@@ -6,6 +6,7 @@ from mobilizon_reshare.dataclasses import MobilizonEvent
 from mobilizon_reshare.dataclasses.event import (
     get_published_events,
     get_mobilizon_events_without_publications,
+    get_mobilizon_event_by_id,
 )
 from mobilizon_reshare.dataclasses.publication import (
     _EventPublication,
@@ -66,6 +67,15 @@ async def publish_event(
         return perform_dry_run(publications)
     else:
         return await publish_publications(publications)
+
+
+async def publish_by_mobilizon_id(
+    event_mobilizon_id,
+    command_config: CommandConfig,
+    publishers: Optional[Iterator[str]] = None,
+):
+    event = await get_mobilizon_event_by_id(event_mobilizon_id)
+    return await publish_event(event, command_config, publishers)
 
 
 async def select_and_publish(

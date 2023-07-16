@@ -24,7 +24,7 @@ def pretty(publication: Publication):
     return (
         f"{str(publication.id) : <40}{publication.timestamp.isoformat() : <36}"
         f"{click.style(publication.status.name, fg=status_to_color[publication.status]) : <22}"
-        f"{publication.publisher.name : <12}{str(publication.event.id)}"
+        f"{publication.publisher.name : <12}{str(publication.event.mobilizon_id)}"
     )
 
 
@@ -33,7 +33,6 @@ async def list_publications(
     frm: Optional[datetime] = None,
     to: Optional[datetime] = None,
 ):
-
     frm = Arrow.fromdatetime(frm) if frm else None
     to = Arrow.fromdatetime(to) if to else None
     if status is None:
