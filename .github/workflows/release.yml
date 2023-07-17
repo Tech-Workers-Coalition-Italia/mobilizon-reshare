@@ -27,7 +27,7 @@ jobs:
 
       # Runs a single command using the runners shell
       - name: Install GNU Guix
-        uses: PromyLOPh/guix-install-action@v1
+        uses: PromyLOPh/guix-install-action@v1.4
 
       # Runs a set of commands using the runners shell
       - name: Build image
