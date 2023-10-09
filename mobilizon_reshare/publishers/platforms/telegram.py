@@ -1,7 +1,6 @@
 import re
 from typing import Optional
 
-import pkg_resources
 import requests
 from bs4 import BeautifulSoup
 from requests import Response
@@ -20,18 +19,6 @@ from mobilizon_reshare.publishers.exceptions import (
 
 
 class TelegramFormatter(AbstractEventFormatter):
-    default_template_path = pkg_resources.resource_filename(
-        "mobilizon_reshare.publishers.templates", "telegram.tmpl.j2"
-    )
-
-    default_recap_template_path = pkg_resources.resource_filename(
-        "mobilizon_reshare.publishers.templates", "telegram_recap.tmpl.j2"
-    )
-
-    default_recap_header_template_path = pkg_resources.resource_filename(
-        "mobilizon_reshare.publishers.templates", "telegram_recap_header.tmpl.j2"
-    )
-
     _conf = ("publisher", "telegram")
 
     def _validate_event(self, event: MobilizonEvent) -> None:

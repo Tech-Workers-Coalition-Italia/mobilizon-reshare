@@ -1,3 +1,4 @@
+import importlib
 import inspect
 import logging
 from abc import ABC, abstractmethod
@@ -124,6 +125,33 @@ class AbstractEventFormatter(LoggerMixin, ConfLoaderMixin):
         """
         raise NotImplementedError  # pragma: no cover
 
+    def _get_name(self) -> str:
+        return self._conf[1]
+
+
+    def _get_template(self, configured_template, default_generator) -> Template:
+        if configured_template:
+            return JINJA_ENV.get_template(configured_template)
+        else:
+            template_ref = default_generator()
+            with importlib.resources.as_file(template_ref) as template_path:
+                return JINJA_ENV.get_template(template_path.as_posix())
+
+
+    def get_default_template_path(self, type=""):
+        return importlib.resources.files(
+        "mobilizon_reshare.publishers.templates"
+    ) / f"{self._get_name()}{type}.tmpl.j2"
+
+
+    def get_default_recap_template_path(self):
+        return self.get_default_template_path(type="_recap")
+
+
+    def get_default_recap_header_template_path(self):
+        return self.get_default_template_path(type="_recap_header")
+
+
     def validate_event(self, event: _MobilizonEvent) -> None:
         self._validate_event(event)
         self._validate_message(self.get_message_from_event(event))
@@ -148,21 +176,20 @@ class AbstractEventFormatter(LoggerMixin, ConfLoaderMixin):
         """
         Retrieves publisher's message template.
         """
-        template_path = self.conf.msg_template_path or self.default_template_path
-        return JINJA_ENV.get_template(template_path)
+        return self._get_template(self.conf.msg_template_path, self.get_default_template_path)
 
-    def get_recap_header(self):
-        template_path = (
-            self.conf.recap_header_template_path
-            or self.default_recap_header_template_path
+    def get_recap_header(self) -> Template:
+        return self._get_template(
+            self.conf.recap_header_template_path,
+            self.get_default_recap_header_template_path
         )
-        return JINJA_ENV.get_template(template_path).render()
+
 
     def get_recap_fragment_template(self) -> Template:
-        template_path = (
-            self.conf.recap_template_path or self.default_recap_template_path
+        return self._get_template(
+            self.conf.recap_template_path,
+            self.get_default_recap_template_path
         )
-        return JINJA_ENV.get_template(template_path)
 
     def get_recap_fragment(self, event: _MobilizonEvent) -> str:
         """

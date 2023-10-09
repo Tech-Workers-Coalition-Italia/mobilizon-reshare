@@ -1,6 +1,5 @@
 from typing import Optional
 
-import pkg_resources
 from tweepy import OAuthHandler, API, TweepyException
 from tweepy.models import Status
 
@@ -17,19 +16,7 @@ from mobilizon_reshare.publishers.exceptions import (
 
 
 class TwitterFormatter(AbstractEventFormatter):
-
     _conf = ("publisher", "twitter")
-    default_template_path = pkg_resources.resource_filename(
-        "mobilizon_reshare.publishers.templates", "twitter.tmpl.j2"
-    )
-
-    default_recap_template_path = pkg_resources.resource_filename(
-        "mobilizon_reshare.publishers.templates", "twitter_recap.tmpl.j2"
-    )
-
-    default_recap_header_template_path = pkg_resources.resource_filename(
-        "mobilizon_reshare.publishers.templates", "twitter_recap_header.tmpl.j2"
-    )
 
     def _validate_event(self, event: MobilizonEvent) -> None:
         pass  # pragma: no cover

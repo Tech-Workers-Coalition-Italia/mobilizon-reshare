@@ -1,7 +1,6 @@
 from typing import Optional
 
 import facebook
-import pkg_resources
 from facebook import GraphAPIError
 
 from mobilizon_reshare.dataclasses import MobilizonEvent
@@ -19,19 +18,7 @@ from mobilizon_reshare.publishers.exceptions import (
 
 
 class FacebookFormatter(AbstractEventFormatter):
-
     _conf = ("publisher", "facebook")
-    default_template_path = pkg_resources.resource_filename(
-        "mobilizon_reshare.publishers.templates", "facebook.tmpl.j2"
-    )
-
-    default_recap_template_path = pkg_resources.resource_filename(
-        "mobilizon_reshare.publishers.templates", "facebook_recap.tmpl.j2"
-    )
-
-    default_recap_header_template_path = pkg_resources.resource_filename(
-        "mobilizon_reshare.publishers.templates", "facebook_recap_header.tmpl.j2"
-    )
 
     def _validate_event(self, event: MobilizonEvent) -> None:
         text = event.description

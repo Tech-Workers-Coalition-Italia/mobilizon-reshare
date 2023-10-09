@@ -1,7 +1,6 @@
 from typing import Optional
 from urllib.parse import urljoin
 
-import pkg_resources
 import requests
 from requests import Response
 
@@ -20,19 +19,7 @@ from mobilizon_reshare.publishers.exceptions import (
 
 
 class MastodonFormatter(AbstractEventFormatter):
-
     _conf = ("publisher", "mastodon")
-    default_template_path = pkg_resources.resource_filename(
-        "mobilizon_reshare.publishers.templates", "mastodon.tmpl.j2"
-    )
-
-    default_recap_template_path = pkg_resources.resource_filename(
-        "mobilizon_reshare.publishers.templates", "mastodon_recap.tmpl.j2"
-    )
-
-    default_recap_header_template_path = pkg_resources.resource_filename(
-        "mobilizon_reshare.publishers.templates", "mastodon_recap_header.tmpl.j2"
-    )
 
     def _validate_event(self, event: MobilizonEvent) -> None:
         text = event.description
