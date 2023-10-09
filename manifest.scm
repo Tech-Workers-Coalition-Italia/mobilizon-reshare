@@ -8,10 +8,10 @@
   #:use-module (srfi srfi-1))
 
 (packages->manifest
-  (append
-    (map cadr (package-direct-inputs mobilizon-reshare))
-    (map specification->package+output
+ (append
+  (map cadr (package-direct-inputs mobilizon-reshare))
+  (map specification->package+output
        '("git-cal" "man-db" "texinfo"
-         "python-pre-commit" "cloc"
+         "pre-commit" "cloc"
          "ripgrep" "python-semver"
          "fd" "docker-compose" "poetry"))))
