@@ -5,12 +5,12 @@
  (channel
   (name 'mobilizon-reshare)
   (url "https://git.sr.ht/~fishinthecalculator/mobilizon-reshare-guix")
-  (branch "main"))
+  (branch "upstream-master"))
  (channel
   (name 'guix)
   (url "https://git.savannah.gnu.org/git/guix.git")
   (commit
-   "79a3cd34c0318928186a04b6481c4d22c0051d04")
+   "7e9783b2ab8c747ef340daa749bdeba9e924ec57")
   (introduction
    (make-channel-introduction
     "afb9f2752315f131e4ddd44eba02eed403365085"
