@@ -11,7 +11,7 @@ license = "Coopyleft"
 [tool.poetry.dependencies]
 python = "^3.10"
 dynaconf = "~3.1"
-tortoise-orm = {extras = ["asyncpg"], version = "~0.20"}
+tortoise-orm = {extras = ["asyncpg"], version = "~0.19"}
 aiosqlite = "~0.17"
 Jinja2 = "~3.1"
 requests = "~2.28"
