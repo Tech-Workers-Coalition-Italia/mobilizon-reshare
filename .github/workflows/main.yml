@@ -20,7 +20,7 @@ on:
 
   push:
     # Sequence of patterns matched against refs/tags
-    branches: ["master"]
+    branches: ["master", "guix-upstream"]
     paths-ignore:
         - 'guix.scm'
         - 'manifest.scm'
