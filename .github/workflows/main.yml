@@ -5,10 +5,34 @@ name: CI
 # Controls when the workflow will run
 on:
   pull_request:
+    paths-ignore:
+        - 'guix.scm'
+        - 'manifest.scm'
+        - 'channels-lock.scm'
+        - '.envrc'
+        - '.gitignore'
+        - 'pre-commit-*.yaml'
+        - Dockerfile
+        - README.*
+        - LICENSE
+        - 'sample_settings/**'
+        - 'etc/**'
 
   push:
     # Sequence of patterns matched against refs/tags
     branches: ["master"]
+    paths-ignore:
+        - 'guix.scm'
+        - 'manifest.scm'
+        - 'channels-lock.scm'
+        - '.envrc'
+        - '.gitignore'
+        - 'pre-commit-*.yaml'
+        - Dockerfile
+        - README.*
+        - LICENSE
+        - 'sample_settings/**'
+        - 'etc/**'
 
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
@@ -16,19 +40,31 @@ on:
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
   run-tests-dev:
-    # The type of runner that the job will run on
-    runs-on: ubuntu-latest
-
-    # Steps represent a sequence of tasks that will be executed as part of the job
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.10", "3.11"]
+        poetry-version: ["1.1.12", "1.7.0"]
+        os: [ubuntu-latest]
+    runs-on: ${{ matrix.os }}
     steps:
-      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
-      - uses: actions/checkout@v2
-
-      # Runs a single command using the runners shell
-      - name: Set up Python 3.10
-        uses: actions/setup-python@v2
+      - uses: actions/checkout@v3
+      - uses: actions/setup-python@v4
         with:
-          python-version: "3.10"
+          python-version: ${{ matrix.python-version }}
+      - name: Run image
+        uses: abatilo/actions-poetry@v2
+        with:
+          poetry-version: ${{ matrix.poetry-version }}
+      - name: Setup a local virtual environment
+        run: |
+          poetry config virtualenvs.create true --local
+          poetry config virtualenvs.in-project true --local
+      - uses: actions/cache@v3
+        name: Define a cache for the virtual environment based on the dependencies lock file
+        with:
+          path: ./.venv
+          key: venv-${{ hashFiles('poetry.lock') }}
       - name: Install dependencies
         run: scripts/install_github_actions_dev_dependencies.sh
       - name: Run tests in dev env
