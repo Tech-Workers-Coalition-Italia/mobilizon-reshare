@@ -5,6 +5,7 @@
 
 ;; 11068:d513d4ca532f376a47a1fc018736292601c81539 -> NOT OK (dependencies)
 ;; 16604:06cd4e761ef5f17fe7c9471f4834fd4893e730cc -> NOT OK (dependencies)
+;; 17988:27ce0d8dda0f2b3cc44df49da78ce5dbc10b37ca -> OK
 ;; 19372:df5a358f67e729116e8176b8489092cd9e499bf5 -> OK
 ;; 22139:79a3cd34c0318928186a04b6481c4d22c0051d04 -> OK
 
@@ -17,7 +18,7 @@
   (name 'guix)
   (url "https://git.savannah.gnu.org/git/guix.git")
   (commit
-   "df5a358f67e729116e8176b8489092cd9e499bf5")
+   "27ce0d8dda0f2b3cc44df49da78ce5dbc10b37ca")
   (introduction
    (make-channel-introduction
     "afb9f2752315f131e4ddd44eba02eed403365085"
