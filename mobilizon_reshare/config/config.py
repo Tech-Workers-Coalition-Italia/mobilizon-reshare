@@ -1,10 +1,9 @@
-import importlib.resources
+import importlib
 import logging
 from logging.config import dictConfig
 from pathlib import Path
 from typing import Optional
 
-import pkg_resources
 from appdirs import AppDirs
 from dynaconf import Dynaconf, Validator
 
@@ -48,17 +47,18 @@ def init_logging(settings: Optional[Dynaconf] = None):
 def get_settings_files_paths() -> Optional[str]:
 
     dirs = AppDirs(appname="mobilizon-reshare", version=current_version())
-    bundled_settings_path = pkg_resources.resource_filename(
-        "mobilizon_reshare", "settings.toml"
-    )
-    for config_path in [
-        Path(dirs.user_config_dir, "mobilizon_reshare.toml").absolute(),
-        Path(dirs.site_config_dir, "mobilizon_reshare.toml").absolute(),
-        bundled_settings_path,
-    ]:
-        if config_path and Path(config_path).exists():
-            logger.debug(f"Loading configuration from {config_path}")
-            return config_path
+    bundled_settings_ref = importlib.resources.files(
+        "mobilizon_reshare"
+    ) / "settings.toml"
+    with importlib.resources.as_file(bundled_settings_ref) as bundled_settings_path:
+        for config_path in [
+            Path(dirs.user_config_dir, "mobilizon_reshare.toml").absolute(),
+            Path(dirs.site_config_dir, "mobilizon_reshare.toml").absolute(),
+            bundled_settings_path.absolute(),
+        ]:
+            if config_path and Path(config_path).exists():
+                logger.debug(f"Loading configuration from {config_path}")
+                return config_path
 
 
 def build_settings(validators: Optional[list[Validator]] = None) -> Dynaconf:

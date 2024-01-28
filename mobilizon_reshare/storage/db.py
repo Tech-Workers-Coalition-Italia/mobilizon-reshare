@@ -1,7 +1,7 @@
 import logging
 from pathlib import Path
 
-import pkg_resources
+import importlib
 import urllib3.util
 from aerich import Command
 from tortoise import Tortoise
@@ -47,9 +47,9 @@ TORTOISE_ORM = get_tortoise_orm()
 class MoReDB:
     def get_migration_location(self):
         scheme = get_db_url().scheme
-        return pkg_resources.resource_filename(
-            "mobilizon_reshare", f"migrations/{scheme}"
-        )
+        scheme_ref = importlib.resources.files("mobilizon_reshare") / "migrations" / f"{scheme}"
+        with importlib.resources.as_file(scheme_ref) as scheme_path:
+            return scheme_path
 
     async def _implement_db_changes(self):
         logging.info("Performing aerich migrations.")

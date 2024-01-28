@@ -1,18 +1,12 @@
-(define-module (guix)
-  #:use-module (guix git-download)
-  #:use-module (guix build-system python)
-  #:use-module (guix gexp)
-  #:use-module (guix packages)
-  #:use-module (guix utils)
-  #:use-module (gnu packages databases)     ;; for python-tortoise-orm
-  #:use-module (gnu packages markup)        ;; for python-markdownify
-  #:use-module (gnu packages python)
-  #:use-module (gnu packages python-web)    ;; for python-uvicorn
-  #:use-module (gnu packages python-xyz)    ;; for dynaconf
-  #:use-module (mobilizon-reshare package)
-  #:use-module (mobilizon-reshare dependencies)
-  #:use-module (ice-9 rdelim)
-  #:use-module (ice-9 popen))
+(use-modules (guix git-download)
+             (guix build-system python)
+             (guix gexp)
+             (guix packages)
+             (guix utils)
+             (gnu packages markup)        ;; for python-markdownify
+             (mobilizon-reshare package)
+             (ice-9 rdelim)
+             (ice-9 popen))
 
 (define %source-dir (getcwd))
 
@@ -32,7 +26,10 @@
     (package (inherit mobilizon-reshare)
       (name "mobilizon-reshare.git")
       (version (git-version source-version revision commit))
-      (source mobilizon-reshare-git-origin))))
+      (source mobilizon-reshare-git-origin)
+      (propagated-inputs
+       (modify-inputs (package-propagated-inputs mobilizon-reshare)
+         (replace "python-markdownify" python-markdownify))))))
 
 (define-public mobilizon-reshare-scheduler
  (package (inherit mobilizon-reshare.git)
