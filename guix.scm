@@ -1,12 +1,14 @@
-(use-modules (guix git-download)
-             (guix build-system python)
-             (guix gexp)
-             (guix packages)
-             (guix utils)
-             (gnu packages markup)        ;; for python-markdownify
-             (mobilizon-reshare package)
-             (ice-9 rdelim)
-             (ice-9 popen))
+(define-module (guix)
+  #:use-module (guix git-download)
+  #:use-module (guix build-system python)
+  #:use-module (guix gexp)
+  #:use-module (guix packages)
+  #:use-module (guix utils)
+  #:use-module (gnu packages markup) ;; for python-markdownify
+  #:use-module (mobilizon-reshare package)
+  #:use-module (mobilizon-reshare dependencies)
+  #:use-module (ice-9 rdelim)
+  #:use-module (ice-9 popen))
 
 (define %source-dir (getcwd))
 
