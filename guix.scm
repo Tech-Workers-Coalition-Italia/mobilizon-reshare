@@ -4,7 +4,8 @@
   #:use-module (guix gexp)
   #:use-module (guix packages)
   #:use-module (guix utils)
-  #:use-module (gnu packages markup) ;; for python-markdownify
+  #:use-module (gnu packages markup)     ;; for python-markdownify
+  #:use-module (gnu packages python-xyz) ;; for python-apscheduler
   #:use-module (mobilizon-reshare package)
   #:use-module (mobilizon-reshare dependencies)
   #:use-module (ice-9 rdelim)
