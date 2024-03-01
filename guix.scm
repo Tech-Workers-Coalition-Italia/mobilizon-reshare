@@ -5,7 +5,7 @@
   #:use-module (guix packages)
   #:use-module (guix utils)
   #:use-module (gnu packages markup)     ;; for python-markdownify
-  #:use-module (gnu packages python-web) ;; for python-fastapi-pagination-minimal
+  #:use-module (gnu packages python-web) ;; for python-fastapi-pagination-minimal and uvicorn
   #:use-module (gnu packages python-xyz) ;; for python-apscheduler
   #:use-module (mobilizon-reshare package)
   #:use-module (mobilizon-reshare dependencies)
@@ -27,14 +27,24 @@
         (revision "0")
         (commit (read-line
                  (open-input-pipe "git show HEAD | head -1 | cut -d ' ' -f 2"))))
-    (package (inherit mobilizon-reshare)
-      (name "mobilizon-reshare.git")
-      (version (git-version source-version revision commit))
-      (source mobilizon-reshare-git-origin)
-      (propagated-inputs
-       (modify-inputs (package-propagated-inputs mobilizon-reshare)
-         (replace "python-fastapi-pagination-minimal" python-fastapi-pagination-minimal)
-         (replace "python-markdownify" python-markdownify))))))
+    ((package-input-rewriting/spec `(("python-fastapi" . ,(const python-fastapi))
+                                     ("python-dotenv" . ,(const python-dotenv-0.13.0))
+                                     ("python-uvicorn" . ,(const python-uvicorn))))
+     (package (inherit mobilizon-reshare)
+       (name "mobilizon-reshare.git")
+       (version (git-version source-version revision commit))
+       (source mobilizon-reshare-git-origin)
+       (propagated-inputs
+        (modify-inputs (package-propagated-inputs mobilizon-reshare)
+          (replace "python-uvicorn" python-uvicorn)
+          (replace "python-fastapi" python-fastapi)
+          (replace "python-fastapi-pagination-minimal"
+            (package
+              (inherit python-fastapi-pagination-minimal)
+              (propagated-inputs
+               (modify-inputs (package-propagated-inputs python-fastapi-pagination-minimal)
+                 (replace "python-fastapi" python-fastapi)))))
+          (replace "python-markdownify" python-markdownify)))))))
 
 (define-public mobilizon-reshare-scheduler
  (package (inherit mobilizon-reshare.git)
