@@ -308,7 +308,7 @@ test = ["anyio[trio] (>=3.2.1,<4.0.0)", "black (==22.8.0)", "databases[sqlite] (
 
 [[package]]
 name = "fastapi-pagination"
-version = "0.11.4"
+version = "0.12.3"
 description = "FastAPI pagination"
 category = "main"
 optional = false
@@ -319,20 +319,21 @@ fastapi = ">=0.80.0"
 pydantic = ">=1.9.1"
 
 [package.extras]
-sqlalchemy = ["SQLAlchemy (>=1.3.20)", "sqlakeyset (>=1.0.1659142803,<2.0.0)"]
+sqlalchemy = ["SQLAlchemy (>=1.3.20)", "sqlakeyset (>=2.0.1680321678,<3.0.0)"]
 asyncpg = ["SQLAlchemy (>=1.3.20)", "asyncpg (>=0.24.0)"]
-all = ["SQLAlchemy (>=1.3.20)", "databases (>=0.6.0)", "orm (>=0.3.1)", "tortoise-orm (>=0.16.18,<0.20.0)", "asyncpg (>=0.24.0)", "ormar (>=0.11.2)", "django (<5.0.0)", "piccolo (>=0.89,<0.106)", "motor (>=2.5.1,<4.0.0)", "mongoengine (>=0.23.1,<0.27.0)", "sqlmodel (>=0.0.8,<0.0.9)", "pony (>=0.7.16,<0.8.0)", "beanie (>=1.11.9,<2.0.0)", "sqlakeyset (>=1.0.1659142803,<2.0.0)", "scylla-driver (>=3.25.6,<4.0.0)"]
+all = ["SQLAlchemy (>=1.3.20)", "databases (>=0.6.0)", "orm (>=0.3.1)", "tortoise-orm (>=0.16.18,<0.20.0)", "asyncpg (>=0.24.0)", "ormar (>=0.11.2)", "django (<5.0.0)", "piccolo (>=0.89,<0.112)", "motor (>=2.5.1,<4.0.0)", "mongoengine (>=0.23.1,<0.28.0)", "sqlmodel (>=0.0.8,<0.0.9)", "pony (>=0.7.16,<0.8.0)", "beanie (>=1.11.9,<2.0.0)", "sqlakeyset (>=2.0.1680321678,<3.0.0)", "scylla-driver (>=3.25.6,<4.0.0)", "bunnet (>=1.1.0,<2.0.0)"]
 databases = ["databases (>=0.6.0)"]
 orm = ["databases (>=0.6.0)", "orm (>=0.3.1)"]
 django = ["databases (>=0.6.0)", "django (<5.0.0)"]
 tortoise = ["tortoise-orm (>=0.16.18,<0.20.0)"]
 ormar = ["ormar (>=0.11.2)"]
-piccolo = ["piccolo (>=0.89,<0.106)"]
+piccolo = ["piccolo (>=0.89,<0.112)"]
 motor = ["motor (>=2.5.1,<4.0.0)"]
-mongoengine = ["mongoengine (>=0.23.1,<0.27.0)"]
-sqlmodel = ["sqlmodel (>=0.0.8,<0.0.9)", "sqlakeyset (>=1.0.1659142803,<2.0.0)"]
+mongoengine = ["mongoengine (>=0.23.1,<0.28.0)"]
+sqlmodel = ["sqlmodel (>=0.0.8,<0.0.9)", "sqlakeyset (>=2.0.1680321678,<3.0.0)"]
 beanie = ["beanie (>=1.11.9,<2.0.0)"]
 scylla-driver = ["scylla-driver (>=3.25.6,<4.0.0)"]
+bunnet = ["bunnet (>=1.1.0,<2.0.0)"]
 
 [[package]]
 name = "h11"
@@ -610,7 +611,7 @@ pytest = ">=3.2.5"
 
 [[package]]
 name = "python-dateutil"
-version = "2.8.2"
+version = "2.9.0.post0"
 description = "Extensions to the standard Python datetime module"
 category = "main"
 optional = false
@@ -1021,7 +1022,7 @@ standard = ["websockets (>=10.0)", "httptools (>=0.4.0)", "watchgod (>=0.6)", "p
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.10"
-content-hash = "b758bdb597165ad8f0fc61bce99bb9f7d83c13788ca20ff3c78ae3a574aed11a"
+content-hash = "89e84928564653435f7e8b547f4d5fc68edf0c25c09a05e51d08d234b4b17e52"
 
 [metadata.files]
 aerich = []
